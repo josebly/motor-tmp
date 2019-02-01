@@ -79,6 +79,8 @@ ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
 ADC_HandleTypeDef hadc3;
 
+DAC_HandleTypeDef hdac;
+
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim5;
@@ -99,6 +101,7 @@ static void MX_TIM8_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM5_Init(void);
+static void MX_DAC_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 uint16_t adc1;
@@ -146,6 +149,7 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM2_Init();
   MX_TIM5_Init();
+  MX_DAC_Init();
   /* USER CODE BEGIN 2 */
 
 	HAL_TIM_Base_Start(&htim8);
@@ -160,12 +164,16 @@ int main(void)
 			HAL_TIM_OC_Start(&htim8, TIM_CHANNEL_4);
 			HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_3);
 			htim8.Instance->CCR2 = 0x1c2;
+      htim8.Instance->CCER |= TIM_CCER_CC1NE;
 			hadc1.Instance->CR1 |= ADC_CR1_JEOCIE;
 			htim1.Instance->DIER |= TIM_DIER_UIE;
 			HAL_NVIC_SetPriority(OTG_FS_IRQn, 3, 0);
+      HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2, 0);
 			htim2.Instance->ARR = 0xFFFFFFFF;
 			htim1.Instance->ARR = 17999;
 			htim5.Instance->ARR = 0xFFFFFFFF;
+      hdac.Instance->CR |= DAC_CR_EN1;
+      DBGMCU->APB2FZ |= DBGMCU_APB2_FZ_DBG_TIM8_STOP;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -453,6 +461,44 @@ static void MX_ADC3_Init(void)
   /* USER CODE BEGIN ADC3_Init 2 */
 
   /* USER CODE END ADC3_Init 2 */
+
+}
+
+/**
+  * @brief DAC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_DAC_Init(void)
+{
+
+  /* USER CODE BEGIN DAC_Init 0 */
+
+  /* USER CODE END DAC_Init 0 */
+
+  DAC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN DAC_Init 1 */
+
+  /* USER CODE END DAC_Init 1 */
+  /**DAC Initialization 
+  */
+  hdac.Instance = DAC;
+  if (HAL_DAC_Init(&hdac) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /**DAC channel OUT1 config 
+  */
+  sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
+  if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN DAC_Init 2 */
+
+  /* USER CODE END DAC_Init 2 */
 
 }
 

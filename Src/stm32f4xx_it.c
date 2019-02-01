@@ -68,10 +68,14 @@
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 #include "math.h"
+uint16_t adc1_des = 2300;
+float kp = 0.7;
 extern uint16_t adc1;
 extern int32_t motor_enc;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim5;
+extern TIM_HandleTypeDef htim8;
+extern DAC_HandleTypeDef hdac;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -229,8 +233,11 @@ void ADC_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
 	static uint32_t t_start;
+  static uint16_t last_adc1;
+  static int bort = 0;
+  static int16_t thresh = 100;
 	t_start = htim5.Instance->CNT;
-//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
 #if 0
   /* USER CODE END ADC_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc1);
@@ -240,7 +247,14 @@ void ADC_IRQHandler(void)
 #endif
 	float a = sinf(1.3);
 	float b = cosf(1.3);
-	adc1 = hadc1.Instance->DR;
+	adc1 = hadc1.Instance->JDR1;
+  if ((int16_t) (adc1 - last_adc1) < -thresh)
+    bort++;
+  last_adc1 = adc1;
+  hdac.Instance->DHR12R1 = adc1;
+  float error = adc1_des - adc1;
+  float command = kp*error;
+  htim8.Instance->CCR1 = command;
 	motor_enc = htim2.Instance->CNT;
 	hadc1.Instance->SR &= ~ADC_SR_JEOC;
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
