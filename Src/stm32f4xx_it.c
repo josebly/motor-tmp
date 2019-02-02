@@ -68,9 +68,29 @@
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 #include "math.h"
-uint16_t adc1_des = 2300;
-float kp = 0.7;
+float ia_bias = 1;
+float ia_amp = 0.5;
+float ia_des = 0;
+float kp = 5;
 extern uint16_t adc1;
+float adc1_offset = 1980;
+float adc1_gain = 3.3/4096/(.007*20);  // V/count * A/Vr / Vo/Vr
+float ia;
+float VtoPWM = 899/12;
+uint16_t max_pwm = 800; // need max pwm for low side sensing.
+uint32_t i_period = 1000;
+float ki = 30000;
+float ki_sat = 5;
+float ki_sum = 0;
+
+inline uint16_t minu16(uint16_t a, uint16_t b) {
+  if (a > b) {
+    return b;
+  } else {
+    return a;
+  }
+}
+
 extern int32_t motor_enc;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim5;
@@ -248,13 +268,17 @@ void ADC_IRQHandler(void)
 	float a = sinf(1.3);
 	float b = cosf(1.3);
 	adc1 = hadc1.Instance->JDR1;
+  ia = adc1_gain*(adc1-adc1_offset);
   if ((int16_t) (adc1 - last_adc1) < -thresh)
     bort++;
   last_adc1 = adc1;
   hdac.Instance->DHR12R1 = adc1;
-  float error = adc1_des - adc1;
-  float command = kp*error;
-  htim8.Instance->CCR1 = command;
+  float error = ia_des - ia;
+  ki_sum += ki*error*(1./100000);
+  ki_sum = fminf(ki_sum, ki_sat);
+  float command = kp*error + ki_sum;
+  uint16_t ccr_command = command*VtoPWM;
+  htim8.Instance->CCR1 = minu16(ccr_command, max_pwm);
 	motor_enc = htim2.Instance->CNT;
 	hadc1.Instance->SR &= ~ADC_SR_JEOC;
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
@@ -270,7 +294,13 @@ void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
-		for(int i=0; i<3000; i++);
+	static uint64_t t = 0;
+  t++;
+  static float amp_sign = 1;
+  if (t % i_period == 0) {
+    amp_sign *= -1;
+    ia_des = ia_bias + amp_sign*ia_amp;
+  }
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 1 */
