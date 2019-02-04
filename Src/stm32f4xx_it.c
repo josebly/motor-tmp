@@ -68,18 +68,18 @@
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 #include "math.h"
-float ia_bias = 1;
-float ia_amp = 0.5;
+float ia_bias = 2;
+float ia_amp = 0;
 float ia_des = 0;
-float kp = 5;
+float kp = 1;
 extern uint16_t adc1;
 float adc1_offset = 1980;
 float adc1_gain = 3.3/4096/(.007*20);  // V/count * A/Vr / Vo/Vr
 float ia;
 float VtoPWM = 899/12;
-uint16_t max_pwm = 800; // need max pwm for low side sensing.
+uint16_t max_pwm = 700; // need max pwm for low side sensing.
 uint32_t i_period = 1000;
-float ki = 30000;
+float ki = 10000;
 float ki_sat = 5;
 float ki_sum = 0;
 
