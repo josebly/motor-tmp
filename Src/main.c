@@ -104,7 +104,7 @@ static void MX_TIM5_Init(void);
 static void MX_DAC_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-uint16_t adc1;
+uint16_t adc1, adc2, adc3;
 int32_t motor_enc;
 /* USER CODE END PFP */
 

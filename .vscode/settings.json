@@ -2,7 +2,8 @@
     "files.associations": {
         "main.h": "c",
         "stm32f4xx_hal.h": "c",
-        "stm32f4xx_hal_conf.h": "c"
+        "stm32f4xx_hal_conf.h": "c",
+        "cmath": "cpp"
     },
     "C_Cpp.default.defines": [
         "USE_HAL_DRIVER",

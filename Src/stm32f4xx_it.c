@@ -36,6 +36,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
+#include "../control/foc_i.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -67,21 +69,29 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+FOCCommand foc_command = {};
+FOCStatus foc_status;
+FOCParam foc_param = { .pi_d.kp=1,
+                       .pi_d.ki=.1,
+                       .pi_d.ki_limit=2,
+                       .pi_d.command_max=2,
+                       .pi_q.kp=1,
+                       .pi_q.ki=.1,
+                       .pi_q.ki_limit=2,
+                       .pi_q.command_max=2, };
+
 #include "math.h"
-float ia_bias = 2;
-float ia_amp = 0;
-float ia_des = 0;
-float kp = 1;
-extern uint16_t adc1;
+float iq_bias = 2;
+float iq_amp = 0;
+float iq_des = 0;
+int32_t i_period = 1000;
+
+extern uint16_t adc1, adc2, adc3;
 float adc1_offset = 1980;
 float adc1_gain = 3.3/4096/(.007*20);  // V/count * A/Vr / Vo/Vr
-float ia;
+
 float VtoPWM = 899/12;
-uint16_t max_pwm = 700; // need max pwm for low side sensing.
-uint32_t i_period = 1000;
-float ki = 10000;
-float ki_sat = 5;
-float ki_sum = 0;
+
 
 inline uint16_t minu16(uint16_t a, uint16_t b) {
   if (a > b) {
@@ -265,21 +275,36 @@ void ADC_IRQHandler(void)
   HAL_ADC_IRQHandler(&hadc3);
   /* USER CODE BEGIN ADC_IRQn 1 */
 #endif
-	float a = sinf(1.3);
-	float b = cosf(1.3);
+
 	adc1 = hadc1.Instance->JDR1;
-  ia = adc1_gain*(adc1-adc1_offset);
+  adc2 = hadc2.Instance->JDR1;
+  adc3 = hadc3.Instance->JDR1;
+  motor_enc = htim2.Instance->CNT;
+  
   if ((int16_t) (adc1 - last_adc1) < -thresh)
     bort++;
   last_adc1 = adc1;
   hdac.Instance->DHR12R1 = adc1;
-  float error = ia_des - ia;
-  ki_sum += ki*error*(1./100000);
-  ki_sum = fminf(ki_sum, ki_sat);
-  float command = kp*error + ki_sum;
-  uint16_t ccr_command = command*VtoPWM;
-  htim8.Instance->CCR1 = minu16(ccr_command, max_pwm);
-	motor_enc = htim2.Instance->CNT;
+
+  foc_command.measured.i_a = adc1_gain*(adc1-adc1_offset);
+  foc_command.measured.i_b = adc1_gain*(adc2-adc1_offset);
+  foc_command.measured.i_c = adc1_gain*(adc3-adc1_offset);
+  foc_command.measured.motor_encoder = motor_enc*(2*M_PI/1024);
+  foc_command.desired.i_q = iq_des;
+
+//TODO: don't set param every time
+  foc_set_param(&foc_param);
+  foc_set_command(&foc_command);
+  foc_update();
+  foc_get_status(&foc_status);
+
+  // uint16_t ccr_command = (foc_status.command.v_a + 6)*VtoPWM;
+  // htim8.Instance->CCR1 = minu16(ccr_command, max_pwm);
+	
+  htim8.Instance->CCR1 = (foc_status.command.v_a + 6)*VtoPWM;
+  htim8.Instance->CCR2 = (foc_status.command.v_b + 6)*VtoPWM;
+  htim8.Instance->CCR3 = (foc_status.command.v_c + 6)*VtoPWM;
+  
 	hadc1.Instance->SR &= ~ADC_SR_JEOC;
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
 	uint32_t t_stop = htim5.Instance->CNT;
@@ -299,7 +324,7 @@ void TIM1_UP_TIM10_IRQHandler(void)
   static float amp_sign = 1;
   if (t % i_period == 0) {
     amp_sign *= -1;
-    ia_des = ia_bias + amp_sign*ia_amp;
+    iq_des = iq_bias + amp_sign*iq_amp;
   }
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
