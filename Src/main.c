@@ -174,6 +174,24 @@ int main(void)
 			htim5.Instance->ARR = 0xFFFFFFFF;
       hdac.Instance->CR |= DAC_CR_EN1;
       DBGMCU->APB2FZ |= DBGMCU_APB2_FZ_DBG_TIM8_STOP;
+
+      CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+      //ITM->LSR = 0xC5ACCE55;
+
+      TPI->SPPR = 0x00000002; // Select NRZ mode
+      TPI->ACPR = 40 - 1; // 4.5 MHz from 180 MHz clock
+      ITM->TPR = 0x00000000;
+      DWT->CTRL = 0x400003FE;
+      TPI->FFCR = 0x00000100;
+      //
+      // Enable ITM and stimulus port
+      //
+
+     // ITM->TCR |= ITM_TCR_ITMENA_Msk; //& ITM_TCR_ITMENA_Msk) != 0UL) &&      /* ITM enabled */
+      ITM->TCR = 0x1000D; // Enable ITM
+      ITM->TER |= 1UL;
+      
+     // ITM->ENA = ITM_TCR_ITMENA_Msk // Enable ITM stimulus port
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -607,11 +625,11 @@ static void MX_TIM2_Init(void)
   sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC1Filter = 0;
+  sConfig.IC1Filter = 2;
   sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC2Filter = 0;
+  sConfig.IC2Filter = 2;
   if (HAL_TIM_Encoder_Init(&htim2, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -625,7 +643,7 @@ static void MX_TIM2_Init(void)
   sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
   sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 2;
+  sConfigIC.ICFilter = 4;
   if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();

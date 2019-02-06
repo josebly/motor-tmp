@@ -1,14 +1,42 @@
 #include "control_fun.h"
 //#include "hal_fun.h"
+#include <cmath>
 
 float fsat(float a, float sat) {
-    if (a > sat) {
-        return sat;
-    } else if (a < -sat) {
-        return -sat;
-    } else {
-        return a;
-    }
+    // Slow version
+    // if (a > sat) {
+    //     return sat;
+    // } else if (a < -sat) {
+    //     return -sat;
+    // } else {
+    //     return a;
+    // }
+
+    // Doesn't completely optimize to branchless instructions
+    // return a>sat ? sat : (a<-sat ? -sat : a);
+
+    // Optimizes to branchless
+    float b = a>sat ? sat : a;
+    b = b<-sat ? -sat : b;
+    return b;
+
+    // Not so great
+    // float s = a>0 ? sat : -sat;
+    // return std::abs(a)-sat>0 ? s : a;
+
+    // Assembly
+    // asm("vcmpe.f32 %[a], %[sat]\n\t"
+    //     "vmrs APSR_nzcv, fpscr\n\t"
+    //     "it gt\n\t"
+    //     "vmovgt.f32 %[a], %[sat]\n\t"
+    //     "vneg.f32 %[sat], %[sat]\n\t"
+    //     "vcmpe.f32 %[a], %[sat]\n\t"
+    //     "vmrs APSR_nzcv, fpscr\n\t"
+    //     "it lt\n\t"
+    //     "vmovlt.f32 %[a], %[sat]\n\t"
+    //     :
+    //     : [a] "t" (a), [sat] "t" (sat));
+    // return a;
 }
 
 void PIController::set_param(const PIParam &pi_param) {

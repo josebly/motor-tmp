@@ -25,7 +25,7 @@ private:
  //   hal::PWM *pwm_;
  //   const hal::ADC &adc_;
  //   const Encoder &encoder_;
-    uint16_t num_poles_ = 1;
+    uint16_t num_poles_ = 7;
     PIController *pi_id_, *pi_iq_;
 };
 

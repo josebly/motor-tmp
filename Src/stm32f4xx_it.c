@@ -85,6 +85,8 @@ float iq_bias = 2;
 float iq_amp = 0;
 float iq_des = 0;
 int32_t i_period = 1000;
+float encoder_offset = 0;
+float encoder_dir = 1;
 
 extern uint16_t adc1, adc2, adc3;
 float adc1_offset = 1980;
@@ -280,6 +282,10 @@ void ADC_IRQHandler(void)
   adc2 = hadc2.Instance->JDR1;
   adc3 = hadc3.Instance->JDR1;
   motor_enc = htim2.Instance->CNT;
+
+
+  ITM->PORT[0].u32 = adc1;
+//  ITM_SendChar
   
   if ((int16_t) (adc1 - last_adc1) < -thresh)
     bort++;
@@ -289,7 +295,7 @@ void ADC_IRQHandler(void)
   foc_command.measured.i_a = adc1_gain*(adc1-adc1_offset);
   foc_command.measured.i_b = adc1_gain*(adc2-adc1_offset);
   foc_command.measured.i_c = adc1_gain*(adc3-adc1_offset);
-  foc_command.measured.motor_encoder = motor_enc*(2*M_PI/1024);
+  foc_command.measured.motor_encoder = encoder_dir*(motor_enc*(2*(float) M_PI/1024)+encoder_offset);
   foc_command.desired.i_q = iq_des;
 
 //TODO: don't set param every time
