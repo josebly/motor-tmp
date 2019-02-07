@@ -116,6 +116,18 @@ int32_t motor_enc, motor_index_pos;
 extern float motor_electrical_zero_pos;
 float motor_index_electrical_offset_pos = -49;
 uint8_t use_motor_index_electrical_offset_pos = 1;
+uint16_t drv_regs_error = 0;
+
+uint16_t drv_regs[] = {
+  (2<<11) | 0x00,  // control_reg
+  (3<<11) | 0x3CC, // hs_reg      0x3CC, moderate drive current
+  (4<<11) | 0x0CC, // ls_reg      0x0CC, no cycle by cycle, 500 ns tdrive
+                                // moderate drive current (.57,1.14A)
+  (5<<11) | 0x20,  // ocp_reg     0x20 -> 50 ns dead time, 
+                              //latched ocp, 4 us ocp deglitch, 0.06 Vds thresh
+  (6<<11) | 0x280, // csa_reg     0x280 -> bidirectional current, 20V/V
+                                // anlog gain, 0.25V sense ocp resistor
+};
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -205,6 +217,7 @@ int main(void)
       ITM->TER |= 1UL;
       
      // ITM->ENA = ITM_TCR_ITMENA_Msk // Enable ITM stimulus port
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -213,8 +226,21 @@ int main(void)
 	char s[512];
 	for(;i<512;i++)
 		s[i] = (uint8_t) i;
+
+    // drv regs setting
+    for (int i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
+      uint16_t reg_out = drv_regs[i];
+      uint16_t reg_in = 0;
+      HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
+      reg_out |= (1<<15); // switch to read mode
+      HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
+      if ((reg_in & 0x7FF) != (reg_out & 0x7FF)) {
+        drv_regs_error |= 1 << i;
+      }
+    }
   while (1)
   {
+
 		HAL_Delay(1);
       if (htim2.Instance->SR & TIM_SR_CC3IF) {
         // qep index received
@@ -561,7 +587,7 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
   hspi1.Init.TIMode = SPI_TIMODE_ENABLE;
@@ -721,7 +747,7 @@ static void MX_TIM2_Init(void)
   sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC2Filter = 2;
+  sConfig.IC2Filter = 4;
   if (HAL_TIM_Encoder_Init(&htim2, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -735,7 +761,7 @@ static void MX_TIM2_Init(void)
   sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
   sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 4;
+  sConfigIC.ICFilter = 2;
   if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
