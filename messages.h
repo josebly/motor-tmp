@@ -30,8 +30,9 @@ typedef struct {
     } desired;
     struct {
         float position;
+        float i_d, i_q;
     } measured;
-    struct { float v_a, v_b, v_c; } command;
+    struct { float v_a, v_b, v_c, v_d, v_q; } command;
 } FOCStatus;
 
 typedef struct {

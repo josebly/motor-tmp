@@ -56,6 +56,10 @@ void FOC::update() {
     status_.command.v_a = v_a_desired;
     status_.command.v_b = v_b_desired;
     status_.command.v_c = v_c_desired;
+    status_.command.v_d = v_d_desired;
+    status_.command.v_q = v_q_desired;
+    status_.measured.i_d = i_d_measured;
+    status_.measured.i_q = i_q_measured;
 //   pwm_->set_voltage(v_a_desired, v_b_desired, v_c_desired);
     update_status();
 }

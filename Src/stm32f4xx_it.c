@@ -88,6 +88,11 @@ int32_t i_period = 1000;
 float motor_encoder_dir = -1;
 float motor_electrical_zero_pos = 0;
 
+int32_t last_motor_enc=0;
+float motor_velocity=0;
+float motor_velocity_filtered=0;
+float alpha=0.001;
+
 extern uint16_t adc1, adc2, adc3;
 float adc1_offset = 1980;
 float adc1_gain = 3.3/4096/(.007*20);  // V/count * A/Vr / Vo/Vr
@@ -282,6 +287,10 @@ void ADC_IRQHandler(void)
   adc2 = hadc2.Instance->JDR1;
   adc3 = hadc3.Instance->JDR1;
   motor_enc = htim2.Instance->CNT;
+  motor_velocity = (motor_enc-last_motor_enc)*(2*(float) M_PI/1024*100000);
+ // motor_velocity_filtered = motor_velocity_filter.update(motor_velocity);
+  motor_velocity_filtered = (1-alpha)*motor_velocity_filtered + alpha*motor_velocity;
+  last_motor_enc = motor_enc;
 
 
   ITM->PORT[0].u32 = adc1;
