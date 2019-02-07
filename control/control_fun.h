@@ -13,4 +13,15 @@ private:
 };
 
 
+class PIDController {
+public:
+    virtual float step(float desired, float measured);
+    void set_param(const PIDParam &param);
+private:
+    float kp_ = 0, kd_ = 0, ki_ = 0, ki_sum_ = 0, ki_limit_ = 0, command_max_ = 0;
+    float error_last_ = 0;
+
+};
+
+
 #endif //MOTOR_CONTROL_FUN_H

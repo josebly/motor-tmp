@@ -52,3 +52,20 @@ float PIController::step(float desired, float measured) {
     ki_sum_ = fsat(ki_sum_, ki_limit_);
     return fsat(kp_*error + ki_sum_, command_max_);
 }
+
+void PIDController::set_param(const PIDParam &param) {
+    ki_ = param.ki;
+    kp_ = param.kp;
+    ki_limit_ = param.ki_limit;
+    kd_ = param.kd;
+    command_max_ = param.command_max;
+}
+
+float PIDController::step(float desired, float measured) {
+    float error = desired - measured;
+    float error_dot = error-error_last_;
+    error_last_ = error;
+    ki_sum_ += ki_ * error;
+    ki_sum_ = fsat(ki_sum_, ki_limit_);
+    return fsat(kp_*error + ki_sum_ + kd_*error_dot, command_max_);
+}

@@ -12,6 +12,8 @@ void foc_set_command(FOCCommand *foc_command);
 void foc_get_status(FOCStatus *foc_status);
 void foc_set_param(FOCParam *foc_param);
 
+void controller_set_param(PIDParam *pid_param);
+float controller_step(float desired, float measured);
 
 #ifdef __cplusplus
 }

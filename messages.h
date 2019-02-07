@@ -14,6 +14,14 @@ typedef struct {
 } PIParam;
 
 typedef struct {
+    float kp;
+    float ki;
+    float ki_limit;
+    float kd;
+    float command_max;
+} PIDParam;
+
+typedef struct {
     PIParam pi_d;
     PIParam pi_q;
     float current_filter_frequency_hz;

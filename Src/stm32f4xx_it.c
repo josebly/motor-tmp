@@ -99,6 +99,14 @@ float adc1_gain = 3.3/4096/(.007*20);  // V/count * A/Vr / Vo/Vr
 
 float VtoPWM = 899/12;
 
+PIDParam controller_param = {
+  .kp=.01,
+  .ki=0,
+  .ki_limit=0,
+  .kd=.0001,
+  .command_max=1
+};
+float pos_desired = 0;
 
 inline uint16_t minu16(uint16_t a, uint16_t b) {
   if (a > b) {
@@ -349,13 +357,15 @@ void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
-	static uint64_t t = 0;
-  t++;
-  static float amp_sign = 1;
-  if (t % i_period == 0) {
-    amp_sign *= -1;
-    iq_des = iq_bias + amp_sign*iq_amp;
-  }
+	// static uint64_t t = 0;
+  // t++;
+  // static float amp_sign = 1;
+  // if (t % i_period == 0) {
+  //   amp_sign *= -1;
+  //   iq_des = iq_bias + amp_sign*iq_amp;
+  // }
+  controller_set_param(&controller_param);
+  iq_des = controller_step(pos_desired, motor_enc);
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 1 */
