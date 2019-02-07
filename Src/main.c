@@ -105,7 +105,10 @@ static void MX_DAC_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 uint16_t adc1, adc2, adc3;
-int32_t motor_enc;
+int32_t motor_enc, motor_index_pos;
+extern float motor_electrical_zero_pos;
+float motor_index_electrical_offset_pos = -49;
+uint8_t use_motor_index_electrical_offset_pos = 1;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -203,6 +206,15 @@ int main(void)
   while (1)
   {
 		HAL_Delay(1);
+      if (htim2.Instance->SR & TIM_SR_CC3IF) {
+        // qep index received
+        motor_index_pos = htim2.Instance->CCR3;
+        if (use_motor_index_electrical_offset_pos) {
+          // motor_index_electrical_offset_pos is the value of an electrical zero minus the index position
+          // motor_electrical_zero_pos is the offset to the initial encoder value
+          motor_electrical_zero_pos = motor_index_electrical_offset_pos + motor_index_pos;
+        }
+      }
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 
 //		sprintf(s, "%d ", i++);

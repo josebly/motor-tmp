@@ -85,8 +85,8 @@ float iq_bias = 2;
 float iq_amp = 0;
 float iq_des = 0;
 int32_t i_period = 1000;
-float encoder_offset = 0;
-float encoder_dir = 1;
+float motor_encoder_dir = -1;
+float motor_electrical_zero_pos = 0;
 
 extern uint16_t adc1, adc2, adc3;
 float adc1_offset = 1980;
@@ -295,7 +295,7 @@ void ADC_IRQHandler(void)
   foc_command.measured.i_a = adc1_gain*(adc1-adc1_offset);
   foc_command.measured.i_b = adc1_gain*(adc2-adc1_offset);
   foc_command.measured.i_c = adc1_gain*(adc3-adc1_offset);
-  foc_command.measured.motor_encoder = encoder_dir*(motor_enc*(2*(float) M_PI/1024)+encoder_offset);
+  foc_command.measured.motor_encoder = motor_encoder_dir*(motor_enc - motor_electrical_zero_pos)*(2*(float) M_PI/1024);
   foc_command.desired.i_q = iq_des;
 
 //TODO: don't set param every time
