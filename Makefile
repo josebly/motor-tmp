@@ -74,7 +74,9 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c
 CPP_SOURCES = control/control_fun.cpp \
 foc.cpp \
 foc_i.cpp \
-sincos.cpp
+sincos.cpp \
+fast_loop.cpp \
+pwm.cpp
 
 # ASM sources
 ASM_SOURCES =  \

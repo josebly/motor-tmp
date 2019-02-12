@@ -69,8 +69,6 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-FOCCommand foc_command = {};
-FOCStatus foc_status;
 FOCParam foc_param = { .pi_d.kp=1,
                        .pi_d.ki=.1,
                        .pi_d.ki_limit=2,
@@ -85,19 +83,10 @@ float iq_bias = 2;
 float iq_amp = 0;
 float iq_des = 0;
 int32_t i_period = 1000;
-float motor_encoder_dir = -1;
-float motor_electrical_zero_pos = 0;
 
-int32_t last_motor_enc=0;
-float motor_velocity=0;
-float motor_velocity_filtered=0;
-float alpha=0.001;
 
-extern uint16_t adc1, adc2, adc3;
-float adc1_offset = 1980;
-float adc1_gain = 3.3/4096/(.007*20);  // V/count * A/Vr / Vo/Vr
-
-float VtoPWM = 899/12;
+uint8_t jl_torque_tx = {0x40};
+uint8_t jl_torque_rx = {0};
 
 PIDParam controller_param = {
   .kp=.01,
@@ -130,6 +119,7 @@ extern ADC_HandleTypeDef hadc2;
 extern ADC_HandleTypeDef hadc3;
 extern DMA_HandleTypeDef hdma_spi2_rx;
 extern TIM_HandleTypeDef htim1;
+extern SPI_HandleTypeDef hspi2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -293,9 +283,6 @@ void ADC_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
 	static uint32_t t_start;
-  static uint16_t last_adc1;
-  static int bort = 0;
-  static int16_t thresh = 100;
 	t_start = htim5.Instance->CNT;
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
 #if 0
@@ -306,42 +293,7 @@ void ADC_IRQHandler(void)
   /* USER CODE BEGIN ADC_IRQn 1 */
 #endif
 
-	adc1 = hadc1.Instance->JDR1;
-  adc2 = hadc2.Instance->JDR1;
-  adc3 = hadc3.Instance->JDR1;
-  motor_enc = htim2.Instance->CNT;
-  motor_velocity = (motor_enc-last_motor_enc)*(2*(float) M_PI/1024*100000);
- // motor_velocity_filtered = motor_velocity_filter.update(motor_velocity);
-  motor_velocity_filtered = (1-alpha)*motor_velocity_filtered + alpha*motor_velocity;
-  last_motor_enc = motor_enc;
-
-
-  ITM->PORT[0].u32 = adc1;
-//  ITM_SendChar
-  
-  if ((int16_t) (adc1 - last_adc1) < -thresh)
-    bort++;
-  last_adc1 = adc1;
-  hdac.Instance->DHR12R1 = adc1;
-
-  foc_command.measured.i_a = adc1_gain*(adc1-adc1_offset);
-  foc_command.measured.i_b = adc1_gain*(adc2-adc1_offset);
-  foc_command.measured.i_c = adc1_gain*(adc3-adc1_offset);
-  foc_command.measured.motor_encoder = motor_encoder_dir*(motor_enc - motor_electrical_zero_pos)*(2*(float) M_PI/1024);
-  foc_command.desired.i_q = iq_des;
-
-//TODO: don't set param every time
-  foc_set_param(&foc_param);
-  foc_set_command(&foc_command);
-  foc_update();
-  foc_get_status(&foc_status);
-
-  // uint16_t ccr_command = (foc_status.command.v_a + 6)*VtoPWM;
-  // htim8.Instance->CCR1 = minu16(ccr_command, max_pwm);
-	
-  htim8.Instance->CCR1 = (foc_status.command.v_a + 6)*VtoPWM;
-  htim8.Instance->CCR2 = (foc_status.command.v_b + 6)*VtoPWM;
-  htim8.Instance->CCR3 = (foc_status.command.v_c + 6)*VtoPWM;
+	fast_loop_update();
   
 	hadc1.Instance->SR &= ~ADC_SR_JEOC;
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
@@ -357,13 +309,16 @@ void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
-	// static uint64_t t = 0;
-  // t++;
+	static uint64_t t = 0;
+  t++;
   // static float amp_sign = 1;
   // if (t % i_period == 0) {
   //   amp_sign *= -1;
   //   iq_des = iq_bias + amp_sign*iq_amp;
   // }
+  if (t % 10 == 0) {
+    HAL_SPI_TransmitReceive_DMA(&hspi2, &jl_torque_tx, &jl_torque_rx, 9);
+  }
   controller_set_param(&controller_param);
   iq_des = controller_step(pos_desired, motor_enc);
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */

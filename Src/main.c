@@ -242,9 +242,10 @@ int main(void)
   {
 
 		HAL_Delay(1);
-      if (htim2.Instance->SR & TIM_SR_CC3IF) {
+      if (TIM2->SR & TIM_SR_CC3IF) {
         // qep index received
-        motor_index_pos = htim2.Instance->CCR3;
+        // TODO cleared by reading CCR3?
+        motor_index_pos = TIM2->CCR3;
         if (use_motor_index_electrical_offset_pos) {
           // motor_index_electrical_offset_pos is the value of an electrical zero minus the index position
           // motor_electrical_zero_pos is the offset to the initial encoder value

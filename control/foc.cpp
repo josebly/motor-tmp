@@ -23,7 +23,6 @@ static const float Kc[2][3] = {{2.0/3, -1.0/3, -1.0/3},
                                {0,      1/SQRT3, -1/SQRT3}};
 
 void FOC::update() {
-    update_command();
     status_.measured.position = command_.measured.motor_encoder;
     status_.desired.i_d = command_.desired.i_d;
     status_.desired.i_q = command_.desired.i_q;
@@ -61,11 +60,9 @@ void FOC::update() {
     status_.measured.i_d = i_d_measured;
     status_.measured.i_q = i_q_measured;
 //   pwm_->set_voltage(v_a_desired, v_b_desired, v_c_desired);
-    update_status();
 }
 
 void FOC::set_param(FOCParam &param) {
-    PeriodicCommunication<FOCCommand, FOCParam, FOCStatus>::set_param(param);
-    pi_id_->set_param(param_.pi_d);
-    pi_iq_->set_param(param_.pi_q);
+    pi_id_->set_param(param.pi_d);
+    pi_iq_->set_param(param.pi_q);
 }

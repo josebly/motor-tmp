@@ -7,10 +7,7 @@
 extern "C" {
 #endif
 
-void foc_update();
-void foc_set_command(FOCCommand *foc_command);
-void foc_get_status(FOCStatus *foc_status);
-void foc_set_param(FOCParam *foc_param);
+void fast_loop_update();
 
 void controller_set_param(PIDParam *pid_param);
 float controller_step(float desired, float measured);
