@@ -6,15 +6,15 @@ import numpy as np
 
 n = 512
 nt = 10000
-x = np.linspace(0, 2*np.pi, n)
+x = np.linspace(0, 2*(n-1)/n*np.pi, n)
 xt = np.linspace(0, float(nt-1)/nt*2*np.pi, nt)
 stab = np.sin(x)
 ctab = np.cos(x)
 plt.plot(x, np.sin(x))
 plt.show() 
 
-i = np.int_(np.floor(xt*(n-1)/2/np.pi))
-(f,b) = np.modf(xt*(n-1)/2/np.pi)
+i = np.int_(np.floor(xt*n/2/np.pi))
+(f,b) = np.modf(xt*n/2/np.pi)
 ff = f*2*np.pi/n
 sin_est1 = stab[i]
 sin_est2 = stab[i] + ff*ctab[i]
