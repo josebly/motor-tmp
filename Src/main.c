@@ -54,7 +54,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "../control/foc_i.h"
 #include "usbd_cdc_if.h"
 
 /* USER CODE END Includes */
@@ -238,6 +238,12 @@ int main(void)
         drv_regs_error |= 1 << i;
       }
     }
+  // a phase lock
+  fast_loop_phase_lock_mode(2);
+  HAL_Delay(2000);
+  motor_electrical_zero_pos = TIM2->CNT;
+  fast_loop_current_mode();
+  fast_loop_set_iq_des(1);
   while (1)
   {
 

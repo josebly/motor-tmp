@@ -41,7 +41,7 @@ void FastLoop::update() {
     foc_command.measured.i_c = adc1_gain*(adc3-adc1_offset);
     foc_command.measured.motor_encoder = motor_encoder_dir*(motor_enc - motor_electrical_zero_pos)*(2*(float) M_PI/1024);
     foc_command.desired.i_q = iq_des;
-    foc_command.desired.i_d = 0;
+    foc_command.desired.i_d = id_des;
 
     //todo remove param set
     foc_->set_param(foc_param);
@@ -52,4 +52,14 @@ void FastLoop::update() {
 
     pwm_.set_voltage(&foc_status.command.v_a);
     // set pwm
+}
+
+void FastLoop::phase_lock_mode(float id) {
+    motor_encoder_dir = 0;
+    id_des = id;
+}
+
+void FastLoop::current_mode() {
+    motor_encoder_dir = -1;
+    id_des = 0;
 }
