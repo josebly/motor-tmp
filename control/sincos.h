@@ -2,4 +2,4 @@ struct Sincos {
     float sin, cos;
 };
 
-Sincos sincos(float x);
+Sincos sincos1(float x);

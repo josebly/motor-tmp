@@ -284,10 +284,10 @@ uint32_t t_start;
 void ADC_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
-	t_start = TIM5->CNT;
-  t_diff0 = TIM5->CNT - t_start;
+	t_start = get_clock();
+  t_diff0 = get_clock() - t_start;
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
-  	t_diff1 = TIM5->CNT - t_start;
+  	t_diff1 = get_clock() - t_start;
 #if 0
   /* USER CODE END ADC_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc1);
@@ -297,11 +297,11 @@ void ADC_IRQHandler(void)
 #endif
 
 	fast_loop_update();
-  t_diff2 = TIM5->CNT-t_start;
+  t_diff2 = get_clock()-t_start;
   
 	hadc1.Instance->SR &= ~ADC_SR_JEOC;
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
-	t_diff = TIM5->CNT - t_start;
+	t_diff = get_clock() - t_start;
   /* USER CODE END ADC_IRQn 1 */
 }
 

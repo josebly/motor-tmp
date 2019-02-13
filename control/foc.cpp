@@ -5,6 +5,7 @@
 //#include "hal_pwm.h"
 //#include "../sensor/encoder.h"
 #include "control_fun.h"
+#include "sincos.h"
 
 #include <cmath>
 
@@ -38,8 +39,12 @@ void FOC::update() {
     float electrical_angle = status_.measured.position * num_poles_;
 
     t_diff10 = TIM5->CNT - t_start;
-    float sin_t = std::sin(electrical_angle);
-    float cos_t = std::cos(electrical_angle);
+    //float sin_t = std::sin(electrical_angle);
+    //float cos_t = std::cos(electrical_angle);
+
+    Sincos sincos = sincos1(electrical_angle);
+    float &sin_t = sincos.sin;
+    float &cos_t = sincos.cos;
 t_diff11 = TIM5->CNT - t_start;
     float  i_alpha_measured = Kc[0][0] * i_abc_measured[0] +
             Kc[0][1] * i_abc_measured[1] +

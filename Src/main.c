@@ -57,6 +57,7 @@
 #include "../control/foc_i.h"
 #include "usbd_cdc_if.h"
 #include "param.h"
+#include "util.h"
 DWT_Type *dwt = DWT;
 
 /* USER CODE END Includes */
@@ -252,7 +253,7 @@ int main(void)
   HAL_Delay(2000);
   motor_electrical_zero_pos = TIM2->CNT;
   fast_loop_current_mode();
-  fast_loop_set_iq_des(2);
+  fast_loop_set_iq_des(-2);
   while (1)
   {
 
