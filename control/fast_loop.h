@@ -1,5 +1,6 @@
 
 #include <cstdint>
+#include "../messages.h"
 
 class FOC;
 class PWM;
@@ -13,6 +14,7 @@ class FastLoop {
     void set_iq_des(float iq) { iq_des = iq; }
     void phase_lock_mode(float id);
     void current_mode();
+    void set_param(const FastLoopParam &fast_loop_param); 
  private:
     FOC *foc_;
     PWM &pwm_;

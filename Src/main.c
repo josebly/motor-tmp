@@ -56,6 +56,8 @@
 /* USER CODE BEGIN Includes */
 #include "../control/foc_i.h"
 #include "usbd_cdc_if.h"
+#include "param.h"
+DWT_Type *dwt = DWT;
 
 /* USER CODE END Includes */
 
@@ -113,9 +115,9 @@ static void MX_SPI1_Init(void);
 /* Private function prototypes -----------------------------------------------*/
 uint16_t adc1, adc2, adc3;
 int32_t motor_enc, motor_index_pos;
-extern float motor_electrical_zero_pos;
+extern int32_t motor_electrical_zero_pos;
 float motor_index_electrical_offset_pos = -49;
-uint8_t use_motor_index_electrical_offset_pos = 1;
+uint8_t use_motor_index_electrical_offset_pos = 0;
 uint16_t drv_regs_error = 0;
 
 uint16_t drv_regs[] = {
@@ -180,6 +182,7 @@ int main(void)
 	HAL_TIM_Base_Start(&htim8);
 	HAL_TIM_Base_Start(&htim1);
 	HAL_TIM_Base_Start(&htim2);
+  HAL_TIM_Base_Start(&htim5);
 	HAL_ADC_Start(&hadc1);
 		HAL_ADC_Start(&hadc2);
 			HAL_ADC_Start(&hadc3);
@@ -199,6 +202,7 @@ int main(void)
 			htim5.Instance->ARR = 0xFFFFFFFF;
       hdac.Instance->CR |= DAC_CR_EN1;
       DBGMCU->APB2FZ |= DBGMCU_APB2_FZ_DBG_TIM8_STOP;
+      DBGMCU->APB1FZ |= DBGMCU_APB1_FZ_DBG_TIM5_STOP;
 
       CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
       //ITM->LSR = 0xC5ACCE55;
@@ -226,24 +230,29 @@ int main(void)
 	char s[512];
 	for(;i<512;i++)
 		s[i] = (uint8_t) i;
+  dwt->CYCCNT;
+  init_param_from_flash();
+  fast_loop_set_param(&param()->fast_loop_param);
+  TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency;
 
-    // drv regs setting
-    for (int i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
-      uint16_t reg_out = drv_regs[i];
-      uint16_t reg_in = 0;
-      HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
-      reg_out |= (1<<15); // switch to read mode
-      HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
-      if ((reg_in & 0x7FF) != (reg_out & 0x7FF)) {
-        drv_regs_error |= 1 << i;
-      }
+  // drv regs setting
+  for (int i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
+    uint16_t reg_out = drv_regs[i];
+    uint16_t reg_in = 0;
+    HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
+    reg_out |= (1<<15); // switch to read mode
+    HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
+    if ((reg_in & 0x7FF) != (reg_out & 0x7FF)) {
+      drv_regs_error |= 1 << i;
     }
+  }
+  
   // a phase lock
   fast_loop_phase_lock_mode(2);
   HAL_Delay(2000);
   motor_electrical_zero_pos = TIM2->CNT;
   fast_loop_current_mode();
-  fast_loop_set_iq_des(1);
+  fast_loop_set_iq_des(2);
   while (1)
   {
 

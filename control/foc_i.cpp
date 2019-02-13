@@ -26,6 +26,10 @@ void fast_loop_current_mode() {
     fast_loop_.current_mode();
 }
 
+void fast_loop_set_param(const FastLoopParam *const fast_loop_param) {
+    fast_loop_.set_param(*fast_loop_param);
+}
+
 // void fast_loop_set_command(FOCCommand *foc_command) {
 //     fast_loop_.set_command(*foc_command);
 // }

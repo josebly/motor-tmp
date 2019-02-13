@@ -279,12 +279,15 @@ void DMA1_Stream3_IRQHandler(void)
 /**
   * @brief This function handles ADC1, ADC2 and ADC3 interrupts.
   */
+uint32_t t_diff, t_diff1, t_diff2, t_diff0;
+uint32_t t_start;
 void ADC_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
-	static uint32_t t_start;
-	t_start = htim5.Instance->CNT;
+	t_start = TIM5->CNT;
+  t_diff0 = TIM5->CNT - t_start;
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
+  	t_diff1 = TIM5->CNT - t_start;
 #if 0
   /* USER CODE END ADC_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc1);
@@ -294,11 +297,11 @@ void ADC_IRQHandler(void)
 #endif
 
 	fast_loop_update();
+  t_diff2 = TIM5->CNT-t_start;
   
 	hadc1.Instance->SR &= ~ADC_SR_JEOC;
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
-	uint32_t t_stop = htim5.Instance->CNT;
-	uint32_t t_diff = t_stop - t_start;
+	t_diff = TIM5->CNT - t_start;
   /* USER CODE END ADC_IRQn 1 */
 }
 

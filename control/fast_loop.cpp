@@ -13,10 +13,11 @@ FastLoop::~FastLoop() {
 }
 
 extern "C" {
-extern FOCParam foc_param;
-float motor_electrical_zero_pos = 0;
+int32_t motor_electrical_zero_pos = 0;
+extern uint32_t t_start;
 }
 
+uint32_t t_diff3, t_diff4, t_diff5;
 void FastLoop::update() {
     // get ADC
     // get encoder
@@ -24,6 +25,7 @@ void FastLoop::update() {
     adc2 = ADC2->JDR1;
     adc3 = ADC3->JDR1;
     motor_enc = TIM2->CNT;
+    t_diff3 = TIM5->CNT - t_start;
     motor_velocity = (motor_enc-last_motor_enc)*(2*(float) M_PI/1024*100000);
     // motor_velocity_filtered = motor_velocity_filter.update(motor_velocity);
     motor_velocity_filtered = (1-alpha)*motor_velocity_filtered + alpha*motor_velocity;
@@ -42,16 +44,20 @@ void FastLoop::update() {
     foc_command.measured.motor_encoder = motor_encoder_dir*(motor_enc - motor_electrical_zero_pos)*(2*(float) M_PI/1024);
     foc_command.desired.i_q = iq_des;
     foc_command.desired.i_d = id_des;
-
-    //todo remove param set
-    foc_->set_param(foc_param);
+    
     foc_->set_command(foc_command);
+    t_diff4 = TIM5->CNT - t_start;
     foc_->update();
+    t_diff5 = TIM5->CNT - t_start;
     FOCStatus foc_status;
     foc_->get_status(&foc_status);
 
     pwm_.set_voltage(&foc_status.command.v_a);
     // set pwm
+}
+
+void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
+    foc_->set_param(fast_loop_param.foc_param);
 }
 
 void FastLoop::phase_lock_mode(float id) {

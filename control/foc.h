@@ -12,7 +12,7 @@ public:
 
     void update();
     void set_command(const FOCCommand &command) { command_ = command; }
-    void set_param(FOCParam &param);
+    void set_param(const FOCParam &param);
     void get_status(FOCStatus *status) const { *status = status_; }
 
 private:

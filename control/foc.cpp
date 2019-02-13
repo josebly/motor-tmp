@@ -22,6 +22,14 @@ FOC::~FOC() {
 static const float Kc[2][3] = {{2.0/3, -1.0/3, -1.0/3},
                                {0,      1/SQRT3, -1/SQRT3}};
 
+
+#include "stm32f4xx.h"
+extern "C" {
+extern uint32_t t_start;
+}
+
+uint32_t t_diff10, t_diff11, t_diff12;
+
 void FOC::update() {
     status_.measured.position = command_.measured.motor_encoder;
     status_.desired.i_d = command_.desired.i_d;
@@ -29,9 +37,10 @@ void FOC::update() {
     float i_abc_measured[3] = {command_.measured.i_a, command_.measured.i_b, command_.measured.i_c};
     float electrical_angle = status_.measured.position * num_poles_;
 
+    t_diff10 = TIM5->CNT - t_start;
     float sin_t = std::sin(electrical_angle);
     float cos_t = std::cos(electrical_angle);
-
+t_diff11 = TIM5->CNT - t_start;
     float  i_alpha_measured = Kc[0][0] * i_abc_measured[0] +
             Kc[0][1] * i_abc_measured[1] +
             Kc[0][2] * i_abc_measured[2];
@@ -47,6 +56,7 @@ void FOC::update() {
 
     float v_alpha_desired = cos_t * v_d_desired + sin_t * v_q_desired;
     float v_beta_desired = -sin_t * v_d_desired + cos_t * v_q_desired;
+    t_diff12 = TIM5->CNT - t_start;
 
     float v_a_desired = Kc[0][0] * v_alpha_desired + Kc[1][0] * v_beta_desired;
     float v_b_desired = Kc[0][1] * v_alpha_desired + Kc[1][1] * v_beta_desired;
@@ -62,7 +72,7 @@ void FOC::update() {
 //   pwm_->set_voltage(v_a_desired, v_b_desired, v_c_desired);
 }
 
-void FOC::set_param(FOCParam &param) {
+void FOC::set_param(const FOCParam &param) {
     pi_id_->set_param(param.pi_d);
     pi_iq_->set_param(param.pi_q);
 }

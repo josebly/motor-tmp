@@ -27,6 +27,12 @@ typedef struct {
     float current_filter_frequency_hz;
 } FOCParam;
 
+
+typedef struct {
+    int32_t pwm_frequency;
+    FOCParam foc_param;
+} FastLoopParam;
+
 typedef struct {
     struct { float i_d, i_q; } desired;
     struct { float i_a, i_b, i_c, motor_encoder; } measured;
