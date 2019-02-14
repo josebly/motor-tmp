@@ -40,6 +40,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "util.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -279,9 +280,9 @@ void DMA1_Stream3_IRQHandler(void)
 /**
   * @brief This function handles ADC1, ADC2 and ADC3 interrupts.
   */
-uint32_t t_diff, t_diff1, t_diff2, t_diff0;
+__attribute__((used)) uint32_t t_diff, t_diff1, t_diff2, t_diff0;
 uint32_t t_start;
-void ADC_IRQHandler(void)
+void ADC_IRQHandler(void) 
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
 	t_start = get_clock();

@@ -58,7 +58,7 @@
 #include "usbd_cdc_if.h"
 #include "param.h"
 #include "util.h"
-DWT_Type *dwt = DWT;
+__attribute__((used)) DWT_Type *dwt = DWT;
 
 /* USER CODE END Includes */
 
@@ -211,7 +211,7 @@ int main(void)
       TPI->SPPR = 0x00000002; // Select NRZ mode
       TPI->ACPR = 40 - 1; // 4.5 MHz from 180 MHz clock
       ITM->TPR = 0x00000000;
-      DWT->CTRL = 0x400003FE;
+      DWT->CTRL = 0x400003FF;
       TPI->FFCR = 0x00000100;
       //
       // Enable ITM and stimulus port

@@ -4,6 +4,6 @@
 #include "stdint.h"
 #include "stm32f446xx.h"
 
-uint32_t get_clock() { return DWT->CYCCNT; }
+inline uint32_t get_clock() { return DWT->CYCCNT; }
 
 #endif
