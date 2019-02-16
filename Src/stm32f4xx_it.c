@@ -86,8 +86,8 @@ float iq_des = 0;
 int32_t i_period = 1000;
 
 
-uint8_t jl_torque_tx = {0x40};
-uint8_t jl_torque_rx = {0};
+uint8_t jl_torque_tx[9] = {0x40};
+uint8_t jl_torque_rx[9] = {0};
 
 PIDParam controller_param = {
   .kp=.01,
@@ -271,7 +271,7 @@ void DMA1_Stream3_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Stream3_IRQn 0 */
 
   /* USER CODE END DMA1_Stream3_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_spi2_rx);
+//  HAL_DMA_IRQHandler(&hdma_spi2_rx);
   /* USER CODE BEGIN DMA1_Stream3_IRQn 1 */
 
   /* USER CODE END DMA1_Stream3_IRQn 1 */
@@ -321,7 +321,9 @@ void TIM1_UP_TIM10_IRQHandler(void)
   //   iq_des = iq_bias + amp_sign*iq_amp;
   // }
   if (t % 10 == 0) {
-    HAL_SPI_TransmitReceive_DMA(&hspi2, &jl_torque_tx, &jl_torque_rx, 9);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+    HAL_SPI_TransmitReceive(&hspi2, jl_torque_tx, jl_torque_rx, 9, 10);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
   }
   controller_set_param(&controller_param);
   iq_des = controller_step(pos_desired, motor_enc);
