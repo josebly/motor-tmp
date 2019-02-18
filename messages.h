@@ -33,6 +33,8 @@ typedef struct {
     FOCParam foc_param;
 } FastLoopParam;
 
+
+
 typedef struct {
     struct { float i_d, i_q; } desired;
     struct { float i_a, i_b, i_c, motor_encoder; } measured;
@@ -49,11 +51,17 @@ typedef struct {
     struct { float v_a, v_b, v_c, v_d, v_q; } command;
 } FOCStatus;
 
+
+
 typedef struct {
     float position, velocity;
     float v_abc[3];
     FOCStatus foc_status;
 } MotorStatus;
+
+typedef struct {
+    FOCStatus foc_status;
+} FastLoopStatus;
 
 typedef struct {
     uint16_t type;       ///< \sa CommandType

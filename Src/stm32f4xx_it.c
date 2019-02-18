@@ -70,14 +70,14 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-FOCParam foc_param = { .pi_d.kp=1,
-                       .pi_d.ki=.1,
-                       .pi_d.ki_limit=2,
-                       .pi_d.command_max=2,
-                       .pi_q.kp=1,
-                       .pi_q.ki=.1,
-                       .pi_q.ki_limit=2,
-                       .pi_q.command_max=2, };
+// FOCParam foc_param = { .pi_d.kp=1,
+//                        .pi_d.ki=.1,
+//                        .pi_d.ki_limit=4,
+//                        .pi_d.command_max=5,
+//                        .pi_q.kp=1,
+//                        .pi_q.ki=.1,
+//                        .pi_q.ki_limit=4,
+//                        .pi_q.command_max=5, };
 
 #include "math.h"
 float iq_bias = 2;
@@ -85,18 +85,21 @@ float iq_amp = 0;
 float iq_des = 0;
 int32_t i_period = 1000;
 
+FastLoopStatus fast_loop_status;
+
 
 uint8_t jl_torque_tx[9] = {0x40};
 uint8_t jl_torque_rx[9] = {0};
 
 PIDParam controller_param = {
-  .kp=.01,
+  .kp=0,
   .ki=0,
   .ki_limit=0,
-  .kd=.0001,
-  .command_max=1
+  .kd=.0,
+  .command_max=2
 };
 float pos_desired = 0;
+float kt = .012/sqrt(.5);
 
 inline uint16_t minu16(uint16_t a, uint16_t b) {
   if (a > b) {
@@ -309,6 +312,12 @@ void ADC_IRQHandler(void)
 /**
   * @brief This function handles TIM1 update interrupt and TIM10 global interrupt.
   */
+
+uint32_t c1, c2;
+float torque_gain = -25;
+float torque_bias = .85;
+float torque;
+float torque_desired = 0;
 void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
@@ -320,13 +329,28 @@ void TIM1_UP_TIM10_IRQHandler(void)
   //   amp_sign *= -1;
   //   iq_des = iq_bias + amp_sign*iq_amp;
   // }
-  if (t % 10 == 0) {
+  if (t % 4 == 0) {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
     HAL_SPI_TransmitReceive(&hspi2, jl_torque_tx, jl_torque_rx, 9, 10);
+    c1 = *((uint32_t *) &jl_torque_rx[1]);
+    c2 = *((uint32_t *) &jl_torque_rx[5]);
+    // hack for bad noise
+    if (c1 != 0 && c2 != 0) {
+      float tmp_torque = torque_gain*((float) ((int32_t) (c1-c2)) / (c1+c2)) + torque_bias;
+      if (fabsf(tmp_torque) < 10) {
+        // more hack
+        torque = tmp_torque;
+      }
+    }
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
   }
   controller_set_param(&controller_param);
-  iq_des = controller_step(pos_desired, motor_enc);
+  fast_loop_get_status(&fast_loop_status);
+  float motor_torque = kt * fast_loop_status.foc_status.measured.i_q;
+  float torque_out = torque + motor_torque;
+  float torque_des = controller_step(torque_desired, torque_out);
+  iq_des = torque_des/kt*(1.f/50.f);
+  fast_loop_set_iq_des(iq_des);
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 1 */

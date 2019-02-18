@@ -15,6 +15,7 @@ class FastLoop {
     void phase_lock_mode(float id);
     void current_mode();
     void set_param(const FastLoopParam &fast_loop_param); 
+    void get_status(FastLoopStatus *fast_loop_status);
  private:
     FOC *foc_;
     PWM &pwm_;

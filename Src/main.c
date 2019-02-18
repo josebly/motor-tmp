@@ -121,8 +121,8 @@ uint16_t drv_regs_error = 0;
 
 uint16_t drv_regs[] = {
   (2<<11) | 0x00,  // control_reg
-  (3<<11) | 0x3CC, // hs_reg      0x3CC, moderate drive current
-  (4<<11) | 0x0CC, // ls_reg      0x0CC, no cycle by cycle, 500 ns tdrive
+  (3<<11) | 0x355, // hs_reg      0x3CC, moderate drive current
+  (4<<11) | 0x055, // ls_reg      0x0CC, no cycle by cycle, 500 ns tdrive
                                 // moderate drive current (.57,1.14A)
   (5<<11) | 0x20,  // ocp_reg     0x20 -> 50 ns dead time, 
                               //latched ocp, 4 us ocp deglitch, 0.06 Vds thresh
@@ -177,14 +177,17 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
+  // spi2 cs
   GPIOB->MODER |= GPIO_MODER_MODE12_0;
   GPIOB->MODER &= ~GPIO_MODER_MODE12_1;
 
-    GPIOF->MODER |= GPIO_MODER_MODE12_0;
+  // tmp power source with power cycle
+  GPIOF->MODER |= GPIO_MODER_MODE12_0;
   GPIOF->MODER &= ~GPIO_MODER_MODE12_1;
+  GPIOF->ODR &= ~GPIO_ODR_OD12;
+  HAL_Delay(100);
   GPIOF->ODR |= GPIO_ODR_OD12;
-  //SPI2->CR2 &= !SPI_CR2_FRF;
-  //SPI2->CR1 |= SPI_CR1_CPHA;
+
 	HAL_TIM_Base_Start(&htim8);
 	HAL_TIM_Base_Start(&htim1);
 	HAL_TIM_Base_Start(&htim2);
@@ -646,7 +649,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi2.Init.NSS = SPI_NSS_HARD_OUTPUT;
   hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;

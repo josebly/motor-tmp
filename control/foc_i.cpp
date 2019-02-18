@@ -30,6 +30,9 @@ void fast_loop_set_param(const FastLoopParam *const fast_loop_param) {
     fast_loop_.set_param(*fast_loop_param);
 }
 
+void fast_loop_get_status(FastLoopStatus *fast_loop_status) {
+    fast_loop_.get_status(fast_loop_status);
+}
 // void fast_loop_set_command(FOCCommand *foc_command) {
 //     fast_loop_.set_command(*foc_command);
 // }

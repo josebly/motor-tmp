@@ -69,3 +69,7 @@ void FastLoop::current_mode() {
     motor_encoder_dir = -1;
     id_des = 0;
 }
+
+void FastLoop::get_status(FastLoopStatus *fast_loop_status) {
+    foc_->get_status(&(fast_loop_status->foc_status));
+}

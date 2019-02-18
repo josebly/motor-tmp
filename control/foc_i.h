@@ -13,6 +13,7 @@ void fast_loop_set_iq_des(float iq);
 void fast_loop_phase_lock_mode(float id);
 void fast_loop_current_mode();
 void fast_loop_set_param(const FastLoopParam *const fast_loop_param);
+void fast_loop_get_status(FastLoopStatus *fast_loop_status);
 
 void controller_set_param(PIDParam *pid_param);
 float controller_step(float desired, float measured);
