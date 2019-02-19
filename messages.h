@@ -61,6 +61,7 @@ typedef struct {
 
 typedef struct {
     FOCStatus foc_status;
+    float motor_mechanical_position;
 } FastLoopStatus;
 
 typedef struct {

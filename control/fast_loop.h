@@ -26,6 +26,7 @@ class FastLoop {
     float motor_velocity_filtered=0;
     float alpha=0.001;
     float motor_encoder_dir = -1;
+    float motor_mechanical_position_ = 0;
 
     float adc1_offset = 1980;
     float adc1_gain = 3.3/4096/(.007*20);  // V/count * A/Vr / Vo/Vr

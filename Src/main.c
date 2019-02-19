@@ -113,11 +113,12 @@ static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 uint16_t adc1, adc2, adc3;
-int32_t motor_enc, motor_index_pos;
+int32_t motor_index_pos;
 extern int32_t motor_electrical_zero_pos;
 float motor_index_electrical_offset_pos = -49;
 uint8_t use_motor_index_electrical_offset_pos = 0;
 uint16_t drv_regs_error = 0;
+FastLoopStatus fast_loop_status;
 
 uint16_t drv_regs[] = {
   (2<<11) | 0x00,  // control_reg
@@ -277,14 +278,14 @@ int main(void)
         }
       }
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-
+  fast_loop_get_status(&fast_loop_status);
 //		sprintf(s, "%d ", i++);
 //		CDC_Transmit_FS((uint8_t *) s, strlen(s));
 	//	CDC_Transmit_FS((uint8_t *) s, 512);	// 1.04 MB/s
 		//	CDC_Transmit_FS("A",1);
 //		CDC_Receive_FS(s, &i);
 //		CDC_Transmit_FS((uint8_t *) s, i);
-		sprintf(s, "%d\r\n", motor_enc);
+		sprintf(s, "%f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q );
 		CDC_Transmit_FS((uint8_t *) s, strlen(s));
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 

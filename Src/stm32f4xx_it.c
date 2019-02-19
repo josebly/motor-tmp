@@ -318,18 +318,35 @@ float torque_gain = -25;
 float torque_bias = .85;
 float torque;
 float torque_desired = 0;
+
+float w = 2*M_PI*.01;
+float p_dot = 0;
+float q = 1;
+float p = 0;
+float q_dot = 0;
+float a = 20;
+
 void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
-	static uint64_t t = 0;
-  t++;
+	static uint64_t count = 0;
+  count++;
+  float dt = 0.0001;
+  p_dot = -w*w*q;
+  p += p_dot*dt;
+  q_dot = p;
+  q += q_dot*dt;
+
   // static float amp_sign = 1;
   // if (t % i_period == 0) {
   //   amp_sign *= -1;
   //   iq_des = iq_bias + amp_sign*iq_amp;
   // }
-  if (t % 4 == 0) {
+
+
+  pos_desired = a*q;
+  if (count % 4 == 0) {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
     HAL_SPI_TransmitReceive(&hspi2, jl_torque_tx, jl_torque_rx, 9, 10);
     c1 = *((uint32_t *) &jl_torque_rx[1]);
@@ -348,7 +365,8 @@ void TIM1_UP_TIM10_IRQHandler(void)
   fast_loop_get_status(&fast_loop_status);
   float motor_torque = kt * fast_loop_status.foc_status.measured.i_q;
   float torque_out = torque + motor_torque;
-  float torque_des = controller_step(torque_desired, torque_out);
+ // float torque_des = controller_step(torque_desired, torque_out);
+  float torque_des = controller_step(pos_desired, fast_loop_status.foc_status.measured.position);
   iq_des = torque_des/kt*(1.f/50.f);
   fast_loop_set_iq_des(iq_des);
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */

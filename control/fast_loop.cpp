@@ -15,6 +15,7 @@ FastLoop::~FastLoop() {
 extern "C" {
 int32_t motor_electrical_zero_pos = 0;
 extern uint32_t t_start;
+extern int32_t motor_index_pos;
 }
 
 uint32_t t_diff3, t_diff4, t_diff5;
@@ -36,13 +37,22 @@ void FastLoop::update() {
     // output adc on dac for reference 
  //   hdac.Instance->DHR12R1 = adc1;
 
+    // cogging compensation
+    motor_mechanical_position_ = (motor_enc - motor_index_pos); 
+    // float i_pos = encoder_mechanical_pos*table_size/motor_encoder_cpr;
+    // uint16_t i = i_pos;
+    // float ifrac = i_pos - i;
+    // float iq_ff = cogging_gain * (table[i] + ifrac * (table[i+1] - table[i]));
+
+    float iq_ff = 0;
+
     // update FOC
     FOCCommand foc_command;
     foc_command.measured.i_a = adc1_gain*(adc1-adc1_offset);
     foc_command.measured.i_b = adc1_gain*(adc2-adc1_offset);
     foc_command.measured.i_c = adc1_gain*(adc3-adc1_offset);
     foc_command.measured.motor_encoder = motor_encoder_dir*(motor_enc - motor_electrical_zero_pos)*(2*(float) M_PI/1024);
-    foc_command.desired.i_q = iq_des;
+    foc_command.desired.i_q = iq_des + iq_ff;
     foc_command.desired.i_d = id_des;
     
     foc_->set_command(foc_command);
@@ -72,4 +82,5 @@ void FastLoop::current_mode() {
 
 void FastLoop::get_status(FastLoopStatus *fast_loop_status) {
     foc_->get_status(&(fast_loop_status->foc_status));
+    fast_loop_status->motor_mechanical_position = motor_mechanical_position_;
 }
