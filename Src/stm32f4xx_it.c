@@ -326,6 +326,10 @@ float p = 0;
 float q_dot = 0;
 float a = 20;
 
+float kwall = 0;
+float wall_position = 0;
+float wall_max_torque = .3;
+
 void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
@@ -365,8 +369,19 @@ void TIM1_UP_TIM10_IRQHandler(void)
   fast_loop_get_status(&fast_loop_status);
   float motor_torque = kt * fast_loop_status.foc_status.measured.i_q;
   float torque_out = torque + motor_torque;
- // float torque_des = controller_step(torque_desired, torque_out);
-  float torque_des = controller_step(pos_desired, fast_loop_status.foc_status.measured.position);
+
+  // virtual wall control
+  if (fast_loop_status.foc_status.measured.position > wall_position) {
+    torque_desired = kwall*(fast_loop_status.foc_status.measured.position - wall_position);
+    if (torque_desired > wall_max_torque) {
+      torque_desired = wall_max_torque;
+    }
+  } else {
+    torque_desired = 0;
+  }
+
+  float torque_des = controller_step(torque_desired, torque_out);
+  //float torque_des = controller_step(pos_desired, fast_loop_status.foc_status.measured.position);
   iq_des = torque_des/kt*(1.f/50.f);
   fast_loop_set_iq_des(iq_des);
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
