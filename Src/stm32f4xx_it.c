@@ -36,11 +36,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
-#include "../control/foc_i.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "util.h"
+#include "../control/foc_i.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -121,10 +121,27 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern ADC_HandleTypeDef hadc3;
-extern DMA_HandleTypeDef hdma_spi2_rx;
 extern TIM_HandleTypeDef htim1;
-extern SPI_HandleTypeDef hspi2;
 /* USER CODE BEGIN EV */
+extern SPI_HandleTypeDef hspi2;
+uint32_t c1, c2;
+float torque_gain = -25;
+float torque_bias = .85;
+float torque;
+float torque_desired = 0;
+
+float w = 2*M_PI*.01;
+float p_dot = 0;
+float q = 1;
+float p = 0;
+float q_dot = 0;
+float a = 20;
+
+float kwall = 0;
+float wall_position = 0;
+float wall_max_torque = .3;
+__attribute__((used)) uint32_t t_diff, t_diff1, t_diff2, t_diff0;
+uint32_t t_start;
 
 /* USER CODE END EV */
 
@@ -267,25 +284,9 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles DMA1 stream3 global interrupt.
-  */
-void DMA1_Stream3_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Stream3_IRQn 0 */
-
-  /* USER CODE END DMA1_Stream3_IRQn 0 */
-//  HAL_DMA_IRQHandler(&hdma_spi2_rx);
-  /* USER CODE BEGIN DMA1_Stream3_IRQn 1 */
-
-  /* USER CODE END DMA1_Stream3_IRQn 1 */
-}
-
-/**
   * @brief This function handles ADC1, ADC2 and ADC3 interrupts.
   */
-__attribute__((used)) uint32_t t_diff, t_diff1, t_diff2, t_diff0;
-uint32_t t_start;
-void ADC_IRQHandler(void) 
+void ADC_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
 	t_start = get_clock();
@@ -312,24 +313,6 @@ void ADC_IRQHandler(void)
 /**
   * @brief This function handles TIM1 update interrupt and TIM10 global interrupt.
   */
-
-uint32_t c1, c2;
-float torque_gain = -25;
-float torque_bias = .85;
-float torque;
-float torque_desired = 0;
-
-float w = 2*M_PI*.01;
-float p_dot = 0;
-float q = 1;
-float p = 0;
-float q_dot = 0;
-float a = 20;
-
-float kwall = 0;
-float wall_position = 0;
-float wall_max_torque = .3;
-
 void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
@@ -384,6 +367,7 @@ void TIM1_UP_TIM10_IRQHandler(void)
   //float torque_des = controller_step(pos_desired, fast_loop_status.foc_status.measured.position);
   iq_des = torque_des/kt*(1.f/50.f);
   fast_loop_set_iq_des(iq_des);
+  main_loop_update();
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 1 */
