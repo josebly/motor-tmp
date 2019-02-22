@@ -15,9 +15,16 @@ class LED {
     void set_color(Color color) {}
     void set_rate(float frequency) {}
     void update() {
-        *red_reg_ = i++;
-        *green_reg_ = 0xFFFF-i;
-        *blue_reg_ = 2*i;
+        // TODO figure out where to put 10000
+        if (i++ >= 10000) {
+            i = 0;
+        }
+        float t = i*(1.f/10000.f);
+        float intensity = t < 0.5 ? 2*t : 2-2*t;
+        uint16_t intensity_period = 65535*intensity*intensity;
+        *red_reg_ = intensity_period;
+        *green_reg_ = intensity_period;
+        *blue_reg_ = intensity_period;
     }
  private:
     uint16_t i = 0;
