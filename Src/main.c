@@ -115,10 +115,7 @@ static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 uint16_t adc1, adc2, adc3;
-int32_t motor_index_pos;
-extern int32_t motor_electrical_zero_pos;
-float motor_index_electrical_offset_pos = -49;
-uint8_t use_motor_index_electrical_offset_pos = 0;
+
 uint16_t drv_regs_error = 0;
 FastLoopStatus fast_loop_status;
 
@@ -243,11 +240,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	int i=0;
 	char s[512];
-	for(;i<512;i++)
-		s[i] = (uint8_t) i;
-  dwt->CYCCNT;
   init_param_from_flash();
   fast_loop_set_param(&param()->fast_loop_param);
   TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency;
@@ -264,34 +257,20 @@ int main(void)
     }
   }
   
-  // a phase lock
+  // startup
   fast_loop_phase_lock_mode(2);
   HAL_Delay(2000);
-  motor_electrical_zero_pos = TIM2->CNT;
   fast_loop_current_mode();
   fast_loop_set_iq_des(-2);
+
   while (1)
   {
 
 		HAL_Delay(1);
-      if (TIM2->SR & TIM_SR_CC3IF) {
-        // qep index received
-        // TODO cleared by reading CCR3?
-        motor_index_pos = TIM2->CCR3;
-        if (use_motor_index_electrical_offset_pos) {
-          // motor_index_electrical_offset_pos is the value of an electrical zero minus the index position
-          // motor_electrical_zero_pos is the offset to the initial encoder value
-          motor_electrical_zero_pos = motor_index_electrical_offset_pos + motor_index_pos;
-        }
-      }
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-  fast_loop_get_status(&fast_loop_status);
-//		sprintf(s, "%d ", i++);
-//		CDC_Transmit_FS((uint8_t *) s, strlen(s));
-	//	CDC_Transmit_FS((uint8_t *) s, 512);	// 1.04 MB/s
-		//	CDC_Transmit_FS("A",1);
-//		CDC_Receive_FS(s, &i);
-//		CDC_Transmit_FS((uint8_t *) s, i);
+    fast_loop_set_param(&param()->fast_loop_param);   // to help with debugging
+    fast_loop_maintenance();
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+    fast_loop_get_status(&fast_loop_status);
 		sprintf(s, "%f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q );
 		CDC_Transmit_FS((uint8_t *) s, strlen(s));
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);

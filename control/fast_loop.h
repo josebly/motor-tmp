@@ -10,6 +10,7 @@ class FastLoop {
     FastLoop(PWM &pwm);
     ~FastLoop();
     void update();
+    void maintenance();
     void set_id_des(float id) { id_des = id; }
     void set_iq_des(float iq) { iq_des = iq; }
     void phase_lock_mode(float id);
@@ -17,6 +18,7 @@ class FastLoop {
     void set_param(const FastLoopParam &fast_loop_param); 
     void get_status(FastLoopStatus *fast_loop_status);
  private:
+    FastLoopParam param_;
     FOC *foc_;
     PWM &pwm_;
 
@@ -34,4 +36,8 @@ class FastLoop {
     float iq_des = 0;
     float id_des = 0;
     uint16_t adc1, adc2, adc3;
+
+    int32_t motor_index_pos_;
+    int32_t motor_electrical_zero_pos_;
+    float inv_motor_encoder_cpr_;
 };

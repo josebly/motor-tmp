@@ -13,6 +13,10 @@ void fast_loop_update() {
     fast_loop_.update();
 }
 
+void fast_loop_maintenance() {
+    fast_loop_.maintenance();
+}
+
 void fast_loop_set_id_des(float id) {
     fast_loop_.set_id_des(id);
 }
