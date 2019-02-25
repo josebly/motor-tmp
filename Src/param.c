@@ -12,6 +12,7 @@ const volatile struct Param __attribute__ ((section ("flash_param"))) initial_pa
     .fast_loop_param.foc_param.pi_q.ki=.1,
     .fast_loop_param.foc_param.pi_q.ki_limit=4,
     .fast_loop_param.foc_param.pi_q.command_max=5,
+    .main_loop_param.update_frequency = 10000,
 };
 
 static struct Param working_param;

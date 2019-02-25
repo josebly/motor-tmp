@@ -212,7 +212,7 @@ int main(void)
 			HAL_NVIC_SetPriority(OTG_FS_IRQn, 3, 0);
       HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2, 0);
 			htim2.Instance->ARR = 0xFFFFFFFF;
-			htim1.Instance->ARR = 17999;
+			
 			htim5.Instance->ARR = 0xFFFFFFFF;
       hdac.Instance->CR |= DAC_CR_EN1;
       DBGMCU->APB2FZ |= DBGMCU_APB2_FZ_DBG_TIM8_STOP;
@@ -244,6 +244,8 @@ int main(void)
   init_param_from_flash();
   fast_loop_set_param(&param()->fast_loop_param);
   TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency;
+  main_loop_set_param(&param()->main_loop_param);
+  TIM1->ARR = 180e6/param()->main_loop_param.update_frequency - 1;
 
   // drv regs setting
   for (int i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
@@ -268,6 +270,7 @@ int main(void)
 
 		HAL_Delay(1);
     fast_loop_set_param(&param()->fast_loop_param);   // to help with debugging
+    main_loop_set_param(&param()->main_loop_param);
     fast_loop_maintenance();
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
     fast_loop_get_status(&fast_loop_status);

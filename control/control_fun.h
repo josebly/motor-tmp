@@ -5,6 +5,7 @@
 
 class PIController {
 public:
+    virtual ~PIController() {}
     virtual float step(float desired, float measured);
     void set_param(const PIParam &pi_param);
 private:
@@ -15,6 +16,7 @@ private:
 
 class PIDController {
 public:
+    virtual ~PIDController() {}
     virtual float step(float desired, float measured);
     void set_param(const PIDParam &param);
 private:

@@ -17,6 +17,7 @@ void fast_loop_set_param(const FastLoopParam *const fast_loop_param);
 void fast_loop_get_status(FastLoopStatus *fast_loop_status);
 
 void main_loop_update();
+void main_loop_set_param(MainLoopParam *main_loop_param);
 
 void controller_set_param(PIDParam *pid_param);
 float controller_step(float desired, float measured);
