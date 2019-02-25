@@ -77,14 +77,17 @@ Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac_ex.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
-Src/param.c
+Src/param.c \
+Src/util.c
 
 CPP_SOURCES = control/control_fun.cpp \
 foc.cpp \
 foc_i.cpp \
 sincos.cpp \
 fast_loop.cpp \
-pwm.cpp
+pwm.cpp \
+main_loop.cpp \
+Src/pin_config.cpp
 
 # ASM sources
 ASM_SOURCES =  \

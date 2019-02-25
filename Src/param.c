@@ -1,7 +1,8 @@
 
 #include "param.h"
 
-static const struct Param initial_param = {
+// Can be written by external methods, e.g. bootloader
+const volatile struct Param __attribute__ ((section ("flash_param"))) initial_param = {
     .fast_loop_param.pwm_frequency = 100000,
     .fast_loop_param.foc_param.pi_d.kp=1,
     .fast_loop_param.foc_param.pi_d.ki=.1,
