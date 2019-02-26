@@ -27,13 +27,30 @@ typedef struct {
     float current_filter_frequency_hz;
 } FOCParam;
 
-
+#define COGGING_TABLE_SIZE 512  // must be multiple of 2
 typedef struct {
     int32_t pwm_frequency;
     FOCParam foc_param;
+    struct {
+        float index_electrical_offset_pos;
+        uint8_t use_index_electrical_offset_pos;
+        uint32_t cpr;
+    } motor_encoder;
+    struct {
+        float table[COGGING_TABLE_SIZE];
+        float gain;
+    } cogging;
 } FastLoopParam;
 
+typedef struct {
+    int32_t update_frequency;
+    PIDParam controller_param;
+} MainLoopParam;
 
+typedef struct {
+    FastLoopParam fast_loop_param;
+    MainLoopParam main_loop_param;
+} Param;
 
 typedef struct {
     struct { float i_d, i_q; } desired;

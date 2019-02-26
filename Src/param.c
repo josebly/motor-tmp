@@ -2,7 +2,7 @@
 #include "param.h"
 
 // Can be written by external methods, e.g. bootloader
-const volatile struct Param __attribute__ ((section ("flash_param"))) initial_param = {
+const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
     .fast_loop_param.pwm_frequency = 100000,
     .fast_loop_param.foc_param.pi_d.kp=1,
     .fast_loop_param.foc_param.pi_d.ki=.1,
@@ -15,9 +15,9 @@ const volatile struct Param __attribute__ ((section ("flash_param"))) initial_pa
     .main_loop_param.update_frequency = 10000,
 };
 
-static struct Param working_param;
+static Param working_param;
 
-struct Param *param() {
+Param *param() {
     return &working_param;
 }
 
