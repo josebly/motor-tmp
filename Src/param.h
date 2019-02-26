@@ -10,6 +10,7 @@ extern "C" {
 
 struct Param {
     FastLoopParam fast_loop_param;
+    MainLoopParam main_loop_param;
 };
 
 struct Param *param();

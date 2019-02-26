@@ -58,6 +58,7 @@
 #include "usbd_cdc_if.h"
 #include "param.h"
 #include "util.h"
+#include "pin_config.h"
 __attribute__((used)) DWT_Type *dwt = DWT;
 
 /* USER CODE END Includes */
@@ -114,13 +115,12 @@ static void MX_SPI1_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-uint16_t adc1, adc2, adc3;
 
 uint16_t drv_regs_error = 0;
 FastLoopStatus fast_loop_status;
 
 uint16_t drv_regs[] = {
-  (2<<11) | 0x00,  // control_reg
+  (2<<11) | 0x20,  // control_reg 0x20, 3 PWM mode
   (3<<11) | 0x355, // hs_reg      0x3CC, moderate drive current
   (4<<11) | 0x055, // ls_reg      0x0CC, no cycle by cycle, 500 ns tdrive
                                 // moderate drive current (.57,1.14A)
@@ -247,6 +247,9 @@ int main(void)
   main_loop_set_param(&param()->main_loop_param);
   TIM1->ARR = 180e6/param()->main_loop_param.update_frequency - 1;
 
+    // drv enable
+  *drv_en_reg = drv_en_pin;
+  HAL_Delay(10);
   // drv regs setting
   for (int i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
     uint16_t reg_out = drv_regs[i];
@@ -258,6 +261,7 @@ int main(void)
       drv_regs_error |= 1 << i;
     }
   }
+
   
   // startup
   fast_loop_phase_lock_mode(2);
@@ -394,7 +398,7 @@ static void MX_ADC1_Init(void)
   }
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
   */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_0;
+  sConfigInjected.InjectedChannel = adc_ia_channel;
   sConfigInjected.InjectedRank = 1;
   sConfigInjected.InjectedNbrOfConversion = 1;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_3CYCLES;
@@ -460,7 +464,7 @@ static void MX_ADC2_Init(void)
   }
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
   */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_1;
+  sConfigInjected.InjectedChannel = adc_ib_channel;
   sConfigInjected.InjectedRank = 1;
   sConfigInjected.InjectedNbrOfConversion = 1;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_3CYCLES;
@@ -526,7 +530,7 @@ static void MX_ADC3_Init(void)
   }
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
   */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_2;
+  sConfigInjected.InjectedChannel = adc_ic_channel;
   sConfigInjected.InjectedRank = 1;
   sConfigInjected.InjectedNbrOfConversion = 1;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_3CYCLES;
