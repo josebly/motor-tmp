@@ -53,8 +53,8 @@ void MainLoop::update() {
   float torque_out = torque + motor_torque;
 
   // virtual wall control
-  if (fast_loop_status.foc_status.measured.position > wall_position) {
-    torque_desired = kwall*(fast_loop_status.foc_status.measured.position - wall_position);
+  if (fast_loop_status.motor_position.position > wall_position) {
+    torque_desired = kwall*(fast_loop_status.motor_position.position - wall_position);
     if (torque_desired > wall_max_torque) {
       torque_desired = wall_max_torque;
     }
@@ -62,10 +62,10 @@ void MainLoop::update() {
     torque_desired = 0;
   }
 
-  float torque_des = controller_->step(torque_desired, torque_out);
-  //float torque_des = controller_step(pos_desired, fast_loop_status.foc_status.measured.position);
+ // float torque_des = controller_->step(torque_desired, torque_out);
+  float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
   iq_des = torque_des/kt*(1.f/50.f);
-  //fast_loop_set_iq_des(iq_des);
+  fast_loop_set_iq_des(iq_des);
     led_->update();
 }
 

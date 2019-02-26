@@ -20,5 +20,10 @@ const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
     .fast_loop_param.adc3_gain = 3.3/4096/(.007*40), 
     .fast_loop_param.motor_encoder.dir = -1,
     .fast_loop_param.motor_encoder.cpr = 1024,
+    .fast_loop_param.motor_encoder.use_index_electrical_offset_pos = 1,
+    .fast_loop_param.motor_encoder.index_electrical_offset_pos = 402,
+    .fast_loop_param.cogging.table = {
+#include "../cogprocessed.csv"
+    }
 
 };

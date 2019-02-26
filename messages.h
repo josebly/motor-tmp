@@ -27,7 +27,7 @@ typedef struct {
     float current_filter_frequency_hz;
 } FOCParam;
 
-#define COGGING_TABLE_SIZE 512  // must be multiple of 2
+#define COGGING_TABLE_SIZE 1024  // must be multiple of 2
 typedef struct {
     int32_t pwm_frequency;
     float adc1_offset, adc2_offset, adc3_offset;

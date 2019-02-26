@@ -34,10 +34,11 @@ void FastLoop::update() {
     // cogging compensation, interpolate in the table
     motor_mechanical_position_ = (motor_enc - motor_index_pos_); 
     float i_pos = motor_mechanical_position_*COGGING_TABLE_SIZE*inv_motor_encoder_cpr_;
-    uint16_t i = (uint16_t) i_pos & (COGGING_TABLE_SIZE - 1);
-    float ifrac = i_pos - i;
+    uint16_t i = (int16_t) i_pos & (COGGING_TABLE_SIZE - 1);
+ //   float ifrac = i_pos - i;  // TODO fix for negative values
     // Note (i+1) & (COGGING_TABLE_SIZE-1) allows wrap around, requires COGGING_TABLE_SIZE is multiple of 2
-    float iq_ff = param_.cogging.gain * (param_.cogging.table[i] + ifrac * (param_.cogging.table[(i+1) & (COGGING_TABLE_SIZE-1)] - param_.cogging.table[i]));
+ //   float iq_ff = param_.cogging.gain * (param_.cogging.table[i] + ifrac * (param_.cogging.table[(i+1) & (COGGING_TABLE_SIZE-1)] - param_.cogging.table[i]));
+    float iq_ff = param_.cogging.gain * param_.cogging.table[i];
 
     // update FOC
     foc_command_.measured.i_a = param_.adc1_gain*(adc1-param_.adc1_offset);
