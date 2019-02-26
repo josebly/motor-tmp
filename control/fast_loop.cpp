@@ -73,7 +73,7 @@ void FastLoop::maintenance() {
 void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
     foc_->set_param(fast_loop_param.foc_param);
     param_ = fast_loop_param;
-    inv_motor_encoder_cpr_ = 1.f/param_.motor_encoder.cpr;
+    inv_motor_encoder_cpr_ = param_.motor_encoder.cpr != 0 ? 1.f/param_.motor_encoder.cpr : 0;
 }
 
 void FastLoop::phase_lock_mode(float id) {
