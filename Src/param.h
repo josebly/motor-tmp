@@ -8,12 +8,7 @@
 extern "C" {
 #endif
 
-struct Param {
-    FastLoopParam fast_loop_param;
-    MainLoopParam main_loop_param;
-};
-
-struct Param *param();
+Param *param();
 void init_param_from_flash();
 void save_param_to_flash();
 

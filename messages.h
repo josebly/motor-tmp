@@ -48,6 +48,11 @@ typedef struct {
 } MainLoopParam;
 
 typedef struct {
+    FastLoopParam fast_loop_param;
+    MainLoopParam main_loop_param;
+} Param;
+
+typedef struct {
     struct { float i_d, i_q; } desired;
     struct { float i_a, i_b, i_c, motor_encoder; } measured;
 } FOCCommand;
