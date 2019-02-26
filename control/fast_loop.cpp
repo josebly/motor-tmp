@@ -44,7 +44,7 @@ void FastLoop::update() {
     foc_command_.measured.i_a = param_.adc1_gain*(adc1-param_.adc1_offset);
     foc_command_.measured.i_b = param_.adc2_gain*(adc2-param_.adc2_offset);
     foc_command_.measured.i_c = param_.adc3_gain*(adc3-param_.adc3_offset);
-    foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI/1024);
+    foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI  * inv_motor_encoder_cpr_);
     foc_command_.desired.i_q = iq_des + iq_ff;
     foc_command_.desired.i_d = id_des;
     
