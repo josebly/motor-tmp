@@ -21,6 +21,7 @@ class FastLoop {
     FastLoopParam param_;
     FOC *foc_;
     PWM &pwm_;
+    enum {CURRENT_MODE, PHASE_LOCK_MODE} mode_ = CURRENT_MODE;
 
     int32_t motor_enc;
     int32_t last_motor_enc=0;
@@ -30,12 +31,10 @@ class FastLoop {
     float motor_encoder_dir = -1;
     float motor_mechanical_position_ = 0;
 
-    float adc1_offset = 1980;
-    float adc1_gain = 3.3/4096/(.007*20);  // V/count * A/Vr / Vo/Vr
-
     float iq_des = 0;
     float id_des = 0;
     uint16_t adc1, adc2, adc3;
+    FOCCommand foc_command_ = {};
 
     int32_t motor_index_pos_;
     int32_t motor_electrical_zero_pos_;

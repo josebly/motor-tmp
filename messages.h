@@ -30,6 +30,8 @@ typedef struct {
 #define COGGING_TABLE_SIZE 512  // must be multiple of 2
 typedef struct {
     int32_t pwm_frequency;
+    float adc1_offset, adc2_offset, adc3_offset;
+    float adc1_gain, adc2_gain, adc3_gain;
     FOCParam foc_param;
     struct {
         float index_electrical_offset_pos;
@@ -79,6 +81,7 @@ typedef struct {
 typedef struct {
     FOCStatus foc_status;
     float motor_mechanical_position;
+    FOCCommand foc_command;
 } FastLoopStatus;
 
 typedef struct {

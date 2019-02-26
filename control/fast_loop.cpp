@@ -39,15 +39,14 @@ void FastLoop::update() {
     float iq_ff = param_.cogging.gain * (param_.cogging.table[i] + ifrac * (param_.cogging.table[(i+1) & (COGGING_TABLE_SIZE-1)] - param_.cogging.table[i]));
 
     // update FOC
-    FOCCommand foc_command;
-    foc_command.measured.i_a = adc1_gain*(adc1-adc1_offset);
-    foc_command.measured.i_b = adc1_gain*(adc2-adc1_offset);
-    foc_command.measured.i_c = adc1_gain*(adc3-adc1_offset);
-    foc_command.measured.motor_encoder = motor_encoder_dir*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI/1024);
-    foc_command.desired.i_q = iq_des + iq_ff;
-    foc_command.desired.i_d = id_des;
+    foc_command_.measured.i_a = param_.adc1_gain*(adc1-param_.adc1_offset);
+    foc_command_.measured.i_b = param_.adc2_gain*(adc2-param_.adc2_offset);
+    foc_command_.measured.i_c = param_.adc3_gain*(adc3-param_.adc3_offset);
+    foc_command_.measured.motor_encoder = motor_encoder_dir*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI/1024);
+    foc_command_.desired.i_q = iq_des + iq_ff;
+    foc_command_.desired.i_d = id_des;
     
-    foc_->set_command(foc_command);
+    foc_->set_command(foc_command_);
     foc_->update();
     FOCStatus foc_status;
     foc_->get_status(&foc_status);
@@ -67,7 +66,11 @@ void FastLoop::maintenance() {
           // motor_electrical_zero_pos is the offset to the initial encoder value
           motor_electrical_zero_pos_ = param_.motor_encoder.index_electrical_offset_pos + motor_index_pos_;
         }
-      }
+    }
+
+    if (mode_ == PHASE_LOCK_MODE) {
+        motor_electrical_zero_pos_ = TIM2->CNT;
+    }
 }
 
 void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
@@ -79,15 +82,17 @@ void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
 void FastLoop::phase_lock_mode(float id) {
     motor_encoder_dir = 0;
     id_des = id;
-    motor_electrical_zero_pos_ = TIM2->CNT;
+    mode_ = PHASE_LOCK_MODE;
 }
 
 void FastLoop::current_mode() {
     motor_encoder_dir = -1;
     id_des = 0;
+    mode_ = CURRENT_MODE;
 }
 
 void FastLoop::get_status(FastLoopStatus *fast_loop_status) {
     foc_->get_status(&(fast_loop_status->foc_status));
     fast_loop_status->motor_mechanical_position = motor_mechanical_position_;
+    fast_loop_status->foc_command = foc_command_;
 }

@@ -126,7 +126,7 @@ uint16_t drv_regs[] = {
                                 // moderate drive current (.57,1.14A)
   (5<<11) | 0x20,  // ocp_reg     0x20 -> 50 ns dead time, 
                               //latched ocp, 4 us ocp deglitch, 0.06 Vds thresh
-  (6<<11) | 0x280, // csa_reg     0x280 -> bidirectional current, 20V/V
+  (6<<11) | 0x2C0, // csa_reg     0x280 -> bidirectional current, 40V/V
                                 // anlog gain, 0.25V sense ocp resistor
 };
 /* USER CODE END PFP */
@@ -266,8 +266,9 @@ int main(void)
   // startup
   fast_loop_phase_lock_mode(2);
   HAL_Delay(2000);
+  fast_loop_maintenance();  // TODO better way than calling this to update zero pos
   fast_loop_current_mode();
-  fast_loop_set_iq_des(-2);
+  fast_loop_set_iq_des(0);
 
   while (1)
   {
@@ -992,7 +993,7 @@ static void MX_TIM8_Init(void)
 }
 
 /**
-  * @brief GPIO Initialization Function
+  * @brief GPIO Initialization Function.fast_loop_param.adc1_offset = 1980,
   * @param None
   * @retval None
   */
