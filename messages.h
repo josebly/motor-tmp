@@ -25,6 +25,7 @@ typedef struct {
     PIParam pi_d;
     PIParam pi_q;
     float current_filter_frequency_hz;
+    float num_poles;
 } FOCParam;
 
 #define COGGING_TABLE_SIZE 1024  // must be multiple of 2
@@ -49,6 +50,7 @@ typedef struct {
 typedef struct {
     int32_t update_frequency;
     PIDParam controller_param;
+    float torque_gain, torque_bias;
 } MainLoopParam;
 
 typedef struct {

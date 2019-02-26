@@ -71,4 +71,5 @@ void FOC::update() {
 void FOC::set_param(const FOCParam &param) {
     pi_id_->set_param(param.pi_d);
     pi_iq_->set_param(param.pi_q);
+    num_poles_ = param.num_poles;
 }

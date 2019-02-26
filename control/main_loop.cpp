@@ -39,7 +39,7 @@ void MainLoop::update() {
     c2 = *((uint32_t *) &jl_torque_rx[5]);
     // hack for bad noise
     if (c1 != 0 && c2 != 0) {
-      float tmp_torque = torque_gain*((float) ((int32_t) (c1-c2)) / (c1+c2)) + torque_bias;
+      float tmp_torque = param_.torque_gain*((float) ((int32_t) (c1-c2)) / (c1+c2)) + param_.torque_bias;
       if (fabsf(tmp_torque) < 10) {
         // more hack
         torque = tmp_torque;
@@ -54,16 +54,16 @@ void MainLoop::update() {
 
   // virtual wall control
   if (fast_loop_status.motor_position.position > wall_position) {
-    torque_desired = kwall*(fast_loop_status.motor_position.position - wall_position);
-    if (torque_desired > wall_max_torque) {
-      torque_desired = wall_max_torque;
+    torque_desired = -kwall*(fast_loop_status.motor_position.position - wall_position);
+    if (torque_desired < -wall_max_torque) {
+      torque_desired = -wall_max_torque;
     }
   } else {
     torque_desired = 0;
   }
 
- // float torque_des = controller_->step(torque_desired, torque_out);
-  float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
+  float torque_des = controller_->step(torque_desired, torque_out);
+ // float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
   iq_des = torque_des/kt*(1.f/50.f);
   fast_loop_set_iq_des(iq_des);
     led_->update();

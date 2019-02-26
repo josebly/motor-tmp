@@ -18,8 +18,7 @@ class MainLoop {
     PIDController *controller_;
 
     uint32_t c1, c2;
-float torque_gain = -25;
-float torque_bias = .85;
+
 float torque;
 float torque_desired = 0;
 
