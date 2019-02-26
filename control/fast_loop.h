@@ -25,10 +25,11 @@ class FastLoop {
 
     int32_t motor_enc;
     int32_t last_motor_enc=0;
+    float motor_position_ = 0;
     float motor_velocity=0;
     float motor_velocity_filtered=0;
     float alpha=0.001;
-    float motor_encoder_dir = -1;
+    float phase_mode_ = 1;    // 1: standard or 2: two wires switched
     float motor_mechanical_position_ = 0;
 
     float iq_des = 0;
@@ -39,4 +40,5 @@ class FastLoop {
     int32_t motor_index_pos_;
     int32_t motor_electrical_zero_pos_;
     float inv_motor_encoder_cpr_;
+    int32_t frequency_hz_ = 100000;
 };

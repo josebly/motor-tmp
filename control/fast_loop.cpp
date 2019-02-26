@@ -20,7 +20,8 @@ void FastLoop::update() {
     adc2 = ADC2->JDR1;
     adc3 = ADC3->JDR1;
     motor_enc = TIM2->CNT;
-    motor_velocity = (motor_enc-last_motor_enc)*(2*(float) M_PI/1024*100000);
+    motor_position_ = param_.motor_encoder.dir * 2 * (float) M_PI * inv_motor_encoder_cpr_ * motor_enc;
+    motor_velocity =  param_.motor_encoder.dir * (motor_enc-last_motor_enc)*(2*(float) M_PI * inv_motor_encoder_cpr_ * frequency_hz_);
     // motor_velocity_filtered = motor_velocity_filter.update(motor_velocity);
     motor_velocity_filtered = (1-alpha)*motor_velocity_filtered + alpha*motor_velocity;
     last_motor_enc = motor_enc;
@@ -42,7 +43,7 @@ void FastLoop::update() {
     foc_command_.measured.i_a = param_.adc1_gain*(adc1-param_.adc1_offset);
     foc_command_.measured.i_b = param_.adc2_gain*(adc2-param_.adc2_offset);
     foc_command_.measured.i_c = param_.adc3_gain*(adc3-param_.adc3_offset);
-    foc_command_.measured.motor_encoder = motor_encoder_dir*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI/1024);
+    foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI/1024);
     foc_command_.desired.i_q = iq_des + iq_ff;
     foc_command_.desired.i_d = id_des;
     
@@ -77,16 +78,17 @@ void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
     foc_->set_param(fast_loop_param.foc_param);
     param_ = fast_loop_param;
     inv_motor_encoder_cpr_ = param_.motor_encoder.cpr != 0 ? 1.f/param_.motor_encoder.cpr : 0;
+    frequency_hz_ = param_.pwm_frequency;
 }
 
 void FastLoop::phase_lock_mode(float id) {
-    motor_encoder_dir = 0;
+    phase_mode_ = 0;
     id_des = id;
     mode_ = PHASE_LOCK_MODE;
 }
 
 void FastLoop::current_mode() {
-    motor_encoder_dir = -1;
+    phase_mode_ = param_.phase_mode == 0 ? 1 : -1;
     id_des = 0;
     mode_ = CURRENT_MODE;
 }
@@ -95,4 +97,7 @@ void FastLoop::get_status(FastLoopStatus *fast_loop_status) {
     foc_->get_status(&(fast_loop_status->foc_status));
     fast_loop_status->motor_mechanical_position = motor_mechanical_position_;
     fast_loop_status->foc_command = foc_command_;
+    fast_loop_status->motor_position.position = motor_position_;
+    fast_loop_status->motor_position.velocity = motor_velocity_filtered;
+    fast_loop_status->motor_position.raw = motor_enc;
 }

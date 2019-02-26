@@ -18,5 +18,7 @@ const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
     .fast_loop_param.adc1_gain = 3.3/4096/(.007*40),  // V/count * A/Vr / Vo/Vr
     .fast_loop_param.adc2_gain = 3.3/4096/(.007*40),
     .fast_loop_param.adc3_gain = 3.3/4096/(.007*40), 
+    .fast_loop_param.motor_encoder.dir = -1,
+    .fast_loop_param.motor_encoder.cpr = 1024,
 
 };
