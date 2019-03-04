@@ -3,7 +3,21 @@
         "main.h": "c",
         "stm32f4xx_hal.h": "c",
         "stm32f4xx_hal_conf.h": "c",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "cstdint": "cpp",
+        "cstdio": "cpp",
+        "cstdlib": "cpp",
+        "limits": "cpp",
+        "*.tcc": "cpp",
+        "type_traits": "cpp",
+        "typeinfo": "cpp",
+        "param.h": "c",
+        "stm32f4xx_it.h": "c",
+        "foc_i.h": "c",
+        "util.h": "c",
+        "pin_config.h": "c",
+        "messages.h": "c",
+        "stdint.h": "c"
     },
     "C_Cpp.default.defines": [
         "USE_HAL_DRIVER",

@@ -51,6 +51,7 @@ typedef struct {
     int32_t update_frequency;
     PIDParam controller_param;
     float torque_gain, torque_bias;
+    float kt;
 } MainLoopParam;
 
 typedef struct {
@@ -92,6 +93,10 @@ typedef struct {
     float motor_mechanical_position;
     FOCCommand foc_command;
 } FastLoopStatus;
+
+typedef struct {
+    float torque;
+} MainLoopStatus;
 
 typedef struct {
     uint16_t type;       ///< \sa CommandType

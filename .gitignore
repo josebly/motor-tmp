@@ -1,3 +1,5 @@
 MDK-ARM/
 Drivers/CMSIS/DSP_Lib/
 build/
+/data/
+.vscode/*.state.json

@@ -21,6 +21,8 @@ private:
     FOCCommand command_;
     FOCStatus status_;
  //   FOCParam param_;
+
+    static const float Kc[2][3];
 };
 
 

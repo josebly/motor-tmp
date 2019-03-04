@@ -118,6 +118,7 @@ static void MX_ADC1_Init(void);
 
 uint16_t drv_regs_error = 0;
 FastLoopStatus fast_loop_status;
+MainLoopStatus main_loop_status;
 
 uint16_t drv_regs[] = {
   (2<<11) | 0x20,  // control_reg 0x20, 3 PWM mode
@@ -140,6 +141,10 @@ uint16_t drv_regs[] = {
   * @brief  The application entry point.
   * @retval int
   */
+float i_a_filtered = 0;
+float i_b_filtered = 0;
+float i_c_filtered = 0;
+float alpha = .01;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -188,6 +193,12 @@ int main(void)
   GPIOF->ODR &= ~GPIO_ODR_OD12;
   HAL_Delay(100);
   GPIOF->ODR |= GPIO_ODR_OD12;
+
+    init_param_from_flash();
+  fast_loop_set_param(&param()->fast_loop_param);
+  TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency;
+  main_loop_set_param(&param()->main_loop_param);
+  TIM1->ARR = 180e6/param()->main_loop_param.update_frequency - 1;
 
 	HAL_TIM_Base_Start(&htim8);
 	HAL_TIM_Base_Start(&htim1);
@@ -241,11 +252,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	char s[512];
-  init_param_from_flash();
-  fast_loop_set_param(&param()->fast_loop_param);
-  TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency;
-  main_loop_set_param(&param()->main_loop_param);
-  TIM1->ARR = 180e6/param()->main_loop_param.update_frequency - 1;
+
 
     // drv enable
   *drv_en_reg = drv_en_pin;
@@ -279,10 +286,14 @@ int main(void)
     fast_loop_maintenance();
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
     fast_loop_get_status(&fast_loop_status);
-		sprintf(s, "%f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q );
+    main_loop_get_status(&main_loop_status);
+		sprintf(s, "%f, %f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q, main_loop_status.torque);
 		CDC_Transmit_FS((uint8_t *) s, strlen(s));
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
+    i_a_filtered = (1-alpha)*i_a_filtered + alpha*fast_loop_status.foc_command.measured.i_a;
+    i_b_filtered = (1-alpha)*i_b_filtered + alpha*fast_loop_status.foc_command.measured.i_b;
+    i_c_filtered = (1-alpha)*i_c_filtered + alpha*fast_loop_status.foc_command.measured.i_c;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

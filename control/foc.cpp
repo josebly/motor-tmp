@@ -20,7 +20,7 @@ FOC::~FOC() {
 }
 
 #define SQRT3 (float) std::sqrt(3)
-static const float Kc[2][3] = {{2.0/3, -1.0/3, -1.0/3},
+const float FOC::Kc[2][3] = {{2.0/3, -1.0/3, -1.0/3},
                                {0,      1/SQRT3, -1/SQRT3}};
 
 

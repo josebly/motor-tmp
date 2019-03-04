@@ -49,7 +49,7 @@ void MainLoop::update() {
   }
   
   fast_loop_get_status(&fast_loop_status);
-  float motor_torque = kt * fast_loop_status.foc_status.measured.i_q;
+  float motor_torque = param_.kt*.02 * fast_loop_status.foc_status.measured.i_q;
   float torque_out = torque + motor_torque;
 
   // virtual wall control
@@ -62,9 +62,10 @@ void MainLoop::update() {
     torque_desired = 0;
   }
 
-  float torque_des = controller_->step(torque_desired, torque_out);
- // float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
-  iq_des = torque_des/kt*(1.f/50.f);
+  //float torque_des = torque_desired; // direct current control
+  //float torque_des = controller_->step(torque_desired, torque_out);
+  float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
+  iq_des = torque_des/param_.kt;
   fast_loop_set_iq_des(iq_des);
     led_->update();
 }
@@ -72,4 +73,8 @@ void MainLoop::update() {
 void MainLoop::set_param(MainLoopParam &param) {
     controller_->set_param(param.controller_param);
     param_ = param;
+}
+
+void MainLoop::get_status(MainLoopStatus * const main_loop_status) const {
+  main_loop_status->torque = torque;
 }

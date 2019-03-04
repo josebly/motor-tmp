@@ -13,13 +13,7 @@
             "type": "cortex-debug",
             "device": "STM32F446ZE",
             "svdFile": "./STM32F446x.svd",
-            "servertype": "jlink",
-            "swoConfig": {"enabled": true,
-                            "source": "probe",
-                            "decoders": [{"port": 0, "label":"a", "type":"console"}],
-                            "swoFrequency": 1000,
-                            "cpuFrequency": 180000000,
-                            "ports": [{"number": 0, "label": "bort", "format": "console"}]}
+            "servertype": "jlink"
         },
         {
             "name": "(gdb) Launch",

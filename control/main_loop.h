@@ -12,6 +12,7 @@ class MainLoop {
     MainLoop();
     void update();
     void set_param(MainLoopParam &);
+    void get_status(MainLoopStatus * const main_loop_status) const;
  private:
     MainLoopParam param_;
     LED *led_;
@@ -27,7 +28,7 @@ float p_dot = 0;
 float q = 1;
 float p = 0;
 float q_dot = 0;
-float a = 20;
+float a = 100*M_PI;
 
 float kwall = 0;
 float wall_position = 0;
@@ -46,7 +47,7 @@ uint8_t jl_torque_rx[9] = {0};
 
 
 float pos_desired = 0;
-float kt = .012/std::sqrt(.5);
+
 
 inline uint16_t minu16(uint16_t a, uint16_t b) {
   if (a > b) {
