@@ -26,6 +26,7 @@ void FastLoop::update() {
     motor_velocity_filtered = (1-alpha)*motor_velocity_filtered + alpha*motor_velocity;
     last_motor_enc = motor_enc;
 
+    // debugging port
     ITM->PORT[0].u32 = adc1;
 
     // output adc on dac for reference 
@@ -48,13 +49,10 @@ void FastLoop::update() {
     foc_command_.desired.i_q = iq_des + iq_ff;
     foc_command_.desired.i_d = id_des;
     
-    foc_->set_command(foc_command_);
-    foc_->update();
-    FOCStatus foc_status;
-    foc_->get_status(&foc_status);
+    FOCStatus *foc_status = foc_->step(foc_command_);
 
-    pwm_.set_voltage(&foc_status.command.v_a);
-    // set pwm
+    // output pwm
+    pwm_.set_voltage(&foc_status->command.v_a);
 }
 
 // called at a slow frequency in a non interrupt

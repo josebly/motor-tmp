@@ -26,11 +26,11 @@ const float FOC::Kc[2][3] = {{2.0/3, -1.0/3, -1.0/3},
 
 #include "stm32f4xx.h"
 
-void FOC::update() {
-    status_.measured.position = command_.measured.motor_encoder;
-    status_.desired.i_d = command_.desired.i_d;
-    status_.desired.i_q = command_.desired.i_q;
-    float i_abc_measured[3] = {command_.measured.i_a, command_.measured.i_b, command_.measured.i_c};
+FOCStatus * const FOC::step(const FOCCommand &command) {
+    status_.measured.position = command.measured.motor_encoder;
+    status_.desired.i_d = command.desired.i_d;
+    status_.desired.i_q = command.desired.i_q;
+    float i_abc_measured[3] = {command.measured.i_a, command.measured.i_b, command.measured.i_c};
     float electrical_angle = status_.measured.position * num_poles_;
 
     //float sin_t = std::sin(electrical_angle);
@@ -66,6 +66,8 @@ void FOC::update() {
     status_.command.v_q = v_q_desired;
     status_.measured.i_d = i_d_measured;
     status_.measured.i_q = i_q_measured;
+
+    return &status_;
 }
 
 void FOC::set_param(const FOCParam &param) {
