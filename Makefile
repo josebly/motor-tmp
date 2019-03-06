@@ -79,7 +79,7 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac_ex.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
 Src/param.c \
 Src/util.c \
-parameters/param2.c
+parameters/param_ec16.c
 
 CPP_SOURCES = control/control_fun.cpp \
 foc.cpp \

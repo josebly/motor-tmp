@@ -38,6 +38,7 @@ float iq_bias = 2;
 float iq_amp = 0;
 float iq_des = 0;
 int32_t i_period = 1000;
+MainLoopParam::MainControlMode mode_;
 
 FastLoopStatus fast_loop_status;
 

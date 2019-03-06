@@ -52,6 +52,8 @@ typedef struct {
     PIDParam controller_param;
     float torque_gain, torque_bias;
     float kt;
+    float gear_ratio;
+    enum MainControlMode {OPEN, BRAKE, CURRENT, MOTOR_TORQUE, JOINT_TORQUE} mode;
 } MainLoopParam;
 
 typedef struct {

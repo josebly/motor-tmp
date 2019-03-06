@@ -62,10 +62,20 @@ void MainLoop::update() {
     torque_desired = 0;
   }
 
-  //float torque_des = torque_desired; // direct current control
-  //float torque_des = controller_->step(torque_desired, torque_out);
-  float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
-  iq_des = torque_des/param_.kt;
+  switch (mode_) {
+    case MainLoopParam::CURRENT:
+      iq_des = torque_desired;
+      break;
+    case MainLoopParam::MOTOR_TORQUE:
+      iq_des = torque_desired/param_.kt;
+      break;
+    case MainLoopParam::JOINT_TORQUE:
+      float torque_des = controller_->step(torque_desired, torque_out);
+      iq_des = torque_desired/(param_.gear_ratio*param_.kt);
+      break;
+  }
+ // float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
+  
   fast_loop_set_iq_des(iq_des);
     led_->update();
 }
@@ -73,6 +83,7 @@ void MainLoop::update() {
 void MainLoop::set_param(MainLoopParam &param) {
     controller_->set_param(param.controller_param);
     param_ = param;
+    mode_ = param_.mode;
 }
 
 void MainLoop::get_status(MainLoopStatus * const main_loop_status) const {
