@@ -53,8 +53,8 @@ void MainLoop::update() {
   float torque_out = torque + motor_torque;
 
   // virtual wall control
-  if (fast_loop_status.motor_position.position > wall_position) {
-    torque_desired = -kwall*(fast_loop_status.motor_position.position - wall_position);
+  if (fast_loop_status.motor_position.position/param_.gear_ratio > wall_position) {
+    torque_desired = -kwall*(fast_loop_status.motor_position.position/param_.gear_ratio - wall_position);
     if (torque_desired < -wall_max_torque) {
       torque_desired = -wall_max_torque;
     }
@@ -67,7 +67,7 @@ void MainLoop::update() {
       iq_des = torque_desired;
       break;
     case MainLoopParam::MOTOR_TORQUE:
-      iq_des = torque_desired/param_.kt;
+      iq_des = torque_desired/(param_.gear_ratio*param_.kt);
       break;
     case MainLoopParam::JOINT_TORQUE:
     {
