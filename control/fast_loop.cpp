@@ -46,7 +46,7 @@ void FastLoop::update() {
     foc_command_.measured.i_b = param_.adc2_gain*(adc2-param_.adc2_offset);
     foc_command_.measured.i_c = param_.adc3_gain*(adc3-param_.adc3_offset);
     foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI  * inv_motor_encoder_cpr_);
-    foc_command_.desired.i_q = iq_des + iq_ff;
+    foc_command_.desired.i_q = iq_des_gain_ * (iq_des + iq_ff);
     foc_command_.desired.i_d = id_des;
     
     FOCStatus *foc_status = foc_->step(foc_command_);
@@ -83,12 +83,14 @@ void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
 void FastLoop::phase_lock_mode(float id) {
     phase_mode_ = 0;
     id_des = id;
+    iq_des_gain_ = 0;
     mode_ = PHASE_LOCK_MODE;
 }
 
 void FastLoop::current_mode() {
     phase_mode_ = param_.phase_mode == 0 ? 1 : -1;
     id_des = 0;
+    iq_des_gain_ = 1;
     mode_ = CURRENT_MODE;
 }
 

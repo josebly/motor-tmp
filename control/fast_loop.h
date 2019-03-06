@@ -34,6 +34,7 @@ class FastLoop {
 
     float iq_des = 0;
     float id_des = 0;
+    float iq_des_gain_ = 1;
     uint16_t adc1, adc2, adc3;
     FOCCommand foc_command_ = {};
 

@@ -70,8 +70,13 @@ void MainLoop::update() {
       iq_des = torque_desired/param_.kt;
       break;
     case MainLoopParam::JOINT_TORQUE:
+    {
       float torque_des = controller_->step(torque_desired, torque_out);
-      iq_des = torque_desired/(param_.gear_ratio*param_.kt);
+      iq_des = torque_des/(param_.gear_ratio*param_.kt);
+    }
+      break;
+    default:
+      iq_des = 0;
       break;
   }
  // float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
@@ -83,7 +88,7 @@ void MainLoop::update() {
 void MainLoop::set_param(MainLoopParam &param) {
     controller_->set_param(param.controller_param);
     param_ = param;
-    mode_ = param_.mode;
+    mode_ = param.mode;
 }
 
 void MainLoop::get_status(MainLoopStatus * const main_loop_status) const {
