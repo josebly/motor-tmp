@@ -271,7 +271,12 @@ int main(void)
 
   
   // startup
-  fast_loop_phase_lock_mode(2);
+  fast_loop_voltage_mode();
+  for (int i=0; i<1000; i++) {
+    HAL_Delay(1);
+    fast_loop_zero_current_sensors();
+  }
+  fast_loop_phase_lock_mode(1);
   HAL_Delay(2000);
   fast_loop_maintenance();  // TODO better way than calling this to update zero pos
   fast_loop_current_mode();

@@ -42,9 +42,9 @@ void FastLoop::update() {
     float iq_ff = param_.cogging.gain * param_.cogging.table[i];
 
     // update FOC
-    foc_command_.measured.i_a = param_.adc1_gain*(adc1-param_.adc1_offset);
-    foc_command_.measured.i_b = param_.adc2_gain*(adc2-param_.adc2_offset);
-    foc_command_.measured.i_c = param_.adc3_gain*(adc3-param_.adc3_offset);
+    foc_command_.measured.i_a = param_.adc1_gain*(adc1-param_.adc1_offset) - ia_bias_;
+    foc_command_.measured.i_b = param_.adc2_gain*(adc2-param_.adc2_offset) - ib_bias_;
+    foc_command_.measured.i_c = param_.adc3_gain*(adc3-param_.adc3_offset) - ic_bias_;
     foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI  * inv_motor_encoder_cpr_);
     foc_command_.desired.i_q = iq_des_gain_ * (iq_des + iq_ff);
     foc_command_.desired.i_d = id_des;
@@ -52,7 +52,13 @@ void FastLoop::update() {
     FOCStatus *foc_status = foc_->step(foc_command_);
 
     // output pwm
-    pwm_.set_voltage(&foc_status->command.v_a);
+    // TODO better voltage mode
+    if (mode_ == VOLTAGE_MODE) {
+        float abc[3] = {};
+        pwm_.set_voltage(abc);
+    } else {
+        pwm_.set_voltage(&foc_status->command.v_a);
+    }
 }
 
 // called at a slow frequency in a non interrupt
@@ -78,6 +84,16 @@ void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
     param_ = fast_loop_param;
     inv_motor_encoder_cpr_ = param_.motor_encoder.cpr != 0 ? 1.f/param_.motor_encoder.cpr : 0;
     frequency_hz_ = param_.pwm_frequency;
+}
+
+void FastLoop::voltage_mode() {
+    mode_ = VOLTAGE_MODE;
+}
+
+void FastLoop::zero_current_sensors() {
+    ia_bias_ = (1-alpha_zero_)*ia_bias_ + alpha_zero_* param_.adc1_gain*(adc1-param_.adc1_offset);
+    ib_bias_ = (1-alpha_zero_)*ib_bias_ + alpha_zero_* param_.adc2_gain*(adc2-param_.adc2_offset);
+    ic_bias_ = (1-alpha_zero_)*ic_bias_ + alpha_zero_* param_.adc3_gain*(adc3-param_.adc3_offset);
 }
 
 void FastLoop::phase_lock_mode(float id) {

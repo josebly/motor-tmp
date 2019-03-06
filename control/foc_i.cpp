@@ -40,6 +40,15 @@ void fast_loop_get_status(FastLoopStatus * const fast_loop_status) {
     fast_loop_.get_status(fast_loop_status);
 }
 
+void fast_loop_voltage_mode() {
+    fast_loop_.voltage_mode();
+}
+
+void fast_loop_zero_current_sensors() {
+    fast_loop_.zero_current_sensors();
+}
+
+
 void main_loop_update() {
     main_loop_.update();
 }

@@ -15,13 +15,15 @@ class FastLoop {
     void set_iq_des(float iq) { iq_des = iq; }
     void phase_lock_mode(float id);
     void current_mode();
+    void voltage_mode();
     void set_param(const FastLoopParam &fast_loop_param); 
     void get_status(FastLoopStatus *fast_loop_status);
+    void zero_current_sensors();
  private:
     FastLoopParam param_;
     FOC *foc_;
     PWM &pwm_;
-    enum {CURRENT_MODE, PHASE_LOCK_MODE} mode_ = CURRENT_MODE;
+    enum {CURRENT_MODE, PHASE_LOCK_MODE, VOLTAGE_MODE} mode_ = CURRENT_MODE;
 
     int32_t motor_enc;
     int32_t last_motor_enc=0;
@@ -42,4 +44,8 @@ class FastLoop {
     int32_t motor_electrical_zero_pos_;
     float inv_motor_encoder_cpr_;
     int32_t frequency_hz_ = 100000;
+    float ia_bias_ = 0;
+    float ib_bias_ = 0;
+    float ic_bias_ = 0;
+    float alpha_zero_ = 0.001;
 };
