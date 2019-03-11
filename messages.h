@@ -45,6 +45,7 @@ typedef struct {
         float table[COGGING_TABLE_SIZE];
         float gain;
     } cogging;
+    float vbus_gain;
 } FastLoopParam;
 
 typedef struct {
