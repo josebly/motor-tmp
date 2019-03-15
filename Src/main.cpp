@@ -59,6 +59,7 @@
 #include "param.h"
 #include "util.h"
 #include "pin_config.h"
+#include "../peripheral/usb.h"
 __attribute__((used)) DWT_Type *dwt = DWT;
 
 /* USER CODE END Includes */
@@ -251,6 +252,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  #define USBx USB_OTG_FS
 	char s[512];
 
 
@@ -282,10 +284,12 @@ int main(void)
   fast_loop_current_mode();
   fast_loop_set_iq_des(0);
 
+  int32_t i  = 0;
+  USB usb;
   while (1)
   {
-
-		HAL_Delay(1);
+    i++;
+	//y	HAL_Delay(5);
     fast_loop_set_param(&param()->fast_loop_param);   // to help with debugging
     main_loop_set_param(&param()->main_loop_param);
     fast_loop_maintenance();
@@ -293,8 +297,19 @@ int main(void)
     fast_loop_get_status(&fast_loop_status);
     main_loop_get_status(&main_loop_status);
 		sprintf(s, "%f, %f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q, main_loop_status.torque);
-		CDC_Transmit_FS((uint8_t *) s, strlen(s));
+		//CDC_Transmit_FS((uint8_t *) s, strlen(s));
+    usb.send_data(1, (uint8_t*) s, strlen(s));
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+
+
+      sprintf(s, "%03ld\n", i%1000);
+    usb.send_data(2, (uint8_t*) s, 4);
+
+
+    if (USBx_OUTEP(3)->DOEPTSIZ) {
+      asm("DBG #10");
+    }
+
 
     i_a_filtered = (1-alpha)*i_a_filtered + alpha*fast_loop_status.foc_command.measured.i_a;
     i_b_filtered = (1-alpha)*i_b_filtered + alpha*fast_loop_status.foc_command.measured.i_b;

@@ -43,7 +43,6 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-Src/main.c \
 Src/usb_device.c \
 Src/usbd_conf.c \
 Src/usbd_desc.c \
@@ -88,7 +87,8 @@ sincos.cpp \
 fast_loop.cpp \
 pwm.cpp \
 main_loop.cpp \
-Src/pin_config.cpp
+Src/pin_config.cpp \
+Src/main.cpp
 
 # ASM sources
 ASM_SOURCES =  \

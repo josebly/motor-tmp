@@ -1,0 +1,33 @@
+#ifndef USB_H
+#define USB_H
+
+#include <cstdint>
+#include "stm32f4xx_ll_usb.h"
+
+#define USBx USB_OTG_FS
+class USB {
+ public:
+    // limited to 64 bytes right now
+    void send_data32(uint8_t endpoint, uint32_t *data, uint8_t length32) 
+    {
+        USBx_DEVICE->DIEPMSK &= ~USB_OTG_DIEPMSK_INEPNEM;
+        USBx_INEP(endpoint)->DIEPCTL |= USB_OTG_DIEPCTL_SNAK;
+        while(!(USBx_INEP(endpoint)->DIEPINT & USB_OTG_DIEPINT_INEPNE));    //wait on nak
+        USBx->GRSTCTL = ( USB_OTG_GRSTCTL_TXFFLSH |(uint32_t)( 1 << (USB_OTG_GRSTCTL_TXFNUM_Pos + endpoint)));
+        while(USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH);     // wait on flush
+    //      if (USBx_INEP(endpoint)->DIEPCTL | USB_OTG_DIEPCTL_EPENA)
+    //          return;
+        USBx_INEP(endpoint)->DIEPTSIZ = 0;  // TODO necessary?
+        USBx_INEP(endpoint)->DIEPTSIZ = sizeof(uint32_t) * length32 | (1 << USB_OTG_DIEPTSIZ_PKTCNT_Pos);
+        USBx_INEP(endpoint)->DIEPCTL |= (USB_OTG_DIEPCTL_CNAK | USB_OTG_DIEPCTL_EPENA);  
+        for(int i=0; i<length32; i++) {
+            USBx_DFIFO(endpoint) = data[i]; 
+        }
+    }
+
+    void send_data(uint8_t endpoint, uint8_t *data, uint8_t length) {
+        send_data32(endpoint, (uint32_t *) data, (length+3)/4);
+    }
+};
+
+#endif
