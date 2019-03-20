@@ -289,21 +289,33 @@ int main(void)
   while (1)
   {
     i++;
-	//y	HAL_Delay(5);
+	  //HAL_Delay(1);
     fast_loop_set_param(&param()->fast_loop_param);   // to help with debugging
     main_loop_set_param(&param()->main_loop_param);
     fast_loop_maintenance();
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
     fast_loop_get_status(&fast_loop_status);
     main_loop_get_status(&main_loop_status);
-		sprintf(s, "%f, %f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q, main_loop_status.torque);
-		//CDC_Transmit_FS((uint8_t *) s, strlen(s));
-    usb.send_data(1, (uint8_t*) s, strlen(s));
+//		sprintf(s, "%f, %f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q, main_loop_status.torque);
+//		CDC_Transmit_FS((uint8_t *) s, strlen(s));
+//    usb.send_data(1, (uint8_t*) s, strlen(s));
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
+    struct Data {
+      int32_t count;
+      int32_t count_received;
+      float motor_position;
+      float iq;
+      float motor_mechanical_position;
+    };
 
-      sprintf(s, "%03ld\n", i%1000);
-    usb.send_data(2, (uint8_t*) s, 4);
+    Data data;
+    data.count = i;
+    data.count_received = count_received();
+    data.motor_mechanical_position = fast_loop_status.motor_mechanical_position;
+    data.iq = fast_loop_status.foc_status.measured.i_q;
+     // sprintf(s, "%03ld\n", i%1000);
+    usb.send_data(2, (uint8_t*) &data, sizeof(data));
 
 
     if (USBx_OUTEP(3)->DOEPTSIZ) {
