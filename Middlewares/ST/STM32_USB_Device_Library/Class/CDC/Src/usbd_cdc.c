@@ -537,7 +537,11 @@ static uint8_t  USBD_CDC_Init (USBD_HandleTypeDef *pdev,
   /* Open Command IN EP */
   USBD_LL_OpenEP(pdev,
                  CDC_CMD_EP,
-                 USBD_EP_TYPE_INTR,
+                 USBD_EP_TYPE_BULK,
+                 CDC_CMD_PACKET_SIZE);
+                   USBD_LL_OpenEP(pdev,
+                 2,
+                 USBD_EP_TYPE_BULK,
                  CDC_CMD_PACKET_SIZE);
   
     

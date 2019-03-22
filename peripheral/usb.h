@@ -25,13 +25,20 @@ class USB {
            return;
         }
 
+// __disable_irq();
+    HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
+
 
         USBx_INEP(endpoint)->DIEPTSIZ = 0;  // TODO necessary?
         USBx_INEP(endpoint)->DIEPTSIZ = sizeof(uint32_t) * length32 | (1 << USB_OTG_DIEPTSIZ_PKTCNT_Pos);
-        USBx_INEP(endpoint)->DIEPCTL |= (USB_OTG_DIEPCTL_CNAK | USB_OTG_DIEPCTL_EPENA);  
+        USBx_INEP(endpoint)->DIEPCTL |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK ;
         for(int i=0; i<length32; i++) {
             USBx_DFIFO(endpoint) = data[i]; 
         }
+     //   USBx_INEP(endpoint)->DIEPCTL |= USB_OTG_DIEPCTL_CNAK;  
+    //     __enable_irq();
+             HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+
     }
 
     void send_data(uint8_t endpoint, uint8_t *data, uint8_t length) {

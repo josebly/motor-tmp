@@ -353,6 +353,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       
       while ( ep_intr )
       {
+        // if (epnum == 2) {
+        //   asm("DBG #2");
+        // } else 
         if (ep_intr & 0x1U)
         {
           epint = USB_ReadDevOutEPInterrupt(hpcd->Instance, epnum);
@@ -412,7 +415,10 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       
       while ( ep_intr )
       {
-        if (ep_intr & 0x1U) /* In ITR */
+        if (epnum == 2) {
+         // asm("BKPT");
+          CLEAR_IN_EP_INTR(2, USB_OTG_DIEPINT_XFRC);
+        } else        if (ep_intr & 0x1U) /* In ITR */
         {
           epint = USB_ReadDevInEPInterrupt(hpcd->Instance, epnum);
 
@@ -458,6 +464,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
           }       
           if(( epint & USB_OTG_DIEPINT_TXFE) == USB_OTG_DIEPINT_TXFE)
           {
+
             PCD_WriteEmptyTxFifo(hpcd , epnum);
           }
         }
