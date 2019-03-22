@@ -44,6 +44,12 @@ class USB {
     void send_data(uint8_t endpoint, uint8_t *data, uint8_t length) {
         send_data32(endpoint, (uint32_t *) data, (length+3)/4);
     }
+
+    // receive up to length bytes from endpoint, return number of bytes read
+    int receive_data(uint8_t endpoint, uint8_t * const data, uint8_t length) {
+        
+        return 0;
+    }
 };
 
 #endif

@@ -284,6 +284,7 @@ int main(void)
   fast_loop_current_mode();
   fast_loop_set_iq_des(0);
 
+extern uint32_t data2[16];
   int32_t i  = 0;
   USB usb;
   while (1)
@@ -311,12 +312,17 @@ int main(void)
 
     Data data;
     data.count = i;
-    data.count_received = count_received();
+    
     data.motor_mechanical_position = fast_loop_status.motor_mechanical_position;
     data.iq = fast_loop_status.foc_status.measured.i_q;
      // sprintf(s, "%03ld\n", i%1000);
-    usb.send_data(2, (uint8_t*) &data, sizeof(data));
+    
+    int32_t usb_count;
+    int num_received = usb.receive_data(2, (uint8_t*) &usb_count, sizeof(usb_count));
+    usb_count = *(int32_t *) &data2[0];
 
+    data.count_received = usb_count;
+    usb.send_data(2, (uint8_t*) &data, sizeof(data));
 
     if (USBx_OUTEP(3)->DOEPTSIZ) {
       asm("DBG #10");
