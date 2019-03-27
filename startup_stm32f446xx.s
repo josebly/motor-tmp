@@ -70,11 +70,33 @@ defined in linker script */
  * @param  None
  * @retval : None
 */
+.section .text
+Reboot_Loader:
+    ldr     r0, =0x40023844 /* RCC_APB2ENR */
+    ldr     r1, =0x00004000 /* ENABLE SYSCFG CLOCK */
+    str     R1, [R0, #0]
+    ldr     R0, =0x40013800 /* SYSCFG_MEMRMP */
+    ldr     R1, =0x00000001 /* MAP ROM AT ZERO */
+    str     R1, [R0, #0]
+    ldr     R0, =0x1FFF0000 /* ROM BASE */
+    ldr     SP,[R0, #0]     /* SP @ +0 */
+    ldr     R0,[R0, #4]     /* PC @ +4 */
+    bx      R0
+
 
     .section  .text.Reset_Handler
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:  
+
+  ldr     R0, =0x2001FFF0   /* End of SRAM for your CPU */
+  ldr     R1, =0xa5a55a5a
+  ldr     R2, [R0, #0]
+  str     R0, [R0, #0]      /* Invalidate */
+  cmp     R2, R1
+  beq     Reboot_Loader
+  
+
   ldr   sp, =_estack      /* set stack pointer */
 
 /* Copy the data segment initializers from flash to SRAM */  
