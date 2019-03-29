@@ -138,7 +138,7 @@ uint16_t drv_regs[] = {
 
 // Call bootloader
 // System memory = 0x1FFF0000
-bool go_to_bootloader = false;
+uint8_t go_to_bootloader = false;
 void reboot_to_bootloader() {
   *((unsigned long *)0x2001FFF0) = 0xa5a55a5a;
   NVIC_SystemReset();

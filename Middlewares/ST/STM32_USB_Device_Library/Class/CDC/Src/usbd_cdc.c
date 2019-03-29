@@ -394,8 +394,8 @@ __ALIGN_BEGIN uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
 // DFU taken from the st dfu mode descriptor change interface protocol 2 to 1
   0x09,
   0x04,
+  0x02,
   0x00,
-  0x03,
   0x00,
   0xfe,
   0x01,

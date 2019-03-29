@@ -363,23 +363,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
           
           if(( epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC)
           {
-            CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);
-            
-            if(hpcd->Init.dma_enable == 1U)
-            {
-              hpcd->OUT_ep[epnum].xfer_count = hpcd->OUT_ep[epnum].maxpacket- (USBx_OUTEP(epnum)->DOEPTSIZ & USB_OTG_DOEPTSIZ_XFRSIZ); 
-              hpcd->OUT_ep[epnum].xfer_buff += hpcd->OUT_ep[epnum].maxpacket;            
-            }
-            
+            CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);   
             HAL_PCD_DataOutStageCallback(hpcd, epnum);
-            if(hpcd->Init.dma_enable == 1U)
-            {
-              if((epnum == 0U) && (hpcd->OUT_ep[epnum].xfer_len == 0U))
-              {
-                 /* this is ZLP, so prepare EP0 for next setup */
-                USB_EP0_OutStart(hpcd->Instance, 1U, (uint8_t *)hpcd->Setup);
-              }              
-            }
           }
           
           if(( epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP)
