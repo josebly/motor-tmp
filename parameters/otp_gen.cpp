@@ -19,7 +19,7 @@ int main() {
     board_id_gen.version.major = 11;
     board_id_gen.version.minor = 36;
     board_id_gen.version.revision = 'c';
-    std::strncpy((char *) &board_id_gen.sn, "123456789012", sizeof(board_id_gen.sn));
+    std::strncpy((char *) &board_id_gen.sn, "123456789", sizeof(board_id_gen.sn));
 
 
     std::ofstream myfile;

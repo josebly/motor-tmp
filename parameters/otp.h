@@ -25,6 +25,11 @@ struct BoardID {
 };
 
 //extern const volatile struct BoardId board_id;
+extern const struct BoardID * const board_id;
+
+inline const char * board_id_product_string() {
+    return "ST";
+}
 
 #ifdef __cplusplus
 }
