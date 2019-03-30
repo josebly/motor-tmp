@@ -91,12 +91,16 @@
   * @{
   */
 
+#include "../parameters/otp.h"
+
+struct BoardID tmp;
+
 #define USBD_VID     1155
 #define USBD_LANGID_STRING     1033
 #define USBD_MANUFACTURER_STRING     "Unhuman"
 #define USBD_PID_FS     22336
 #define USBD_PRODUCT_STRING_FS     "Lee"
-#define USBD_SERIALNUMBER_STRING_FS     "00000000001A"
+#define USBD_SERIALNUMBER_STRING_FS     &tmp.sn
 #define USBD_CONFIGURATION_STRING_FS     "CDC Config"
 #define USBD_INTERFACE_STRING_FS     "CDC Interface"
 
