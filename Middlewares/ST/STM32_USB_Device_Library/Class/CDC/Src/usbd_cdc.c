@@ -64,46 +64,6 @@
 #include "usbd_ctlreq.h"
 
 
-/** @addtogroup STM32_USB_DEVICE_LIBRARY
-  * @{
-  */
-
-
-/** @defgroup USBD_CDC 
-  * @brief usbd core module
-  * @{
-  */ 
-
-/** @defgroup USBD_CDC_Private_TypesDefinitions
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_CDC_Private_Defines
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_CDC_Private_Macros
-  * @{
-  */ 
-
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_CDC_Private_FunctionPrototypes
-  * @{
-  */
-
-
 static uint8_t  USBD_CDC_Init (USBD_HandleTypeDef *pdev, 
                                uint8_t cfgidx);
 
@@ -963,16 +923,5 @@ uint8_t  USBD_CDC_ReceivePacket(USBD_HandleTypeDef *pdev)
     return USBD_FAIL;
   }
 }
-/**
-  * @}
-  */ 
-
-/**
-  * @}
-  */ 
-
-/**
-  * @}
-  */ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -30,52 +30,6 @@
 #include "usbd_ioreq.h"
 
 
-/** @addtogroup STM32_USBD_STATE_DEVICE_LIBRARY
-  * @{
-  */
-
-
-/** @defgroup USBD_REQ 
-  * @brief USB standard requests module
-  * @{
-  */ 
-
-/** @defgroup USBD_REQ_Private_TypesDefinitions
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_REQ_Private_Defines
-  * @{
-  */ 
-
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_REQ_Private_Macros
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_REQ_Private_Variables
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_REQ_Private_FunctionPrototypes
-  * @{
-  */ 
 static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev , 
                                USBD_SetupReqTypedef *req);
 
@@ -98,15 +52,6 @@ static void USBD_ClrFeature(USBD_HandleTypeDef *pdev ,
                             USBD_SetupReqTypedef *req);
 
 static uint8_t USBD_GetLen(uint8_t *buf);
-
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_REQ_Private_Functions
-  * @{
-  */ 
 
 
 /**
@@ -765,18 +710,5 @@ static uint8_t USBD_GetLen(uint8_t *buf)
 
     return len;
 }
-/**
-  * @}
-  */ 
-
-
-/**
-  * @}
-  */ 
-
-
-/**
-  * @}
-  */ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

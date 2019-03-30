@@ -414,23 +414,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
             USBx_DEVICE->DIEPEMPMSK &= ~fifoemptymsk;
             
             CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_XFRC);
-            
-            if (hpcd->Init.dma_enable == 1U)
-            {
-              hpcd->IN_ep[epnum].xfer_buff += hpcd->IN_ep[epnum].maxpacket; 
-            }
-                                      
+                                
             HAL_PCD_DataInStageCallback(hpcd, epnum);
-
-            if (hpcd->Init.dma_enable == 1U)
-            {
-              /* this is ZLP, so prepare EP0 for next setup */
-              if((epnum == 0U) && (hpcd->IN_ep[epnum].xfer_len == 0U))
-              {
-                /* prepare to rx more setup packets */
-                USB_EP0_OutStart(hpcd->Instance, 1U, (uint8_t *)hpcd->Setup);
-              }
-            }           
+          
           }
            if(( epint & USB_OTG_DIEPINT_TOC) == USB_OTG_DIEPINT_TOC)
           {
@@ -1033,11 +1019,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
   ep->xfer_count = 0U;
   ep->is_in = 0U;
   ep->num = ep_addr & 0x7F;
-  
-  if (hpcd->Init.dma_enable == 1U)
-  {
-    ep->dma_addr = (uint32_t)pBuf;  
-  }
+
   
   if ((ep_addr & 0x7F) == 0)
   {
@@ -1081,11 +1063,6 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
   ep->xfer_count = 0U;
   ep->is_in = 1U;
   ep->num = ep_addr & 0x7F;
-  
-  if (hpcd->Init.dma_enable == 1U)
-  {
-    ep->dma_addr = (uint32_t)pBuf;  
-  }
   
   if ((ep_addr & 0x7F) == 0)
   {

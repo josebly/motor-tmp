@@ -36,18 +36,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_conf.h"
 
-/** @addtogroup STM32_USBD_DEVICE_LIBRARY
-  * @{
-  */
-  
-/** @defgroup USB_DEF
-  * @brief general defines for the usb device library file
-  * @{
-  */ 
-
-/** @defgroup USB_DEF_Exported_Defines
-  * @{
-  */ 
 
 #ifndef NULL
 #define NULL  0
@@ -134,16 +122,6 @@
 #define USBD_EP_TYPE_ISOC                                 1
 #define USBD_EP_TYPE_BULK                                 2
 #define USBD_EP_TYPE_INTR                                 3
-
-
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_DEF_Exported_TypesDefinitions
-  * @{
-  */
 
 typedef  struct  usb_setup_req 
 {
@@ -248,15 +226,6 @@ typedef struct _USBD_HandleTypeDef
   void                    *pData;    
 } USBD_HandleTypeDef;
 
-/**
-  * @}
-  */ 
-
-
-
-/** @defgroup USBD_DEF_Exported_Macros
-  * @{
-  */ 
 #define  SWAPBYTE(addr)        (((uint16_t)(*((uint8_t *)(addr)))) + \
                                (((uint16_t)(*(((uint8_t *)(addr)) + 1))) << 8))
 
@@ -292,27 +261,6 @@ typedef struct _USBD_HandleTypeDef
     #define __ALIGN_BEGIN    __align(4) 
   #endif /* __CC_ARM */  
 #endif /* __GNUC__ */ 
-  
-
-/**
-  * @}
-  */ 
-
-/** @defgroup USBD_DEF_Exported_Variables
-  * @{
-  */ 
-
-/**
-  * @}
-  */ 
-
-/** @defgroup USBD_DEF_Exported_FunctionsPrototype
-  * @{
-  */ 
-
-/**
-  * @}
-  */ 
 
 #ifdef __cplusplus
 }
@@ -320,11 +268,4 @@ typedef struct _USBD_HandleTypeDef
 
 #endif /* __USBD_DEF_H */
 
-/**
-  * @}
-  */ 
-
-/**
-* @}
-*/ 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
