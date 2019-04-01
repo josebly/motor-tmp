@@ -11,8 +11,11 @@ extern "C" {
 #endif
 
 struct BoardID {
-    enum BoardType {Nucleo=0};
-    enum Manufacturer {ST=0};
+#ifdef __cplusplus
+    enum BoardType {UnknownBoardType=0, Nucleo446RE=1};
+    enum Manufacturer {UnknownManufacturer=0, ST=1, Unprogrammed=0xFF};
+    BoardID();
+#endif
 
     uint8_t manufacturer;
     uint8_t board_type;
@@ -20,16 +23,16 @@ struct BoardID {
     struct {
         uint8_t major, minor, revision;
     } version;
-    uint8_t sn[10];
-    uint8_t resv[16];
+    uint8_t serial_number[10];      // null terminated, pad with 0xFF
+    uint8_t part_number[12];        // null terminated, pad with 0xFF
+    uint8_t reserved[4];            // write 0xFF x 4
 };
 
-//extern const volatile struct BoardId board_id;
-extern const struct BoardID * const board_id;
+const struct BoardID * const get_board_id();
 
-inline const char * board_id_product_string() {
-    return "ST";
-}
+const char * board_id_serial_number();
+const char * board_id_product_string();
+const char * board_id_manufacturer_string();
 
 #ifdef __cplusplus
 }
