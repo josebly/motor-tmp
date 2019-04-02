@@ -296,7 +296,7 @@ __ALIGN_BEGIN uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
   0x02,   /* bInterfaceClass: Communication Interface Class */
   0x02,   /* bInterfaceSubClass: Abstract Control Model */
   0x01,   /* bInterfaceProtocol: Common AT commands */
-  0x00,   /* iInterface: */
+  0x05,   /* iInterface: */
   
   /*Header Functional Descriptor*/
   0x05,   /* bLength: Endpoint Descriptor size */
@@ -353,7 +353,7 @@ __ALIGN_BEGIN uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
   0x0A,   /* bInterfaceClass: CDC */
   0x00,   /* bInterfaceSubClass: */
   0x00,   /* bInterfaceProtocol: */
-  0x00,   /* iInterface: */
+  0x04,   /* iInterface: */
   
   /*Endpoint OUT Descriptor*/
   0x07,   /* bLength: Endpoint Descriptor size */

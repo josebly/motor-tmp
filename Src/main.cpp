@@ -136,11 +136,10 @@ uint16_t drv_regs[] = {
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// Call bootloader
-// System memory = 0x1FFF0000
+// Call bootloader, trigger is go_to_bootloader==1 on reboot + software reset
 uint8_t go_to_bootloader = false;
 void reboot_to_bootloader() {
-  *((unsigned long *)0x2001FFF0) = 0xa5a55a5a;
+  go_to_bootloader = true;
   NVIC_SystemReset();
 }
 

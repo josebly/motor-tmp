@@ -88,15 +88,23 @@ Reboot_Loader:
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:  
-
-  ldr     R0, =0x2001FFF0   /* End of SRAM for your CPU */
-  ldr     R1, =0xa5a55a5a
-  ldr     R2, [R0, #0]
-  str     R0, [R0, #0]      /* Invalidate */
+/* check if this is a software reset, RCC_CSR.SFTRSTF == 1 */
+  ldr     r0, =0x40023800    /* RCC_BASE */
+  ldr     r1, [r0, #0x74]    /* RCC_CSR */
+  tst     r1, #(1<<28)       /* SFTRSTF bit */
+  orr     r1, #(1<<24)       /* Set RMVF to clear reset flags */
+  str     r1, [r0, #0x74]
+  beq     Continue_Reset
+/* then check if go_to_bootloader == 1 */
+  ldr     R0, =go_to_bootloader
+  ldrb    R1, =1
+  ldrb    R2, [R0, #0]
+  ldrb    R3, =0
+  strb    R3, [R0, #0]    /* go_to_bootloader = 0 */
   cmp     R2, R1
-  beq     Reboot_Loader
+  beq     Reboot_Loader 
   
-
+Continue_Reset:
   ldr   sp, =_estack      /* set stack pointer */
 
 /* Copy the data segment initializers from flash to SRAM */  
