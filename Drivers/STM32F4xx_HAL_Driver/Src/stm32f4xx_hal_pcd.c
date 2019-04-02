@@ -287,6 +287,7 @@ __weak void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
   * @{
   */
   
+uint32_t data2[16];
 /**
   * @brief  Start The USB OTG Device.
   * @param  hpcd PCD handle
@@ -353,6 +354,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       
       while ( ep_intr )
       {
+        // if (epnum == 2) {
+        //   asm("DBG #2");
+        // } else 
         if (ep_intr & 0x1U)
         {
           epint = USB_ReadDevOutEPInterrupt(hpcd->Instance, epnum);
@@ -412,7 +416,10 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       
       while ( ep_intr )
       {
-        if (ep_intr & 0x1U) /* In ITR */
+        if (epnum == 2) {
+         // asm("BKPT");
+          CLEAR_IN_EP_INTR(2, USB_OTG_DIEPINT_XFRC);
+        } else        if (ep_intr & 0x1U) /* In ITR */
         {
           epint = USB_ReadDevInEPInterrupt(hpcd->Instance, epnum);
 
@@ -458,6 +465,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
           }       
           if(( epint & USB_OTG_DIEPINT_TXFE) == USB_OTG_DIEPINT_TXFE)
           {
+
             PCD_WriteEmptyTxFifo(hpcd , epnum);
           }
         }
@@ -652,23 +660,38 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
       
       temp = USBx->GRXSTSP;
       
-      ep = &hpcd->OUT_ep[temp & USB_OTG_GRXSTSP_EPNUM];
-      
-      if(((temp & USB_OTG_GRXSTSP_PKTSTS) >> 17U) ==  STS_DATA_UPDT)
-      {
-        if((temp & USB_OTG_GRXSTSP_BCNT) != 0U)
+      if((temp & USB_OTG_GRXSTSP_EPNUM) == 2) {
+        if ( ((temp & USB_OTG_GRXSTSP_PKTSTS) >> USB_OTG_GRXSTSP_PKTSTS_Pos) ==
+                STS_DATA_UPDT) {
+                int count = ((temp & USB_OTG_GRXSTSP_BCNT) >> USB_OTG_GRXSTSP_BCNT_Pos);
+                for(int i=0; i<((count+3)/4); i++) {
+                  data2[i] = USBx_DFIFO(0);
+                }
+                USBx_OUTEP(2)->DOEPTSIZ = 0x80040; 
+                USBx_OUTEP(2)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
+
+                }
+      } else {
+
+        ep = &hpcd->OUT_ep[temp & USB_OTG_GRXSTSP_EPNUM];
+        
+        if(((temp & USB_OTG_GRXSTSP_PKTSTS) >> 17U) ==  STS_DATA_UPDT)
         {
-          USB_ReadPacket(USBx, ep->xfer_buff, (temp & USB_OTG_GRXSTSP_BCNT) >> 4U);
-          ep->xfer_buff += (temp & USB_OTG_GRXSTSP_BCNT) >> 4U;
+          if((temp & USB_OTG_GRXSTSP_BCNT) != 0U)
+          {
+            USB_ReadPacket(USBx, ep->xfer_buff, (temp & USB_OTG_GRXSTSP_BCNT) >> 4U);
+            ep->xfer_buff += (temp & USB_OTG_GRXSTSP_BCNT) >> 4U;
+            ep->xfer_count += (temp & USB_OTG_GRXSTSP_BCNT) >> 4U;
+          }
+        }
+        else if (((temp & USB_OTG_GRXSTSP_PKTSTS) >> 17U) ==  STS_SETUP_UPDT)
+        {
+          USB_ReadPacket(USBx, (uint8_t *)hpcd->Setup, 8U);
           ep->xfer_count += (temp & USB_OTG_GRXSTSP_BCNT) >> 4U;
         }
       }
-      else if (((temp & USB_OTG_GRXSTSP_PKTSTS) >> 17U) ==  STS_SETUP_UPDT)
-      {
-        USB_ReadPacket(USBx, (uint8_t *)hpcd->Setup, 8U);
-        ep->xfer_count += (temp & USB_OTG_GRXSTSP_BCNT) >> 4U;
-      }
       USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL);
+      
     }
     
     /* Handle SOF Interrupt */
