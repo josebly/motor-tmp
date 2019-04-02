@@ -77,6 +77,9 @@ void FastLoop::maintenance() {
     if (mode_ == PHASE_LOCK_MODE) {
         motor_electrical_zero_pos_ = TIM2->CNT;
     }
+
+    v_bus_ = ADC1->DR*param_.vbus_gain;
+    pwm_.set_vbus(v_bus_);
 }
 
 void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
