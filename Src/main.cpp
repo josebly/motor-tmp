@@ -260,14 +260,13 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   #define USBx USB_OTG_FS
-	char s[512];
 
 
     // drv enable
   *drv_en_reg = drv_en_pin;
   HAL_Delay(10);
   // drv regs setting
-  for (int i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
+  for (uint8_t i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
     uint16_t reg_out = drv_regs[i];
     uint16_t reg_in = 0;
     HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
@@ -317,7 +316,7 @@ extern uint32_t data2[16];
       float motor_mechanical_position;
     };
 
-    Data data;
+    Data data = {};
     data.count = i;
     
     data.motor_mechanical_position = fast_loop_status.motor_mechanical_position;
@@ -325,7 +324,7 @@ extern uint32_t data2[16];
      // sprintf(s, "%03ld\n", i%1000);
     
     int32_t usb_count;
-    int num_received = usb.receive_data(2, (uint8_t*) &usb_count, sizeof(usb_count));
+  //  int num_received = usb.receive_data(2, (uint8_t*) &usb_count, sizeof(usb_count));
     usb_count = *(int32_t *) &data2[0];
 
     data.count_received = usb_count;
