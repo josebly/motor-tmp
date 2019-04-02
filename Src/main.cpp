@@ -136,6 +136,14 @@ uint16_t drv_regs[] = {
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// Call bootloader
+// System memory = 0x1FFF0000
+uint8_t go_to_bootloader = false;
+void reboot_to_bootloader() {
+  *((unsigned long *)0x2001FFF0) = 0xa5a55a5a;
+  NVIC_SystemReset();
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -335,7 +343,9 @@ extern uint32_t data2[16];
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
+    if (go_to_bootloader) {
+      reboot_to_bootloader();
+    }
   }
   /* USER CODE END 3 */
 }

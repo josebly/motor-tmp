@@ -260,6 +260,7 @@ USBD_StatusTypeDef USBD_ClrClassConfig(USBD_HandleTypeDef  *pdev, uint8_t cfgidx
 * @param  pdev: device instance
 * @retval status
 */
+extern uint8_t go_to_bootloader;
 USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, uint8_t *psetup)
 {
 
@@ -274,7 +275,15 @@ USBD_StatusTypeDef USBD_LL_SetupStage(USBD_HandleTypeDef *pdev, uint8_t *psetup)
     USBD_StdDevReq (pdev, &pdev->request);
     break;
     
-  case USB_REQ_RECIPIENT_INTERFACE:     
+  case USB_REQ_RECIPIENT_INTERFACE:
+    if ((pdev->request.bmRequest & 0x60) == 0x20) {
+      // interface class request
+      if ((pdev->request.wIndex == 2) && (pdev->request.bRequest == 0)) {
+        // dfu_detach request
+        go_to_bootloader = 1;
+        // should return ack or zero length packet or something
+      }
+    }     
     USBD_StdItfReq(pdev, &pdev->request);
     break;
     

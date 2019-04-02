@@ -278,7 +278,7 @@ __ALIGN_BEGIN uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
   USB_DESC_TYPE_CONFIGURATION,      /* bDescriptorType: Configuration */
   USB_CDC_CONFIG_DESC_SIZ,                /* wTotalLength:no of returned bytes */
   0x00,
-  0x02,   /* bNumInterfaces: 2 interface */
+  0x03,   /* bNumInterfaces: 2 interface */
   0x01,   /* bConfigurationValue: Configuration value */
   0x00,   /* iConfiguration: Index of string descriptor describing the configuration */
   0xC0,   /* bmAttributes: self powered */
@@ -389,7 +389,29 @@ __ALIGN_BEGIN uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
   0x02,                              /* bmAttributes: Bulk */
   LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),  /* wMaxPacketSize: */
   HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
-  0x00                               /* bInterval: ignore for Bulk transfer */
+  0x00,                               /* bInterval: ignore for Bulk transfer */
+
+// DFU taken from the st dfu mode descriptor change interface protocol 2 to 1
+  0x09,
+  0x04,
+  0x02,
+  0x00,
+  0x00,
+  0xfe,
+  0x01,
+  0x01,
+  0x00,
+
+  0x09,
+  0x21,
+  0x0b, 
+  0xff,
+  0x00,
+  0x00,
+  0x08,
+  0x1a,
+  0x01
+
 } ;
 
 __ALIGN_BEGIN uint8_t USBD_CDC_OtherSpeedCfgDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
