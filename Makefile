@@ -88,7 +88,8 @@ fast_loop.cpp \
 pwm.cpp \
 main_loop.cpp \
 Src/pin_config.cpp \
-Src/main.cpp
+Src/main.cpp \
+parameters/otp.cpp
 
 # ASM sources
 ASM_SOURCES =  \
