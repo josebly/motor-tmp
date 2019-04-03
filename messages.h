@@ -60,6 +60,7 @@ typedef struct {
 typedef struct {
     FastLoopParam fast_loop_param;
     MainLoopParam main_loop_param;
+    char name[64];
 } Param;
 
 typedef struct {
