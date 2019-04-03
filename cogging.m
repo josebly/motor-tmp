@@ -16,8 +16,16 @@ plot(xr(1:end-1), i)
 f = fft(i);
 [~,i2] = maxk(abs(f), 20); % or should it be limited in frequency?
 
+freq = fftfreq(length(f),1/n);
+figure(3);
+plot(freq,abs(f));
+i2 = abs(freq) < 200;
+
 mf = zeros(size(f));
 mf(i2) = f(i2);
 mf(1) = 0; % remove average
 iq = ifft(mf);
+figure(2);
 plot(xr(1:end-1), iq)
+
+

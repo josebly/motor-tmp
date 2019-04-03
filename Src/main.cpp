@@ -59,6 +59,7 @@
 #include "param.h"
 #include "util.h"
 #include "pin_config.h"
+#include "../peripheral/usb.h"
 __attribute__((used)) DWT_Type *dwt = DWT;
 
 /* USER CODE END Includes */
@@ -118,6 +119,7 @@ static void MX_ADC1_Init(void);
 
 uint16_t drv_regs_error = 0;
 FastLoopStatus fast_loop_status;
+MainLoopStatus main_loop_status;
 
 uint16_t drv_regs[] = {
   (2<<11) | 0x20,  // control_reg 0x20, 3 PWM mode
@@ -134,12 +136,23 @@ uint16_t drv_regs[] = {
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// Call bootloader, trigger is go_to_bootloader==1 on reboot + software reset
+uint8_t go_to_bootloader = false;
+void reboot_to_bootloader() {
+  go_to_bootloader = true;
+  NVIC_SystemReset();
+}
+
 /* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
+float i_a_filtered = 0;
+float i_b_filtered = 0;
+float i_c_filtered = 0;
+float alpha = .01;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -189,6 +202,12 @@ int main(void)
   HAL_Delay(100);
   GPIOF->ODR |= GPIO_ODR_OD12;
 
+    init_param_from_flash();
+  fast_loop_set_param(&param()->fast_loop_param);
+  TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency;
+  main_loop_set_param(&param()->main_loop_param);
+  TIM1->ARR = 180e6/param()->main_loop_param.update_frequency - 1;
+
 	HAL_TIM_Base_Start(&htim8);
 	HAL_TIM_Base_Start(&htim1);
 	HAL_TIM_Base_Start(&htim2);
@@ -224,7 +243,7 @@ int main(void)
       TPI->SPPR = 0x00000002; // Select NRZ mode
       TPI->ACPR = 40 - 1; // 4.5 MHz from 180 MHz clock
       ITM->TPR = 0x00000000;
-      DWT->CTRL = 0x400003FF;
+      DWT->CTRL = 0x400003FF | (1ul<<17) | DWT_CTRL_LSUEVTENA_Msk | DWT_CTRL_FOLDEVTENA_Msk;
       TPI->FFCR = 0x00000100;
       //
       // Enable ITM and stimulus port
@@ -240,18 +259,14 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	char s[512];
-  init_param_from_flash();
-  fast_loop_set_param(&param()->fast_loop_param);
-  TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency;
-  main_loop_set_param(&param()->main_loop_param);
-  TIM1->ARR = 180e6/param()->main_loop_param.update_frequency - 1;
+  #define USBx USB_OTG_FS
+
 
     // drv enable
   *drv_en_reg = drv_en_pin;
   HAL_Delay(10);
   // drv regs setting
-  for (int i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
+  for (uint8_t i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
     uint16_t reg_out = drv_regs[i];
     uint16_t reg_in = 0;
     HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
@@ -264,29 +279,71 @@ int main(void)
 
   
   // startup
-  fast_loop_phase_lock_mode(2);
+  fast_loop_voltage_mode();
+  for (int i=0; i<1000; i++) {
+    HAL_Delay(1);
+    fast_loop_zero_current_sensors();
+  }
+  fast_loop_phase_lock_mode(1);
   HAL_Delay(2000);
   fast_loop_maintenance();  // TODO better way than calling this to update zero pos
   fast_loop_current_mode();
   fast_loop_set_iq_des(0);
 
+extern uint32_t data2[16];
+  int32_t i  = 0;
+  USB usb;
   while (1)
   {
-
-		HAL_Delay(1);
+    i++;
+	  //HAL_Delay(1);
     fast_loop_set_param(&param()->fast_loop_param);   // to help with debugging
     main_loop_set_param(&param()->main_loop_param);
     fast_loop_maintenance();
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
     fast_loop_get_status(&fast_loop_status);
-		sprintf(s, "%f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q );
-		CDC_Transmit_FS((uint8_t *) s, strlen(s));
+    main_loop_get_status(&main_loop_status);
+//		sprintf(s, "%f, %f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q, main_loop_status.torque);
+//		CDC_Transmit_FS((uint8_t *) s, strlen(s));
+//    usb.send_data(1, (uint8_t*) s, strlen(s));
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
+    struct Data {
+      int32_t count;
+      int32_t count_received;
+      float motor_position;
+      float iq;
+      float motor_mechanical_position;
+    };
+
+    Data data = {};
+    data.count = i;
+    
+    data.motor_mechanical_position = fast_loop_status.motor_mechanical_position;
+    data.iq = fast_loop_status.foc_status.measured.i_q;
+     // sprintf(s, "%03ld\n", i%1000);
+    
+    int32_t usb_count;
+  //  int num_received = usb.receive_data(2, (uint8_t*) &usb_count, sizeof(usb_count));
+    usb_count = *(int32_t *) &data2[0];
+
+    data.count_received = usb_count;
+    usb.send_data(2, (uint8_t*) &data, sizeof(data));
+
+    if (USBx_OUTEP(3)->DOEPTSIZ) {
+      asm("DBG #10");
+    }
+
+
+    i_a_filtered = (1-alpha)*i_a_filtered + alpha*fast_loop_status.foc_command.measured.i_a;
+    i_b_filtered = (1-alpha)*i_b_filtered + alpha*fast_loop_status.foc_command.measured.i_b;
+    i_c_filtered = (1-alpha)*i_c_filtered + alpha*fast_loop_status.foc_command.measured.i_c;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
+    if (go_to_bootloader) {
+      reboot_to_bootloader();
+    }
   }
   /* USER CODE END 3 */
 }
@@ -376,7 +433,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
@@ -390,7 +447,7 @@ static void MX_ADC1_Init(void)
   }
   /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
   */
-  sConfig.Channel = ADC_CHANNEL_15;
+  sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)

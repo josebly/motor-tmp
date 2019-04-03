@@ -39,7 +39,7 @@ void MainLoop::update() {
     c2 = *((uint32_t *) &jl_torque_rx[5]);
     // hack for bad noise
     if (c1 != 0 && c2 != 0) {
-      float tmp_torque = torque_gain*((float) ((int32_t) (c1-c2)) / (c1+c2)) + torque_bias;
+      float tmp_torque = param_.torque_gain*((float) ((int32_t) (c1-c2)) / (c1+c2)) + param_.torque_bias;
       if (fabsf(tmp_torque) < 10) {
         // more hack
         torque = tmp_torque;
@@ -49,27 +49,48 @@ void MainLoop::update() {
   }
   
   fast_loop_get_status(&fast_loop_status);
-  float motor_torque = kt * fast_loop_status.foc_status.measured.i_q;
+  float motor_torque = param_.kt*.02 * fast_loop_status.foc_status.measured.i_q;
   float torque_out = torque + motor_torque;
 
   // virtual wall control
-  if (fast_loop_status.foc_status.measured.position > wall_position) {
-    torque_desired = kwall*(fast_loop_status.foc_status.measured.position - wall_position);
-    if (torque_desired > wall_max_torque) {
-      torque_desired = wall_max_torque;
+  if (fast_loop_status.motor_position.position/param_.gear_ratio > wall_position) {
+    torque_desired = -kwall*(fast_loop_status.motor_position.position/param_.gear_ratio - wall_position);
+    if (torque_desired < -wall_max_torque) {
+      torque_desired = -wall_max_torque;
     }
   } else {
     torque_desired = 0;
   }
 
-  float torque_des = controller_->step(torque_desired, torque_out);
-  //float torque_des = controller_step(pos_desired, fast_loop_status.foc_status.measured.position);
-  iq_des = torque_des/kt*(1.f/50.f);
-  //fast_loop_set_iq_des(iq_des);
+  switch (mode_) {
+    case MainLoopParam::CURRENT:
+      iq_des = torque_desired;
+      break;
+    case MainLoopParam::MOTOR_TORQUE:
+      iq_des = torque_desired/(param_.gear_ratio*param_.kt);
+      break;
+    case MainLoopParam::JOINT_TORQUE:
+    {
+      float torque_des = controller_->step(torque_desired, torque_out);
+      iq_des = torque_des/(param_.gear_ratio*param_.kt);
+    }
+      break;
+    default:
+      iq_des = 0;
+      break;
+  }
+ // float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
+  
+  fast_loop_set_iq_des(iq_des);
     led_->update();
 }
 
 void MainLoop::set_param(MainLoopParam &param) {
     controller_->set_param(param.controller_param);
     param_ = param;
+    mode_ = param.mode;
+}
+
+void MainLoop::get_status(MainLoopStatus * const main_loop_status) const {
+  main_loop_status->torque = torque;
 }

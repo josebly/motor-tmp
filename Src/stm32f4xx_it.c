@@ -98,7 +98,12 @@ extern TIM_HandleTypeDef htim1;
 
 
 __attribute__((used)) uint32_t t_diff, t_diff1, t_diff2, t_diff0;
+uint8_t cpi_start, lsu_start;
+__attribute__((used)) uint8_t cpi_diff, lsu_diff;
+__attribute__((used)) uint8_t lsu_diff0, lsu_diff1;
 uint32_t t_start;
+__attribute__((used)) uint8_t fold_start, fold_diff;
+__attribute__((used)) uint16_t inst;
 
 /* USER CODE END EV */
 
@@ -246,7 +251,19 @@ void SysTick_Handler(void)
 void ADC_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
+  //asm("PLI [PC, #0]");  // this doesn't seem to make a large difference
+  asm("PLD [PC, #0]");  // this seems to speed up by 20 cycles
+                        // I thought the real problem would be about PC+1000 bytes 
+                        // but below instructions don't seem to help
+  // asm("PLD [PC, #960]");
+  // asm("PLD [PC, #980]");
+  // asm("PLD [PC, #1000]");
+  // asm("PLD [PC, #1016]");
+  // asm("PLD [PC, #1032]");
 	t_start = get_clock();
+  cpi_start = get_cpi_count();
+  lsu_start = get_lsu_count();
+  fold_start = DWT->FOLDCNT;
   t_diff0 = get_clock() - t_start;
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
   	t_diff1 = get_clock() - t_start;
@@ -258,12 +275,19 @@ void ADC_IRQHandler(void)
   /* USER CODE BEGIN ADC_IRQn 1 */
 #endif
 
+  lsu_diff0 = get_lsu_count() - lsu_start;
+  asm("DBG #5");
 	fast_loop_update();
+  lsu_diff1 = get_lsu_count() - lsu_start;
   t_diff2 = get_clock()-t_start;
   
 	hadc1.Instance->SR &= ~ADC_SR_JEOC;
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
 	t_diff = get_clock() - t_start;
+  cpi_diff = get_cpi_count() - cpi_start;
+  lsu_diff = get_lsu_count() - lsu_start;
+  fold_diff = DWT->FOLDCNT - fold_start;
+  inst = t_diff - cpi_diff - lsu_diff;
   /* USER CODE END ADC_IRQn 1 */
 }
 

@@ -25,28 +25,36 @@ typedef struct {
     PIParam pi_d;
     PIParam pi_q;
     float current_filter_frequency_hz;
+    float num_poles;
 } FOCParam;
 
-#define COGGING_TABLE_SIZE 512  // must be multiple of 2
+#define COGGING_TABLE_SIZE 1024  // must be multiple of 2
 typedef struct {
     int32_t pwm_frequency;
     float adc1_offset, adc2_offset, adc3_offset;
     float adc1_gain, adc2_gain, adc3_gain;
     FOCParam foc_param;
+    uint8_t phase_mode;
     struct {
         float index_electrical_offset_pos;
         uint8_t use_index_electrical_offset_pos;
         uint32_t cpr;
+        float dir;
     } motor_encoder;
     struct {
         float table[COGGING_TABLE_SIZE];
         float gain;
     } cogging;
+    float vbus_gain;
 } FastLoopParam;
 
 typedef struct {
     int32_t update_frequency;
     PIDParam controller_param;
+    float torque_gain, torque_bias;
+    float kt;
+    float gear_ratio;
+    enum MainControlMode {OPEN, BRAKE, CURRENT, MOTOR_TORQUE, JOINT_TORQUE} mode;
 } MainLoopParam;
 
 typedef struct {
@@ -80,9 +88,18 @@ typedef struct {
 
 typedef struct {
     FOCStatus foc_status;
+    struct {
+        int32_t raw;
+        float position;
+        float velocity;
+    } motor_position;
     float motor_mechanical_position;
     FOCCommand foc_command;
 } FastLoopStatus;
+
+typedef struct {
+    float torque;
+} MainLoopStatus;
 
 typedef struct {
     uint16_t type;       ///< \sa CommandType

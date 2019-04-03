@@ -9,6 +9,8 @@
 #	2017-02-10 - Several enhancements + project update mode
 #   2015-07-22 - first version
 # ------------------------------------------------
+GIT_VERSION := $(shell git describe --dirty --always --tags)
+$(shell touch version.h)
 
 ######################################
 # target
@@ -43,7 +45,6 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-Src/main.c \
 Src/usb_device.c \
 Src/usbd_conf.c \
 Src/usbd_desc.c \
@@ -79,7 +80,7 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac_ex.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
 Src/param.c \
 Src/util.c \
-parameters/param2.c
+parameters/param_ec16.c
 
 CPP_SOURCES = control/control_fun.cpp \
 foc.cpp \
@@ -88,7 +89,9 @@ sincos.cpp \
 fast_loop.cpp \
 pwm.cpp \
 main_loop.cpp \
-Src/pin_config.cpp
+Src/pin_config.cpp \
+Src/main.cpp \
+parameters/otp.cpp
 
 # ASM sources
 ASM_SOURCES =  \
@@ -139,7 +142,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32F446xx
+-DSTM32F446xx \
+-DGIT_VERSION=\"$(GIT_VERSION)\"
 
 
 # AS includes
@@ -231,4 +235,3 @@ clean:
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
 
-# *** EOF ***

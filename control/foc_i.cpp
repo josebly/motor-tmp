@@ -36,16 +36,29 @@ void fast_loop_set_param(const FastLoopParam *const fast_loop_param) {
     fast_loop_.set_param(*fast_loop_param);
 }
 
-void fast_loop_get_status(FastLoopStatus *fast_loop_status) {
+void fast_loop_get_status(FastLoopStatus * const fast_loop_status) {
     fast_loop_.get_status(fast_loop_status);
 }
+
+void fast_loop_voltage_mode() {
+    fast_loop_.voltage_mode();
+}
+
+void fast_loop_zero_current_sensors() {
+    fast_loop_.zero_current_sensors();
+}
+
 
 void main_loop_update() {
     main_loop_.update();
 }
 
-void main_loop_set_param(MainLoopParam *main_loop_param) {
+void main_loop_set_param(MainLoopParam * const main_loop_param) {
     main_loop_.set_param(*main_loop_param);
+}
+
+void main_loop_get_status(MainLoopStatus * const main_loop_status) {
+    main_loop_.get_status(main_loop_status);
 }
 
 // void fast_loop_set_command(FOCCommand *foc_command) {
