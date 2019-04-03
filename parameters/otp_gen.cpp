@@ -2,7 +2,7 @@
 
 // Save OTP to a file for uploading
 
-// build with gcc otp_gen.cpp otp.cpp -lstdc++
+// build with g++ otp_gen.cpp otp.cpp
 
 #include "otp.h"
 #include <iostream>
