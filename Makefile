@@ -9,6 +9,8 @@
 #	2017-02-10 - Several enhancements + project update mode
 #   2015-07-22 - first version
 # ------------------------------------------------
+GIT_VERSION := $(shell git describe --dirty --always --tags)
+$(shell touch version.h)
 
 ######################################
 # target
@@ -140,7 +142,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32F446xx
+-DSTM32F446xx \
+-DGIT_VERSION=\"$(GIT_VERSION)\"
 
 
 # AS includes
@@ -232,4 +235,3 @@ clean:
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
 
-# *** EOF ***

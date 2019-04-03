@@ -53,7 +53,7 @@
 #include "usbd_conf.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "../version.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,8 +99,8 @@
 #define USBD_PID_FS     22336
 #define USBD_PRODUCT_STRING_FS          board_id_product_string()
 #define USBD_SERIALNUMBER_STRING_FS     board_id_serial_number()
-#define USBD_CONFIGURATION_STRING_FS     "Config"
-#define USBD_INTERFACE_STRING_FS     "J1"
+#define USBD_CONFIGURATION_STRING_FS    VERSION " " GIT_HASH " " BUILD_DATETIME
+#define USBD_INTERFACE_STRING_FS        "J1"
 
 #define USB_SIZ_BOS_DESC            0x0C
 
