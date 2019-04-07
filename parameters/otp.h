@@ -12,8 +12,11 @@ extern "C" {
 
 struct BoardID {
 #ifdef __cplusplus
-    enum BoardType {UnknownBoardType=0, Nucleo446RE=1};
-    enum Manufacturer {UnknownManufacturer=0, ST=1, Unprogrammed=0xFF};
+    union BoardType {
+        enum STBoardType {STUnknownBoardType=0, Nucleo446RE=1, Nucleo446ZE=2};
+        enum FabulabBoardType {FabulabUnknownBoardType=0, DevBoard=1};
+    };
+    enum Manufacturer {UnknownManufacturer=0, ST=1, FabulabSL=2, Unprogrammed=0xFF};
     BoardID();
 #endif
 

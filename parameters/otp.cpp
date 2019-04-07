@@ -2,14 +2,25 @@
 
 static const BoardID default_board_id;
 
-static const char * ProductStrings[] = {
-    "Unknown",
-    "Nucleo F446RE"
+static const char * ProductStrings[][3] = {
+    {
+        "Unknown",
+    },
+    {
+        "Unknown ST",
+        "Nucleo F446RE",
+        "Nucleo F446ZE",
+    },
+    {
+        "Unknown Fabulab",
+        "dev_00",
+    },
 };
 
 static const char * ManufacturerStrings[] = {
     "Unknown",
-    "ST"
+    "ST",
+    "FabulabSL"
 };
 
 BoardID::BoardID() : serial_number("0") {}
@@ -26,14 +37,16 @@ const char * board_id_serial_number() {
     return reinterpret_cast<const char *>(get_board_id()->serial_number);
 }
 
+//TODO make safe for bad values
 const char * board_id_product_string() {
     uint8_t product_type = 0;
     if (get_board_id()->board_type <= sizeof(ProductStrings)) {
         product_type = get_board_id()->board_type;
     }
-    return ProductStrings[product_type];
+    return ProductStrings[get_board_id()->manufacturer][product_type];
 }
 
+//TODO make safe for bad values
 const char * board_id_manufacturer_string() {
     uint8_t manufacturer = 0;
     if (get_board_id()->manufacturer <= sizeof(ManufacturerStrings)) {
