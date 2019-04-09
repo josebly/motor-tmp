@@ -16,9 +16,9 @@ FastLoop::~FastLoop() {
 void FastLoop::update() {
     // get ADC
     // get encoder
-    adc1 = ADC1->JDR1;
+    adc1 = ADC3->JDR1;
     adc2 = ADC2->JDR1;
-    adc3 = ADC3->JDR1;
+    adc3 = ADC1->JDR1;
     motor_enc = TIM2->CNT;
     motor_position_ = param_.motor_encoder.dir * 2 * (float) M_PI * inv_motor_encoder_cpr_ * motor_enc;
     motor_velocity =  param_.motor_encoder.dir * (motor_enc-last_motor_enc)*(2*(float) M_PI * inv_motor_encoder_cpr_ * frequency_hz_);
