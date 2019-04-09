@@ -9,7 +9,7 @@ class PIDController;
 
 class MainLoop {
  public:
-    MainLoop();
+    void init();
     void update();
     void set_param(MainLoopParam &);
     void get_status(MainLoopStatus * const main_loop_status) const;

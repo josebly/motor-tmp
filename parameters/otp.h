@@ -12,8 +12,11 @@ extern "C" {
 
 struct BoardID {
 #ifdef __cplusplus
-    enum BoardType {UnknownBoardType=0, Nucleo446RE=1};
-    enum Manufacturer {UnknownManufacturer=0, ST=1, Unprogrammed=0xFF};
+    union BoardType {
+        enum STBoardType {STUnknownBoardType=0, Nucleo446RE=1, Nucleo446ZE=2};
+        enum FabulabBoardType {FabulabUnknownBoardType=0, dev_00=1};
+    };
+    enum Manufacturer {UnknownManufacturer=0, ST=1, FabulabSL=2, Unprogrammed=0xFF};
     BoardID();
 #endif
 
@@ -35,6 +38,18 @@ const char * board_id_product_string();
 const char * board_id_manufacturer_string();
 
 #ifdef __cplusplus
+
+class BoardIDWrapper {
+ public:
+    BoardIDWrapper(const BoardID * const);
+    const BoardID * const get_board_id() const;
+    const char * get_serial_number() const;
+    const char * get_manufacturer_string() const;
+    const char * get_product_string() const;
+    const char * get_part_number() const;
+ private:
+    const BoardID * board_id_;
+};
 }
 #endif
 

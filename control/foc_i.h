@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+void system_init();
+
 void fast_loop_update();
 void fast_loop_maintenance();
 void fast_loop_set_id_des(float id);
