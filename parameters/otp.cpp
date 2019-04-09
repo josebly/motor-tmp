@@ -1,7 +1,12 @@
 #include "otp.h"
 
 static const BoardID default_board_id;
+#ifdef STM32F446xx
 static BoardIDWrapper board_id_wrapper = {(const BoardID * const) 0x1FFF7800};
+#else
+static BoardIDWrapper board_id_wrapper = {&default_board_id};
+#endif
+
 BoardID::BoardID() : serial_number("0") {}
 
 static const char * ProductStrings[][3] = {
