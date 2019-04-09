@@ -1,6 +1,6 @@
 #include "otp.h"
 
-static const BoardID default_board_id;
+static const BoardID default_board_id = {};
 
 static const char * ProductStrings[][3] = {
     {

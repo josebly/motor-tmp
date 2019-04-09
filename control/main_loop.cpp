@@ -9,7 +9,7 @@
 
 #include "foc_i.h"
 
-MainLoop::MainLoop() {
+void MainLoop::init() {
     const PinConfig * const p = get_pin_config();
     led_ = new LED(p->red_reg, p->green_reg, p->blue_reg);
     controller_ = new PIDController;

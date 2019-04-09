@@ -17,13 +17,13 @@ static PinConfig default_pin_config = {
     .pwm_a_reg = (uint16_t *) &TIM8->CCR3,
     .pwm_b_reg = (uint16_t *) &TIM8->CCR2,
     .pwm_c_reg = (uint16_t *) &TIM8->CCR1,
-    .crystal_frequency_MHz = 24,
+    .crystal_frequency_MHz = 8,
 };
 
 Config::Config() {
     pin_config_ = &default_pin_config;
-    if (get_board_id()->manufacturer == BoardID::ST) {
-        pin_config_->crystal_frequency_MHz = 8;
+    if (get_board_id()->manufacturer == BoardID::FabulabSL) {
+        pin_config_->crystal_frequency_MHz = 24;
     }
 }
 
