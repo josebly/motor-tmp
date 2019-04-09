@@ -38,6 +38,18 @@ const char * board_id_product_string();
 const char * board_id_manufacturer_string();
 
 #ifdef __cplusplus
+
+class BoardIDWrapper {
+ public:
+    BoardIDWrapper(const BoardID * const);
+    const BoardID * const get_board_id() const;
+    const char * get_serial_number() const;
+    const char * get_manufacturer_string() const;
+    const char * get_product_string() const;
+    const char * get_part_number() const;
+ private:
+    const BoardID * board_id_;
+};
 }
 #endif
 
