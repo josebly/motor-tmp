@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dfu-util -s 0x1FFF7800 -a 2 -D parameters/otp.bin
+dfu-util -s 0x1FFF7800 -a 2 -D otp.bin
 
 # locking
 cat /dev/zero | head -c 1 > zero.bin
