@@ -5,6 +5,7 @@
 #include "main_loop.h"
 #include "encoder.h"
 #include "../Src/param.h"
+#include "../Src/pin_config.h"
 
 static PWM pwm_ = {*TIM8};
 static Encoder motor_encoder_;
@@ -14,14 +15,7 @@ static MainLoop main_loop_;
 
 void system_init() {
     main_loop_.init();
-    switch (param()->fast_loop_param.encoder_select) {
-        default:
-        case 0:
-            motor_encoder_.init(reinterpret_cast<volatile int32_t*>(&TIM2->CNT));
-        case 1:
-            motor_encoder_.init(reinterpret_cast<volatile int32_t*>(&TIM5->CNT));
-    }
-    
+    motor_encoder_.init(get_pin_config()->motor_encoder_reg);
 }
 
 void fast_loop_update() {
