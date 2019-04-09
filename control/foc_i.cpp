@@ -3,14 +3,25 @@
 #include "foc_i.h"
 #include "pwm.h"
 #include "main_loop.h"
+#include "encoder.h"
+#include "../Src/param.h"
 
 static PWM pwm_ = {*TIM8};
-static FastLoop fast_loop_(pwm_);
+static Encoder motor_encoder_;
+static FastLoop fast_loop_(pwm_, motor_encoder_);
 static PIDController controller_;
 static MainLoop main_loop_;
 
 void system_init() {
     main_loop_.init();
+    switch (param()->fast_loop_param.encoder_select) {
+        default:
+        case 0:
+            motor_encoder_.init(reinterpret_cast<volatile int32_t*>(&TIM2->CNT));
+        case 1:
+            motor_encoder_.init(reinterpret_cast<volatile int32_t*>(&TIM5->CNT));
+    }
+    
 }
 
 void fast_loop_update() {

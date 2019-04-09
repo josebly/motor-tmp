@@ -46,6 +46,7 @@ typedef struct {
         float gain;
     } cogging;
     float vbus_gain;
+    uint8_t encoder_select;
 } FastLoopParam;
 
 typedef struct {

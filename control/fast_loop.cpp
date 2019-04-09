@@ -3,8 +3,9 @@
 #include "foc.h"
 #include <cmath>
 #include "pwm.h"
+#include "encoder.h"
 
-FastLoop::FastLoop(PWM &pwm) : pwm_(pwm) {
+FastLoop::FastLoop(PWM &pwm, Encoder &encoder) : pwm_(pwm), encoder_(encoder) {
     foc_ = new FOC;
 }
 
@@ -19,7 +20,7 @@ void FastLoop::update() {
     adc1 = ADC3->JDR1;
     adc2 = ADC2->JDR1;
     adc3 = ADC1->JDR1;
-    motor_enc = TIM2->CNT;
+    motor_enc = encoder_.get_value();
     motor_position_ = param_.motor_encoder.dir * 2 * (float) M_PI * inv_motor_encoder_cpr_ * motor_enc;
     motor_velocity =  param_.motor_encoder.dir * (motor_enc-last_motor_enc)*(2*(float) M_PI * inv_motor_encoder_cpr_ * frequency_hz_);
     // motor_velocity_filtered = motor_velocity_filter.update(motor_velocity);
