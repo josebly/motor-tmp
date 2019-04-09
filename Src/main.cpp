@@ -165,7 +165,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  system_init();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -263,7 +263,7 @@ int main(void)
 
 
     // drv enable
-  *drv_en_reg = drv_en_pin;
+  *get_pin_config()->drv_en_reg = get_pin_config()->drv_en_pin;
   HAL_Delay(10);
   // drv regs setting
   for (uint8_t i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
@@ -368,7 +368,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLM = get_pin_config()->crystal_frequency_MHz;
   RCC_OscInitStruct.PLL.PLLN = 360;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 2;
@@ -397,7 +397,7 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CLK48;
-  PeriphClkInitStruct.PLLSAI.PLLSAIM = 8;
+  PeriphClkInitStruct.PLLSAI.PLLSAIM = get_pin_config()->crystal_frequency_MHz;
   PeriphClkInitStruct.PLLSAI.PLLSAIN = 192;
   PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
   PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV4;
@@ -414,7 +414,7 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
-static void MX_ADC1_Init(void)
+static void MX_ADC1_Init(void)  // IC, JDR1, and vbus DR
 {
 
   /* USER CODE BEGIN ADC1_Init 0 */
@@ -447,7 +447,7 @@ static void MX_ADC1_Init(void)
   }
   /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
   */
-  sConfig.Channel = ADC_CHANNEL_5;
+  sConfig.Channel = get_pin_config()->adc_vbus_channel;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -456,7 +456,7 @@ static void MX_ADC1_Init(void)
   }
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
   */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_15;
+  sConfigInjected.InjectedChannel = get_pin_config()->adc_ic_channel;
   sConfigInjected.InjectedRank = 1;
   sConfigInjected.InjectedNbrOfConversion = 1;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_3CYCLES;
@@ -480,7 +480,7 @@ static void MX_ADC1_Init(void)
   * @param None
   * @retval None
   */
-static void MX_ADC2_Init(void)
+static void MX_ADC2_Init(void)  // IB
 {
 
   /* USER CODE BEGIN ADC2_Init 0 */
@@ -513,7 +513,7 @@ static void MX_ADC2_Init(void)
   }
   /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
   */
-  sConfig.Channel = ADC_CHANNEL_14;
+  sConfig.Channel = 0;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
@@ -522,7 +522,7 @@ static void MX_ADC2_Init(void)
   }
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
   */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_14;
+  sConfigInjected.InjectedChannel = get_pin_config()->adc_ib_channel;
   sConfigInjected.InjectedRank = 1;
   sConfigInjected.InjectedNbrOfConversion = 1;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_3CYCLES;
@@ -546,7 +546,7 @@ static void MX_ADC2_Init(void)
   * @param None
   * @retval None
   */
-static void MX_ADC3_Init(void)
+static void MX_ADC3_Init(void)  // IA
 {
 
   /* USER CODE BEGIN ADC3_Init 0 */
@@ -579,7 +579,7 @@ static void MX_ADC3_Init(void)
   }
   /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
   */
-  sConfig.Channel = ADC_CHANNEL_13;
+  sConfig.Channel = 0;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
@@ -588,7 +588,7 @@ static void MX_ADC3_Init(void)
   }
   /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
   */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_13;
+  sConfigInjected.InjectedChannel = get_pin_config()->adc_ia_channel;
   sConfigInjected.InjectedRank = 1;
   sConfigInjected.InjectedNbrOfConversion = 1;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_3CYCLES;

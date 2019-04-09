@@ -9,6 +9,10 @@ static FastLoop fast_loop_(pwm_);
 static PIDController controller_;
 static MainLoop main_loop_;
 
+void system_init() {
+    main_loop_.init();
+}
+
 void fast_loop_update() {
     fast_loop_.update();
 }
