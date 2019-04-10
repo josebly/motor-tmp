@@ -202,6 +202,8 @@ int main(void)
   HAL_Delay(100);
   GPIOF->ODR |= GPIO_ODR_OD12;
 
+  DRV_EN_GPIO_INIT
+
     init_param_from_flash();
   fast_loop_set_param(&param()->fast_loop_param);
   TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency;
