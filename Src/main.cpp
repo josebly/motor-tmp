@@ -165,6 +165,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  config_init();
   system_init();
   /* USER CODE END Init */
 

@@ -17,18 +17,28 @@ static PinConfig default_pin_config = {
     .pwm_a_reg = (uint16_t *) &TIM8->CCR3,
     .pwm_b_reg = (uint16_t *) &TIM8->CCR2,
     .pwm_c_reg = (uint16_t *) &TIM8->CCR1,
-    .crystal_frequency_MHz = 8,
+    .crystal_frequency_MHz = 24,
+    .motor_encoder_reg = reinterpret_cast<volatile int32_t *>(&TIM2->CNT),
 };
 
 Config::Config() {
     pin_config_ = &default_pin_config;
-    if (get_board_id()->manufacturer == BoardID::FabulabSL) {
-        pin_config_->crystal_frequency_MHz = 24;
-    }
+    // TODO maybe create objects here
+    // motor_encoder_ = new Encoder(reinterpret_cast<volatile int32_t *>(&TIM5->CNT))
 }
 
 static Config config;
 
 const PinConfig * const get_pin_config() {
     return config.get_pin_config();
+}
+
+void config_init() {
+    config.init();
+}
+
+void Config::init() {
+    if (get_board_id()->manufacturer == BoardID::ST) {
+        pin_config_->crystal_frequency_MHz = 8;
+    }
 }
