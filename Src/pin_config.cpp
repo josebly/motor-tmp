@@ -17,6 +17,7 @@ static PinConfig default_pin_config = {
     .pwm_b_reg = (uint16_t *) &TIM8->CCR2,
     .pwm_c_reg = (uint16_t *) &TIM8->CCR1,
     .crystal_frequency_MHz = 8,
+    .motor_encoder_reg = reinterpret_cast<volatile int32_t *>(&TIM5->CNT),
 };
 
 Config::Config() {
@@ -24,6 +25,8 @@ Config::Config() {
     if (get_board_id()->manufacturer == BoardID::FabulabSL) {
         pin_config_->crystal_frequency_MHz = 24;
     }
+    // TODO maybe create objects here
+    // motor_encoder_ = new Encoder(reinterpret_cast<volatile int32_t *>(&TIM5->CNT))
 }
 
 static Config config;
