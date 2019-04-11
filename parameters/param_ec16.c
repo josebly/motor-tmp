@@ -33,6 +33,6 @@ const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
     .fast_loop_param.vbus_gain = 3.3/4096*(82+4.99)/4.99,
     .fast_loop_param.cogging.table = {
 #include "../cogprocessed.csv"
-    }
-
+    },
+    .name = "J1 ec16"
 };

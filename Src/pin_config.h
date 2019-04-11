@@ -30,6 +30,7 @@ typedef struct {
 } PinConfig;
 
 const PinConfig * const get_pin_config();
+void config_init();
 
 #ifdef __cplusplus
 }
@@ -37,6 +38,7 @@ const PinConfig * const get_pin_config();
 class Config {
  public:
     Config();
+    void init();
     const PinConfig * const get_pin_config() const { return pin_config_; }
  private:
     PinConfig * pin_config_;
