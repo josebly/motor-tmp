@@ -34,4 +34,7 @@ const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
 #include "../cogprocessed.csv"
     },
     .name = "J1 colibri",
+    .startup_param.do_phase_lock = 1,
+    .startup_param.phase_lock_current = 2,
+    .startup_param.phase_lock_duration = 2,
 };

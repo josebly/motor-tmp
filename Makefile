@@ -235,3 +235,7 @@ clean:
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
 
+PARAM_GEN_SRCS = Src/param.c parameters/param_ec16.c Src/param_gen.cpp
+param_gen: 
+	gcc $(PARAM_GEN_SRCS) -lstdc++ -o $(BUILD_DIR)/param_gen
+

@@ -287,8 +287,10 @@ int main(void)
     HAL_Delay(3);
     fast_loop_zero_current_sensors();
   }
-  fast_loop_phase_lock_mode(2);
-  HAL_Delay(6000);
+  if (param()->startup_param.do_phase_lock) {
+    fast_loop_phase_lock_mode(param()->startup_param.phase_lock_current);
+    HAL_Delay(1000*param()->startup_param.phase_lock_duration);
+  }
   fast_loop_maintenance();  // TODO better way than calling this to update zero pos
   fast_loop_current_mode();
   fast_loop_set_iq_des(1);

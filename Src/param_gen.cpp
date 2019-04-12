@@ -46,6 +46,11 @@ int main(int argc, char** argv) {
     main_loop_param->add_option("--gear_ratio", p.main_loop_param.gear_ratio, "Gear ratio", true);
     main_loop_param->add_option("--kt", p.main_loop_param.kt, "Motor kt", true);
 
+    CLI::App *startup_param = app.add_subcommand("startup_param");
+    startup_param->add_option("--do_phase_lock", p.startup_param.do_phase_lock = 1, "Do phase lock at startup", true);
+    startup_param->add_option("--phase_lock_duration",p.startup_param.phase_lock_duration, "phase lock duration seconds", true);
+    startup_param->add_option("--phase_lock_current",p.startup_param.phase_lock_current, "phase lock current A", true);
+
     CLI11_PARSE(app, argc, argv);
 
     // TODO maybe option for pi_d
@@ -73,7 +78,10 @@ void print_param(Param *p) {
     std::cout << "Name: " << p->name << std::endl;
     std::cout << "Number of pole pairs: " << p->fast_loop_param.foc_param.num_poles << std::endl;
     std::cout << "Encoder direction: " << p->fast_loop_param.motor_encoder.dir << std::endl;
-    std::cout << "Phase order: " << p->fast_loop_param.phase_mode << std::endl;
+    std::cout << "Phase order: " << (p->fast_loop_param.phase_mode ? "switched" : "standard") << std::endl;
     std::cout << "Encoder cpr: " << p->fast_loop_param.motor_encoder.cpr << std::endl;
     std::cout << "Current sensor 1 V/A: " << 3.3/4096/p->fast_loop_param.adc1_gain << std::endl;
+    std::cout << "Do phase lock: " << (p->startup_param.do_phase_lock ? "yes" : "no") << std::endl;
+    std::cout << "Phase lock_duration: " << p->startup_param.phase_lock_duration << "s" << std::endl;
+    std::cout << "Phase lock_current: " << p->startup_param.phase_lock_current << "A" << std::endl;
 }
