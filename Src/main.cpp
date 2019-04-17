@@ -329,7 +329,7 @@ extern uint32_t data2[16];
     usb_count = *(int32_t *) &data2[0];
 
     data.count_received = usb_count;
-    usb.send_data(2, (uint8_t*) &data, sizeof(data));
+ //   usb.send_data(2, (uint8_t*) &data, sizeof(data));
 
     if (USBx_OUTEP(3)->DOEPTSIZ) {
       asm("DBG #10");

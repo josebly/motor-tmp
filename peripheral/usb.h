@@ -2,13 +2,14 @@
 #define USB_H
 
 #include <cstdint>
+#include "stm32f4xx_hal.h"
 #include "stm32f4xx_ll_usb.h"
 
 #define USBx USB_OTG_FS
 class USB {
  public:
     // limited to 64 bytes right now
-    void send_data32(uint8_t endpoint, uint32_t *data, uint8_t length32) 
+    void send_data32(uint8_t endpoint, const uint32_t *data, uint8_t length32) 
     {
         GPIOC->ODR |= GPIO_ODR_OD13;
         //USBx_DEVICE->DIEPMSK &= ~USB_OTG_DIEPMSK_INEPNEM;
@@ -45,7 +46,7 @@ class USB {
 
     }
 
-    void send_data(uint8_t endpoint, uint8_t *data, uint8_t length) {
+    void send_data(uint8_t endpoint, const uint8_t *data, uint8_t length) {
         send_data32(endpoint, (uint32_t *) data, (length+3)/4);
     }
 

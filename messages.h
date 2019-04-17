@@ -167,4 +167,12 @@ typedef struct {
     MotorStatus motor_status;
 } SimulatorStatus;
 
+typedef struct {
+
+} SendData;
+
+typedef struct {
+
+} ReceiveData;
+
 #endif

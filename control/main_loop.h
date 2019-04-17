@@ -5,6 +5,7 @@
 #include "../messages.h"
 class LED;
 class PIDController;
+class Communication;
 #include <cmath>
 
 class MainLoop {
@@ -17,6 +18,7 @@ class MainLoop {
     MainLoopParam param_;
     LED *led_;
     PIDController *controller_;
+    Communication *communication_;
 
     uint32_t c1, c2;
 

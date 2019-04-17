@@ -6,19 +6,23 @@
 #include "../Src/pin_config.h"
 #include <cmath>
 #include "stm32f4xx_hal.h"
-
+#include "../communication/usb_communication.h"
 #include "foc_i.h"
 
 void MainLoop::init() {
     const PinConfig * const p = get_pin_config();
     led_ = new LED(p->red_reg, p->green_reg, p->blue_reg);
     controller_ = new PIDController;
+    communication_ = new USBCommunication;
+    communication_->init();
 }
 
 extern SPI_HandleTypeDef hspi2;
 void MainLoop::update() {
     	static uint64_t count = 0;
   count++;
+  ReceiveData receive_data;
+  int count_received = communication_->receive_data(&receive_data);
   float dt = 0.0001;
   p_dot = -w*w*q;
   p += p_dot*dt;
@@ -83,6 +87,8 @@ void MainLoop::update() {
  // float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
   
   fast_loop_set_iq_des(iq_des);
+  SendData send_data;
+  communication_->send_data(send_data);
     led_->update();
 }
 
