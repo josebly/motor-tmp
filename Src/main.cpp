@@ -313,35 +313,10 @@ extern uint32_t data2[16];
 //    usb.send_data(1, (uint8_t*) s, strlen(s));
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
-    struct Data {
-      int32_t count;
-      int32_t count_received;
-      float motor_position;
-      float iq;
-      float motor_mechanical_position;
-      float iabc[3];
-    };
 
-    Data data = {};
-    data.count = i;
-    
-    data.motor_mechanical_position = fast_loop_status.motor_mechanical_position;
-    data.iq = fast_loop_status.foc_status.measured.i_q;
-     // sprintf(s, "%03ld\n", i%1000);
-    data.iabc[0] = fast_loop_status.foc_command.measured.i_a;
-    data.iabc[1] = fast_loop_status.foc_command.measured.i_b;
-    data.iabc[2] = fast_loop_status.foc_command.measured.i_c;
-    
     int32_t usb_count;
   //  int num_received = usb.receive_data(2, (uint8_t*) &usb_count, sizeof(usb_count));
     usb_count = *(int32_t *) &data2[0];
-
-    data.count_received = usb_count;
-    usb.send_data(2, (uint8_t*) &data, sizeof(data));
-
-    if (USBx_OUTEP(3)->DOEPTSIZ) {
-      asm("DBG #10");
-    }
 
 
     i_a_filtered = (1-alpha)*i_a_filtered + alpha*fast_loop_status.foc_command.measured.i_a;

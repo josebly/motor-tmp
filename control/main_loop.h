@@ -5,6 +5,7 @@
 #include "../messages.h"
 class LED;
 class PIDController;
+class Communication;
 #include <cmath>
 
 class MainLoop {
@@ -17,37 +18,11 @@ class MainLoop {
     MainLoopParam param_;
     LED *led_;
     PIDController *controller_;
-
-    uint32_t c1, c2;
-
-float torque;
-float torque_desired = 0;
-
-float w = 2*M_PI*.01;
-float p_dot = 0;
-float q = 1;
-float p = 0;
-float q_dot = 0;
-float a = 100*M_PI;
-
-float kwall = 0;
-float wall_position = 0;
-float wall_max_torque = .3;
-
-float iq_bias = 2;
-float iq_amp = 0;
-float iq_des = 0;
-int32_t i_period = 1000;
-MainLoopParam::MainControlMode mode_;
-
-FastLoopStatus fast_loop_status;
-
-
-uint8_t jl_torque_tx[9] = {0x40};
-uint8_t jl_torque_rx[9] = {0};
-
-
-float pos_desired = 0;
+    Communication *communication_;
+    ReceiveData receive_data_ = {};
+    uint64_t count_ = 0;
+    FastLoopStatus fast_loop_status_ = {};
+    MainControlMode mode_ = OPEN;
 
 
 inline uint16_t minu16(uint16_t a, uint16_t b) {

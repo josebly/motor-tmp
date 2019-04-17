@@ -3,6 +3,7 @@
 #include "foc.h"
 #include <cmath>
 #include "pwm.h"
+#include "../Src/util.h"
 #include "encoder.h"
 
 FastLoop::FastLoop(PWM &pwm, Encoder &encoder) : pwm_(pwm), encoder_(encoder) {
@@ -15,6 +16,7 @@ FastLoop::~FastLoop() {
 
 // called at fixed frequency in an interrupt
 void FastLoop::update() {
+    timestamp_ = get_clock();
     // get ADC
     // get encoder
     adc1 = ADC3->JDR1;
@@ -121,4 +123,5 @@ void FastLoop::get_status(FastLoopStatus *fast_loop_status) {
     fast_loop_status->motor_position.position = motor_position_;
     fast_loop_status->motor_position.velocity = motor_velocity_filtered;
     fast_loop_status->motor_position.raw = motor_enc;
+    fast_loop_status->timestamp = timestamp_;
 }
