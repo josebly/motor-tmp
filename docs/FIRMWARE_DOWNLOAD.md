@@ -1,6 +1,6 @@
 If this is the first programming of the device ever, set bootloader mode by setting jumpers and power cycling. If not the first programming just continue with device plugged in.
 
-For the first programming start by loading the one time programmable memory as described in [OTP.md].
+For the first programming start by loading the one time programmable memory as described in [otp](OTP.md).
 
 Next load the code by running `./load_program.sh` from its directory
 
