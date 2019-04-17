@@ -8,6 +8,10 @@
 extern "C" {
 #endif
 
+#define DRV_EN_GPIO_INIT     GPIOA->MODER |= GPIO_MODER_MODE9_0; \
+                             GPIOA->MODER &= ~GPIO_MODER_MODE9_1; \
+                             GPIOA->BSRR |= GPIO_BSRR_BS9;
+
 typedef struct {
     uint16_t *const red_reg;
     uint16_t *const green_reg;
@@ -22,6 +26,7 @@ typedef struct {
     uint16_t *const pwm_b_reg;
     uint16_t *const pwm_c_reg;
     uint8_t crystal_frequency_MHz;
+    volatile int32_t *const motor_encoder_reg;
 } PinConfig;
 
 const PinConfig * const get_pin_config();

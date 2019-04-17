@@ -65,7 +65,6 @@ void MainLoop::update() {
 
   switch (mode_) {
     case MainLoopParam::CURRENT:
-      iq_des = torque_desired;
       break;
     case MainLoopParam::MOTOR_TORQUE:
       iq_des = torque_desired/(param_.gear_ratio*param_.kt);
@@ -82,7 +81,9 @@ void MainLoop::update() {
   }
  // float torque_des = controller_->step(pos_desired, fast_loop_status.motor_position.position);
   
-  fast_loop_set_iq_des(iq_des);
+  if (mode_ != MainLoopParam::CURRENT) {
+    fast_loop_set_iq_des(iq_des);
+  }
     led_->update();
 }
 

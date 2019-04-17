@@ -58,8 +58,15 @@ typedef struct {
 } MainLoopParam;
 
 typedef struct {
+    uint8_t do_phase_lock;          // 1: yes, 0: no
+    float phase_lock_current;       // current in A
+    float phase_lock_duration;      // duration in seconds
+} StartupParam;
+
+typedef struct {
     FastLoopParam fast_loop_param;
     MainLoopParam main_loop_param;
+    StartupParam startup_param;
     char name[64];
 } Param;
 

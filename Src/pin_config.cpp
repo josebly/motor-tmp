@@ -2,8 +2,7 @@
 #include "pin_config.h"
 #include "../parameters/otp.h"
 #include "stm32f446xx.h"
-
-
+                            
 static PinConfig default_pin_config = {
     .red_reg = (uint16_t *) &TIM3->CCR1,
     .green_reg = (uint16_t *) &TIM3->CCR2,

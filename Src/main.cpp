@@ -203,6 +203,8 @@ int main(void)
   HAL_Delay(100);
   GPIOF->ODR |= GPIO_ODR_OD12;
 
+  DRV_EN_GPIO_INIT
+
     init_param_from_flash();
   fast_loop_set_param(&param()->fast_loop_param);
   TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency;
@@ -282,14 +284,16 @@ int main(void)
   // startup
   fast_loop_voltage_mode();
   for (int i=0; i<1000; i++) {
-    HAL_Delay(1);
+    HAL_Delay(3);
     fast_loop_zero_current_sensors();
   }
-  fast_loop_phase_lock_mode(1);
-  HAL_Delay(2000);
+  if (param()->startup_param.do_phase_lock) {
+    fast_loop_phase_lock_mode(param()->startup_param.phase_lock_current);
+    HAL_Delay(1000*param()->startup_param.phase_lock_duration);
+  }
   fast_loop_maintenance();  // TODO better way than calling this to update zero pos
   fast_loop_current_mode();
-  fast_loop_set_iq_des(0);
+  fast_loop_set_iq_des(1);
 
 extern uint32_t data2[16];
   int32_t i  = 0;
@@ -315,6 +319,7 @@ extern uint32_t data2[16];
       float motor_position;
       float iq;
       float motor_mechanical_position;
+      float iabc[3];
     };
 
     Data data = {};
@@ -323,6 +328,9 @@ extern uint32_t data2[16];
     data.motor_mechanical_position = fast_loop_status.motor_mechanical_position;
     data.iq = fast_loop_status.foc_status.measured.i_q;
      // sprintf(s, "%03ld\n", i%1000);
+    data.iabc[0] = fast_loop_status.foc_command.measured.i_a;
+    data.iabc[1] = fast_loop_status.foc_command.measured.i_b;
+    data.iabc[2] = fast_loop_status.foc_command.measured.i_c;
     
     int32_t usb_count;
   //  int num_received = usb.receive_data(2, (uint8_t*) &usb_count, sizeof(usb_count));
@@ -828,7 +836,7 @@ static void MX_TIM2_Init(void)
   sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
   sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
   sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC2Filter = 4;
+  sConfig.IC2Filter = 2;
   if (HAL_TIM_Encoder_Init(&htim2, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -842,7 +850,7 @@ static void MX_TIM2_Init(void)
   sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
   sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 2;
+  sConfigIC.ICFilter = 4;
   if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
@@ -931,8 +939,9 @@ static void MX_TIM5_Init(void)
 
   /* USER CODE END TIM5_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_Encoder_InitTypeDef sConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_IC_InitTypeDef sConfigIC = {0};
 
   /* USER CODE BEGIN TIM5_Init 1 */
 
@@ -942,18 +951,34 @@ static void MX_TIM5_Init(void)
   htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim5.Init.Period = 0xFFFFFFFF;
   htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+  if (HAL_TIM_IC_Init(&htim5) != HAL_OK)
   {
     Error_Handler();
   }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
+  sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
+  sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
+  sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
+  sConfig.IC1Filter = 2;
+  sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
+  sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
+  sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
+  sConfig.IC2Filter = 2;
+  if (HAL_TIM_Encoder_Init(&htim5, &sConfig) != HAL_OK)
   {
     Error_Handler();
   }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+  sConfigIC.ICFilter = 4;
+  if (HAL_TIM_IC_ConfigChannel(&htim5, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
