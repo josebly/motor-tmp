@@ -29,6 +29,7 @@
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
 
+extern uint8_t usb_connected;
 
 /** @addtogroup STM32_USBD_STATE_DEVICE_LIBRARY
   * @{
@@ -509,6 +510,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev ,
       {                                			   							   							   				
         pdev->dev_config = cfgidx;
         pdev->dev_state = USBD_STATE_CONFIGURED;
+        usb_connected = 1;
         if(USBD_SetClassConfig(pdev , cfgidx) == USBD_FAIL)
         {
           USBD_CtlError(pdev , req);  

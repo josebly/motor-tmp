@@ -289,6 +289,7 @@ __weak void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
   
 uint32_t data2[16];
 uint8_t data2_count = 0;
+uint8_t usb_connected = 0;
 /**
   * @brief  Start The USB OTG Device.
   * @param  hpcd PCD handle
@@ -719,6 +720,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
         HAL_PCD_DisconnectCallback(hpcd);
       }
       hpcd->Instance->GOTGINT |= temp;
+      usb_connected = 0;
     }
   }
 }
