@@ -12,7 +12,7 @@ class FastLoop {
     void update();
     void maintenance();
     void set_id_des(float id) { id_des = id; }
-    void set_iq_des(float iq) { iq_des = iq; }
+    void set_iq_des(float iq) { if (mode_ == CURRENT_MODE) iq_des = iq; }
     void phase_lock_mode(float id);
     void current_mode();
     void voltage_mode();
@@ -49,4 +49,5 @@ class FastLoop {
     float ic_bias_ = 0;
     float alpha_zero_ = 0.001;
     float v_bus_ = 12;
+    mcu_time timestamp_;
 };

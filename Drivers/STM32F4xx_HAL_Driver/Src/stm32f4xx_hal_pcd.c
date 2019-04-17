@@ -288,6 +288,7 @@ __weak void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
   */
   
 uint32_t data2[16];
+uint8_t data2_count = 0;
 /**
   * @brief  Start The USB OTG Device.
   * @param  hpcd PCD handle
@@ -652,6 +653,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
                 for(int i=0; i<((count+3)/4); i++) {
                   data2[i] = USBx_DFIFO(0);
                 }
+                data2_count = count;
                 USBx_OUTEP(2)->DOEPTSIZ = 0x80040; 
                 USBx_OUTEP(2)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
 
