@@ -4,3 +4,4 @@ build/
 /data/
 .vscode/*.state.json
 .vscode/ipch/
+release_*
