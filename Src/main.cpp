@@ -214,6 +214,7 @@ int main(void)
   main_loop_set_param(&param()->main_loop_param);
   TIM1->ARR = 180e6/param()->main_loop_param.update_frequency - 1;
 
+  SPI3->CR1 |= SPI_CR1_SPE;   // enable spi
 	HAL_TIM_Base_Start(&htim8);
 	HAL_TIM_Base_Start(&htim1);
 	HAL_TIM_Base_Start(&htim2);
