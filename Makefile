@@ -92,7 +92,8 @@ main_loop.cpp \
 Src/pin_config.cpp \
 Src/main.cpp \
 parameters/otp.cpp \
-communication/usb_communication.cpp 
+communication/usb_communication.cpp \
+control/spi_encoder.cpp
 
 # ASM sources
 ASM_SOURCES =  \
