@@ -82,7 +82,8 @@ Src/param.c \
 Src/util.c \
 parameters/param_ec16.c
 
-CPP_SOURCES = Src/config.cpp \		# config must be initialized before others
+# config must be initialized before others
+CPP_SOURCES = Src/config.cpp \
 control/control_fun.cpp \
 foc.cpp \
 foc_i.cpp \
