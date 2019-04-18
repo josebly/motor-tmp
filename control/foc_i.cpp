@@ -7,8 +7,7 @@
 #include "../Src/pin_config.h"
 #include "../Src/config.h"
 
-static PWM pwm_ = {*TIM8};
-static FastLoop fast_loop_(pwm_, config.motor_encoder);
+static FastLoop fast_loop_(config.motor_pwm, config.motor_encoder);
 static PIDController controller_;
 static MainLoop main_loop_;
 

@@ -3,4 +3,5 @@
 
 static struct {
     SPIEncoder motor_encoder = {*SPI3};
+    PWM motor_pwm = {*TIM8};
 } config_items;

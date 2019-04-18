@@ -5,5 +5,6 @@
 const Config config;
 
 Config::Config() :
-    motor_encoder(config_items.motor_encoder)
+    motor_encoder(config_items.motor_encoder),
+    motor_pwm(motor_pwm)
     {}
