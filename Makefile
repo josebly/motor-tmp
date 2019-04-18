@@ -82,7 +82,8 @@ Src/param.c \
 Src/util.c \
 parameters/param_ec16.c
 
-CPP_SOURCES = control/control_fun.cpp \
+CPP_SOURCES = Src/config.cpp \		# config must be initialized before others
+control/control_fun.cpp \
 foc.cpp \
 foc_i.cpp \
 sincos.cpp \
@@ -93,7 +94,8 @@ Src/pin_config.cpp \
 Src/main.cpp \
 parameters/otp.cpp \
 communication/usb_communication.cpp \
-control/spi_encoder.cpp
+control/spi_encoder.cpp \
+
 
 # ASM sources
 ASM_SOURCES =  \
@@ -196,13 +198,14 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET
 # build the application
 #######################################
 # list of objects
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
+OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:.cpp=.o)))
+vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:.cpp=.o)))
-vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
+
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@

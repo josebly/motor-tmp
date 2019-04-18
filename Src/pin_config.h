@@ -35,9 +35,9 @@ void config_init();
 #ifdef __cplusplus
 }
 
-class Config {
+class CConfig {
  public:
-    Config();
+    CConfig();
     void init();
     const PinConfig * const get_pin_config() const { return pin_config_; }
  private:

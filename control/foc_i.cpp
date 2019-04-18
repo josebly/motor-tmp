@@ -3,20 +3,18 @@
 #include "foc_i.h"
 #include "pwm.h"
 #include "main_loop.h"
-#include "encoder.h"
-#include "spi_encoder.h"
 #include "../Src/param.h"
 #include "../Src/pin_config.h"
+#include "../Src/config.h"
 
 static PWM pwm_ = {*TIM8};
-static SPIEncoder motor_encoder_;
-static FastLoop fast_loop_(pwm_, motor_encoder_);
+static FastLoop fast_loop_(pwm_, config.motor_encoder);
 static PIDController controller_;
 static MainLoop main_loop_;
 
 void system_init() {
     main_loop_.init();
-    motor_encoder_.init(get_pin_config()->motor_encoder_reg);
+   // motor_encoder_.init(get_pin_config()->motor_encoder_reg);
 }
 
 void fast_loop_update() {

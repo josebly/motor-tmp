@@ -20,13 +20,13 @@ static PinConfig default_pin_config = {
     .motor_encoder_reg = reinterpret_cast<volatile int32_t *>(&TIM2->CNT),
 };
 
-Config::Config() {
+CConfig::CConfig() {
     pin_config_ = &default_pin_config;
     // TODO maybe create objects here
     // motor_encoder_ = new Encoder(reinterpret_cast<volatile int32_t *>(&TIM5->CNT))
 }
 
-static Config config;
+static CConfig config;
 
 const PinConfig * const get_pin_config() {
     return config.get_pin_config();
@@ -36,7 +36,7 @@ void config_init() {
     config.init();
 }
 
-void Config::init() {
+void CConfig::init() {
     if (get_board_id()->manufacturer == BoardID::ST) {
         pin_config_->crystal_frequency_MHz = 8;
     }
