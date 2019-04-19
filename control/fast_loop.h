@@ -1,3 +1,5 @@
+#ifndef FAST_LOOP_H
+#define FAST_LOOP_H
 
 #include <cstdint>
 #include "../messages.h"
@@ -53,3 +55,5 @@ class FastLoop {
     mcu_time timestamp_;
    Encoder &encoder_;
 };
+
+#endif

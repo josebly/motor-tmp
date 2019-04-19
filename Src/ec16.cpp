@@ -1,8 +1,7 @@
-#include "../control/spi_encoder.h"
 #include "stm32f446xx.h"
 
 static struct {
-    SPIEncoder motor_encoder = {*SPI3};
+    Encoder motor_encoder = {reinterpret_cast<volatile int32_t *>(&TIM2->CNT)};
     PWM motor_pwm = {*TIM8};
     FastLoop fast_loop = {motor_pwm, motor_encoder};
     MainLoop main_loop;
