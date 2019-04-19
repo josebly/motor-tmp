@@ -10,7 +10,7 @@ class Encoder;
 
 class FastLoop {
  public:
-    FastLoop(PWM &pwm, Encoder &encoder);
+    FastLoop(PWM &pwm, Encoder &encoder); // TODO consider changing encoder to template
     ~FastLoop();
     void update();
     void maintenance();

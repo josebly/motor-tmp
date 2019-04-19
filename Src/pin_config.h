@@ -20,7 +20,6 @@ typedef struct {
     uint8_t const adc_ic_channel;
     uint8_t const adc_vbus_channel;
     uint8_t crystal_frequency_MHz;
-    volatile int32_t *const motor_encoder_reg;
 } PinConfig;
 
 const PinConfig * const get_pin_config();
