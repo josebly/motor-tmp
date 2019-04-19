@@ -1,4 +1,5 @@
 #include "../control/spi_encoder.h"
+#include "../communication/usb_communication.h"
 #include "stm32f446xx.h"
 
 static struct {
@@ -11,5 +12,6 @@ static struct {
                const_cast<uint16_t*>(reinterpret_cast<volatile uint16_t *>(&TIM3->CCR2)),
                const_cast<uint16_t*>(reinterpret_cast<volatile uint16_t *>(&TIM3->CCR4))};
     PIDController controller;
-    MainLoop main_loop = {controller, led};
+    USBCommunication communication;
+    MainLoop main_loop = {controller, communication, led};
 } config_items;

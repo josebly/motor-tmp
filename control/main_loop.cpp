@@ -10,14 +10,13 @@
 #include "foc_i.h"
 
 void MainLoop::init() {
-    communication_ = new USBCommunication;
-    communication_->init();
+    communication_.init();
 }
 
 extern SPI_HandleTypeDef hspi2;
 void MainLoop::update() {
   count_++;
-  int count_received = communication_->receive_data(&receive_data_);
+  int count_received = communication_.receive_data(&receive_data_);
   if (count_received) {
     if (mode_ != static_cast<MainControlMode>(receive_data_.mode_desired)) {
       //stuff
@@ -36,7 +35,7 @@ void MainLoop::update() {
   send_data.timestamp = fast_loop_status_.timestamp;
   send_data.motor_mechanical_position = fast_loop_status_.motor_mechanical_position;
   send_data.motor_position = fast_loop_status_.motor_position.position;
-  communication_->send_data(send_data);
+  communication_.send_data(send_data);
   led_.update();
 }
 
