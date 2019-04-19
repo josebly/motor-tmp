@@ -24,9 +24,6 @@ void main_loop_update();
 void main_loop_set_param(MainLoopParam * const main_loop_param);
 void main_loop_get_status(MainLoopStatus * const main_loop_status);
 
-void controller_set_param(PIDParam *pid_param);
-float controller_step(float desired, float measured);
-
 #ifdef __cplusplus
 }
 #endif
