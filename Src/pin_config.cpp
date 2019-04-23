@@ -30,7 +30,7 @@ void config_init() {
 }
 
 void CConfig::init() {
-    if (get_board_id()->manufacturer == BoardID::ST) {
+    if (get_board_id()->manufacturer != BoardID::FabulabSL) {
         pin_config_->crystal_frequency_MHz = 8;
     }
 }
