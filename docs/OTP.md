@@ -8,8 +8,14 @@ memory, which will prevent that block of OTP from being overwritten.
 
 The otp_gen program provides some help with the -h option. A typical usage of otp_gen 
 for an ST Nucleo board is:
-> otp_gen -s 101
+```shell
+$ otp_gen -s 101
+```
 For a Fabulab board:
-> otp_gen -s 101 -m 2 -b 1 -p dev_00
+```shell
+$ otp_gen -s 101 -m 2 -b 1 -p dev_00
+```
 Then load:
-> ./load_otp.sh
+```shell
+$ ./load_otp.sh
+```

@@ -247,6 +247,26 @@ clean:
 -include $(wildcard $(BUILD_DIR)/*.d)
 
 PARAM_GEN_SRCS = Src/param.c parameters/${DEFAULT_PARAM_C} Src/param_gen.cpp
-param_gen: 
+param_gen: $(PARAM_GEN_SRCS) | $(BUILD_DIR)
 	gcc $(PARAM_GEN_SRCS) -lstdc++ -o $(BUILD_DIR)/param_gen
+
+OTP_GEN_SRCS = parameters/otp_gen.cpp parameters/otp.cpp
+otp_gen: $(BUILD_DIR)
+	g++ $(OTP_GEN_SRCS) -o $(BUILD_DIR)/otp_gen
+
+FOLDER = release_$(shell git describe --tags)
+package: all param_gen otp_gen
+	mkdir -p $(FOLDER)
+	cp $(BUILD_DIR)/param_gen $(FOLDER)
+	cp Src/load_param.sh $(FOLDER)
+	cp load_program.sh $(FOLDER)
+	cp $(BUILD_DIR)/$(TARGET).bin $(FOLDER)
+	cp $(BUILD_DIR)/$(TARGET)_param.bin $(FOLDER)
+	cp $(BUILD_DIR)/otp_gen $(FOLDER)
+	cp parameters/load_otp.sh $(FOLDER)
+	cp parameters/dev_00.ini $(FOLDER)
+	cp 99-st.rules $(FOLDER)
+	cp LICENSE $(FOLDER)
+	cp -r docs/ $(FOLDER)
+	tar czf $(FOLDER).tgz $(FOLDER)/
 
