@@ -29,8 +29,12 @@ void config_init() {
     config.init();
 }
 
+// Used for HAL 
+uint32_t HSE_VALUE = 24000000U;
+
 void CConfig::init() {
     if (get_board_id()->manufacturer != BoardID::FabulabSL) {
         pin_config_->crystal_frequency_MHz = 8;
+        HSE_VALUE = 8000000;
     }
 }
