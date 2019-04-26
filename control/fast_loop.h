@@ -19,6 +19,8 @@ class FastLoop {
     void phase_lock_mode(float id);
     void current_mode();
     void voltage_mode();
+    void brake_mode();
+    void open_mode();
     void set_param(const FastLoopParam &fast_loop_param); 
     void get_status(FastLoopStatus *fast_loop_status);
     void zero_current_sensors();
@@ -26,7 +28,7 @@ class FastLoop {
     FastLoopParam param_;
     FOC *foc_;
     PWM &pwm_;
-    enum {CURRENT_MODE, PHASE_LOCK_MODE, VOLTAGE_MODE} mode_ = CURRENT_MODE;
+    enum {OPEN_MODE, BRAKE_MODE, CURRENT_MODE, PHASE_LOCK_MODE, VOLTAGE_MODE} mode_ = CURRENT_MODE;
 
     int32_t motor_enc;
     int32_t last_motor_enc=0;
