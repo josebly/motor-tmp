@@ -26,6 +26,7 @@ DEBUG = 1
 LTO=0
 ifeq ($(LTO), 1)
 LTOI = -flto
+$(info "Building with lto!!!!")
 else
 LTOI = 
 endif
@@ -33,6 +34,7 @@ endif
 # optimization
 OPT = -Og -O3
 
+DEFAULT_PARAM_C = param_dev_00_robo.c
 
 #######################################
 # paths
@@ -80,7 +82,7 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac_ex.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
 Src/param.c \
 Src/util.c \
-parameters/param_ec16.c
+parameters/${DEFAULT_PARAM_C}
 
 # config must be initialized before others
 CPP_SOURCES = Src/config.cpp \
@@ -244,7 +246,7 @@ clean:
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
 
-PARAM_GEN_SRCS = Src/param.c parameters/param_ec16.c Src/param_gen.cpp
+PARAM_GEN_SRCS = Src/param.c parameters/${DEFAULT_PARAM_C} Src/param_gen.cpp
 param_gen: 
 	gcc $(PARAM_GEN_SRCS) -lstdc++ -o $(BUILD_DIR)/param_gen
 
