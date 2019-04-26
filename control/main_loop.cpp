@@ -54,7 +54,6 @@ void MainLoop::update() {
 void MainLoop::set_param(MainLoopParam &param) {
     controller_.set_param(param.controller_param);
     param_ = param;
-//    mode_ = param.mode;
 }
 
 void MainLoop::get_status(MainLoopStatus * const main_loop_status) const {

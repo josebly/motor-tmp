@@ -288,7 +288,7 @@ int main(void)
   // startup
   fast_loop_voltage_mode();
   for (int i=0; i<1000; i++) {
-    HAL_Delay(2);
+    HAL_Delay(1);
     fast_loop_zero_current_sensors();
   }
   if (param()->startup_param.do_phase_lock) {
@@ -296,7 +296,18 @@ int main(void)
     HAL_Delay(1000*param()->startup_param.phase_lock_duration);
   }
   fast_loop_maintenance();  // TODO better way than calling this to update zero pos
-  fast_loop_current_mode();
+  switch (param()->startup_param.startup_mode) {
+    default:
+    case OPEN:
+      fast_loop_open_mode();
+      break;
+    case BRAKE:
+      fast_loop_brake_mode();
+      break;
+    case NORMAL_CONTROL:
+      fast_loop_current_mode();
+      break;
+  }
   fast_loop_set_iq_des(0);
 
 extern uint32_t data2[16];
