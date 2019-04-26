@@ -1,3 +1,5 @@
+#ifndef FAST_LOOP_H
+#define FAST_LOOP_H
 
 #include <cstdint>
 #include "../messages.h"
@@ -8,7 +10,7 @@ class Encoder;
 
 class FastLoop {
  public:
-    FastLoop(PWM &pwm, Encoder &encoder);
+    FastLoop(PWM &pwm, Encoder &encoder); // TODO consider changing encoder to template
     ~FastLoop();
     void update();
     void maintenance();
@@ -53,3 +55,5 @@ class FastLoop {
     mcu_time timestamp_;
    Encoder &encoder_;
 };
+
+#endif

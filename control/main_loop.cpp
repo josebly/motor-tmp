@@ -1,6 +1,6 @@
 
 #include "main_loop.h"
-#include "../peripheral/led.h"
+#include "../communication/led.h"
 #include "control_fun.h"
 
 #include "../Src/pin_config.h"
@@ -10,17 +10,13 @@
 #include "foc_i.h"
 
 void MainLoop::init() {
-    const PinConfig * const p = get_pin_config();
-    led_ = new LED(p->red_reg, p->green_reg, p->blue_reg);
-    controller_ = new PIDController;
-    communication_ = new USBCommunication;
-    communication_->init();
+    communication_.init();
 }
 
 extern SPI_HandleTypeDef hspi2;
 void MainLoop::update() {
   count_++;
-  int count_received = communication_->receive_data(&receive_data_);
+  int count_received = communication_.receive_data(&receive_data_);
   if (count_received) {
     if (mode_ != static_cast<MainControlMode>(receive_data_.mode_desired)) {
       //stuff
@@ -29,7 +25,7 @@ void MainLoop::update() {
   
   fast_loop_get_status(&fast_loop_status_);
 
-  float iq_des = controller_->step(receive_data_.position_desired, fast_loop_status_.motor_position.position) + \
+  float iq_des = controller_.step(receive_data_.position_desired, fast_loop_status_.motor_position.position) + \
               receive_data_.current_desired;
 
   fast_loop_set_iq_des(iq_des);
@@ -39,12 +35,12 @@ void MainLoop::update() {
   send_data.timestamp = fast_loop_status_.timestamp;
   send_data.motor_mechanical_position = fast_loop_status_.motor_mechanical_position;
   send_data.motor_position = fast_loop_status_.motor_position.position;
-  communication_->send_data(send_data);
-  led_->update();
+  communication_.send_data(send_data);
+  led_.update();
 }
 
 void MainLoop::set_param(MainLoopParam &param) {
-    controller_->set_param(param.controller_param);
+    controller_.set_param(param.controller_param);
     param_ = param;
     mode_ = param.mode;
 }

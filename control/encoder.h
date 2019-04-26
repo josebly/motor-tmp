@@ -6,8 +6,9 @@
 
 class Encoder {
  public:
-    void init(volatile int32_t *counter_reg) { counter_reg_ = counter_reg; }
-    int32_t get_value() const { return *counter_reg_; }
+    Encoder(volatile int32_t *counter_reg) { counter_reg_ = counter_reg; }
+    virtual int32_t get_value() { return *counter_reg_; }
+    virtual void trigger() {}
  private:
     volatile int32_t *counter_reg_;
 };
