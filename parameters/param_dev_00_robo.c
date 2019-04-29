@@ -12,7 +12,7 @@ const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
     .fast_loop_param.foc_param.pi_q.ki=.1,
     .fast_loop_param.foc_param.pi_q.ki_limit=2.5,
     .fast_loop_param.foc_param.pi_q.command_max=3,
-    .fast_loop_param.foc_param.num_poles = 7,
+    .fast_loop_param.foc_param.num_poles = 1,
     .main_loop_param.gear_ratio = 50,
     .main_loop_param.kt = .012*sqrt(.5),
     .startup_param.startup_mode = NORMAL_CONTROL,
@@ -37,5 +37,5 @@ const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
     .startup_param.do_phase_lock = 1,
     .startup_param.phase_lock_current = 2,
     .startup_param.phase_lock_duration = 2,
-    .name = "J1",
+    .name = "J6",
 };
