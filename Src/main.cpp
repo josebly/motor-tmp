@@ -211,8 +211,7 @@ int main(void)
 
     init_param_from_flash();
   fast_loop_set_param(&param()->fast_loop_param);
-  TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency;
-  
+  TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency ;
   main_loop_set_param(&param()->main_loop_param);
   TIM1->ARR = 180e6/param()->main_loop_param.update_frequency - 1;
 
