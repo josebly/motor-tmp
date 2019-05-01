@@ -183,6 +183,7 @@ typedef struct {
     float motor_position;
     float iq;
     float motor_mechanical_position;
+    float ia, ib, ic;
 } SendData;
 
 typedef struct {

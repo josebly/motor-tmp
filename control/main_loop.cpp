@@ -47,6 +47,9 @@ void MainLoop::update() {
   send_data.timestamp = fast_loop_status_.timestamp;
   send_data.motor_mechanical_position = fast_loop_status_.motor_mechanical_position;
   send_data.motor_position = fast_loop_status_.motor_position.position;
+  send_data.ia = fast_loop_status_.foc_command.measured.i_a;
+  send_data.ib = fast_loop_status_.foc_command.measured.i_b;
+  send_data.ic = fast_loop_status_.foc_command.measured.i_c;
   communication_.send_data(send_data);
   led_.update();
 }
