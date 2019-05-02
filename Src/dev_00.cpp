@@ -4,7 +4,7 @@
 
 static struct {
     SPIEncoder motor_encoder = {*SPI3};
-    GPIO enable;
+    GPIO enable = {*GPIOC, 14, GPIO::OUTPUT};
     PWM motor_pwm = {899, *const_cast<uint32_t*>(&TIM8->CCR3), 
                           *const_cast<uint32_t*>(&TIM8->CCR2), 
                           *const_cast<uint32_t*>(&TIM8->CCR1),
