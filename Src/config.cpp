@@ -4,6 +4,7 @@
 #include "../control/control_fun.h"
 #include "../control/encoder.h"
 #include "../control/pwm.h"
+#include "../control/gpio.h"
 
 #include "dev_00.cpp"
 

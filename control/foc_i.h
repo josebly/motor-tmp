@@ -15,6 +15,8 @@ void fast_loop_set_id_des(float id);
 void fast_loop_set_iq_des(float iq);
 void fast_loop_phase_lock_mode(float id);
 void fast_loop_current_mode();
+void fast_loop_open_mode();
+void fast_loop_brake_mode();
 void fast_loop_set_param(const FastLoopParam *const fast_loop_param);
 void fast_loop_get_status(FastLoopStatus * const fast_loop_status);
 void fast_loop_voltage_mode();

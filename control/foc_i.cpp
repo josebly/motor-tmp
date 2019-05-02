@@ -28,6 +28,14 @@ void fast_loop_current_mode() {
     config.fast_loop.current_mode();
 }
 
+void fast_loop_brake_mode() {
+    config.fast_loop.brake_mode();
+}
+
+void fast_loop_open_mode() {
+    config.fast_loop.open_mode();
+}
+
 void fast_loop_set_param(const FastLoopParam *const fast_loop_param) {
     config.fast_loop.set_param(*fast_loop_param);
 }

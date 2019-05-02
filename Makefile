@@ -98,6 +98,7 @@ Src/main.cpp \
 parameters/otp.cpp \
 communication/usb_communication.cpp \
 control/spi_encoder.cpp \
+control/gpio.cpp \
 
 
 # ASM sources

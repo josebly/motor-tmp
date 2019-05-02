@@ -19,7 +19,19 @@ void MainLoop::update() {
   int count_received = communication_.receive_data(&receive_data_);
   if (count_received) {
     if (mode_ != static_cast<MainControlMode>(receive_data_.mode_desired)) {
-      //stuff
+      mode_ = static_cast<MainControlMode>(receive_data_.mode_desired);
+      switch (mode_) {
+        case OPEN:
+        default:
+          fast_loop_open_mode();
+          break;
+        case BRAKE:
+          fast_loop_brake_mode();
+          break;
+        case NORMAL_CONTROL:
+          fast_loop_current_mode();
+          break;
+      }
     }
   }
   
@@ -42,7 +54,6 @@ void MainLoop::update() {
 void MainLoop::set_param(MainLoopParam &param) {
     controller_.set_param(param.controller_param);
     param_ = param;
-    mode_ = param.mode;
 }
 
 void MainLoop::get_status(MainLoopStatus * const main_loop_status) const {
