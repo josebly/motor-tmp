@@ -44,7 +44,6 @@ MEMORY
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
 FLASH (rx)     : ORIGIN = 0x8000000, LENGTH = 384K
 SECTOR_7 (rx)  : ORIGIN = 0x8060000, LENGTH = 128K
-OTP (r)        : ORIGIN = 0x1FFF7800, LENGTH = 32
 }
 
 /* Define output sections */
@@ -83,11 +82,6 @@ SECTIONS
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
   } >FLASH
-
-  otp (NOLOAD) :
-  {
-    *(otp)
-  } >OTP
 
   /* special param */
   flash_param :
