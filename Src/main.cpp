@@ -84,6 +84,9 @@ ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
 ADC_HandleTypeDef hadc3;
 
+DMA_HandleTypeDef hdma_spi1_tx;
+DMA_HandleTypeDef hdma_spi1_rx;
+
 DAC_HandleTypeDef hdac;
 
 SPI_HandleTypeDef hspi1;
@@ -104,6 +107,7 @@ TIM_HandleTypeDef htim8;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC2_Init(void);
 static void MX_ADC3_Init(void);
 static void MX_TIM8_Init(void);
@@ -180,6 +184,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init(); 
   MX_USB_DEVICE_Init();
   MX_ADC2_Init();
   MX_ADC3_Init();
@@ -1091,6 +1096,21 @@ static void MX_TIM8_Init(void)
   HAL_TIM_MspPostInit(&htim8);
 
 }
+
+static void MX_DMA_Init(void)  
+{ 
+  /* DMA controller clock enable */ 
+  __HAL_RCC_DMA2_CLK_ENABLE(); 
+ 
+  /* DMA interrupt init */ 
+  /* DMA2_Stream0_IRQn interrupt configuration */ 
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0); 
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn); 
+  /* DMA2_Stream3_IRQn interrupt configuration */ 
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0); 
+  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn); 
+ 
+} 
 
 /**
   * @brief GPIO Initialization Function.fast_loop_param.adc1_offset = 1980,
