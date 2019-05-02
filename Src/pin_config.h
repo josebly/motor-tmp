@@ -8,19 +8,35 @@
 extern "C" {
 #endif
 
-extern uint16_t *const red_reg;
-extern uint16_t *const green_reg;
-extern uint16_t *const blue_reg;
+#define DRV_EN_GPIO_INIT     GPIOA->MODER |= GPIO_MODER_MODE9_0; \
+                             GPIOA->MODER &= ~GPIO_MODER_MODE9_1; \
+                             GPIOA->BSRR |= GPIO_BSRR_BS9;
 
-extern volatile uint32_t *const drv_en_reg;
-extern uint32_t const drv_en_pin;
+typedef struct {
+    volatile uint32_t *const drv_en_reg;
+    uint32_t const drv_en_pin;
+    uint8_t const adc_ia_channel;
+    uint8_t const adc_ib_channel;
+    uint8_t const adc_ic_channel;
+    uint8_t const adc_vbus_channel;
+    uint8_t crystal_frequency_MHz;
+} PinConfig;
 
-extern uint8_t const adc_ia_channel;
-extern uint8_t const adc_ib_channel;
-extern uint8_t const adc_ic_channel;
+const PinConfig * const get_pin_config();
+void config_init();
 
 #ifdef __cplusplus
 }
+
+class CConfig {
+ public:
+    CConfig();
+    void init();
+    const PinConfig * const get_pin_config() const { return pin_config_; }
+ private:
+    PinConfig * pin_config_;
+};
+
 #endif
 
 #endif

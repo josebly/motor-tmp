@@ -54,6 +54,7 @@
 
 /* USER CODE BEGIN INCLUDE */
 #include "../version.h"
+#include "param.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,7 +101,7 @@
 #define USBD_PRODUCT_STRING_FS          board_id_product_string()
 #define USBD_SERIALNUMBER_STRING_FS     board_id_serial_number()
 #define USBD_CONFIGURATION_STRING_FS    VERSION " " GIT_HASH " " BUILD_DATETIME
-#define USBD_INTERFACE_STRING_FS        "J1"
+#define USBD_INTERFACE_STRING_FS        param()->name
 
 #define USB_SIZ_BOS_DESC            0x0C
 

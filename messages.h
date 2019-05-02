@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #define MAX_DATA_LENGTH 120 // bytes
+typedef int32_t mcu_time;
 
 typedef struct {
     float kp;
@@ -48,18 +49,27 @@ typedef struct {
     float vbus_gain;
 } FastLoopParam;
 
+enum MainControlMode {OPEN, BRAKE, NORMAL_CONTROL};
 typedef struct {
     int32_t update_frequency;
     PIDParam controller_param;
     float torque_gain, torque_bias;
     float kt;
     float gear_ratio;
-    enum MainControlMode {OPEN, BRAKE, CURRENT, MOTOR_TORQUE, JOINT_TORQUE} mode;
 } MainLoopParam;
+
+typedef struct {
+    uint8_t do_phase_lock;          // 1: yes, 0: no
+    float phase_lock_current;       // current in A
+    float phase_lock_duration;      // duration in seconds
+    enum MainControlMode startup_mode;
+} StartupParam;
 
 typedef struct {
     FastLoopParam fast_loop_param;
     MainLoopParam main_loop_param;
+    StartupParam startup_param;
+    char name[64];
 } Param;
 
 typedef struct {
@@ -87,6 +97,7 @@ typedef struct {
 } MotorStatus;
 
 typedef struct {
+    mcu_time timestamp;
     FOCStatus foc_status;
     struct {
         int32_t raw;
@@ -165,5 +176,20 @@ typedef struct {
 typedef struct {
     MotorStatus motor_status;
 } SimulatorStatus;
+
+typedef struct {
+    mcu_time timestamp;
+    mcu_time timestamp_received;
+    float motor_position;
+    float iq;
+    float motor_mechanical_position;
+} SendData;
+
+typedef struct {
+    mcu_time timestamp;
+    uint8_t mode_desired;
+    float current_desired;
+    float position_desired;
+} ReceiveData;
 
 #endif

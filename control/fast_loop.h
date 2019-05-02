@@ -1,21 +1,26 @@
+#ifndef FAST_LOOP_H
+#define FAST_LOOP_H
 
 #include <cstdint>
 #include "../messages.h"
 
 class FOC;
 class PWM;
+class Encoder;
 
 class FastLoop {
  public:
-    FastLoop(PWM &pwm);
+    FastLoop(PWM &pwm, Encoder &encoder); // TODO consider changing encoder to template
     ~FastLoop();
     void update();
     void maintenance();
     void set_id_des(float id) { id_des = id; }
-    void set_iq_des(float iq) { iq_des = iq; }
+    void set_iq_des(float iq) { if (mode_ == CURRENT_MODE) iq_des = iq; }
     void phase_lock_mode(float id);
     void current_mode();
     void voltage_mode();
+    void brake_mode();
+    void open_mode();
     void set_param(const FastLoopParam &fast_loop_param); 
     void get_status(FastLoopStatus *fast_loop_status);
     void zero_current_sensors();
@@ -23,7 +28,7 @@ class FastLoop {
     FastLoopParam param_;
     FOC *foc_;
     PWM &pwm_;
-    enum {CURRENT_MODE, PHASE_LOCK_MODE, VOLTAGE_MODE} mode_ = CURRENT_MODE;
+    enum {OPEN_MODE, BRAKE_MODE, CURRENT_MODE, PHASE_LOCK_MODE, VOLTAGE_MODE} mode_ = CURRENT_MODE;
 
     int32_t motor_enc;
     int32_t last_motor_enc=0;
@@ -47,6 +52,10 @@ class FastLoop {
     float ia_bias_ = 0;
     float ib_bias_ = 0;
     float ic_bias_ = 0;
-    float alpha_zero_ = 0.001;
+    float alpha_zero_ = 0.01;
     float v_bus_ = 12;
+    mcu_time timestamp_;
+   Encoder &encoder_;
 };
+
+#endif

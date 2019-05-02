@@ -1,14 +1,40 @@
 
 #include "pin_config.h"
+#include "../parameters/otp.h"
 #include "stm32f446xx.h"
+                            
+static PinConfig default_pin_config = {
+    .drv_en_reg = &GPIOC->ODR,
+    .drv_en_pin = GPIO_ODR_OD14,
+    .adc_ia_channel = 3,
+    .adc_ib_channel = 14,   // note adc12 only
+    .adc_ic_channel = 15,   // note adc12 only
+    .adc_vbus_channel = 5,
+    .crystal_frequency_MHz = 24,
+};
 
-uint16_t *const red_reg = (uint16_t *) &TIM3->CCR1;
-uint16_t *const green_reg = (uint16_t *) &TIM3->CCR2;
-uint16_t *const blue_reg = (uint16_t *) &TIM3->CCR4;
+CConfig::CConfig() {
+    pin_config_ = &default_pin_config;
+    // TODO maybe create objects here
+    // motor_encoder_ = new Encoder(reinterpret_cast<volatile int32_t *>(&TIM5->CNT))
+}
 
-volatile uint32_t *const drv_en_reg = &GPIOC->ODR;
-uint32_t const drv_en_pin = GPIO_ODR_OD14;
+static CConfig config;
 
-uint8_t const adc_ia_channel = 15;
-uint8_t const adc_ib_channel = 14;
-uint8_t const adc_ic_channel = 13;
+const PinConfig * const get_pin_config() {
+    return config.get_pin_config();
+}
+
+void config_init() {
+    config.init();
+}
+
+// Used for HAL 
+uint32_t HSE_VALUE = 24000000U;
+
+void CConfig::init() {
+    if (get_board_id()->manufacturer != BoardID::FabulabSL) {
+        pin_config_->crystal_frequency_MHz = 8;
+        HSE_VALUE = 8000000;
+    }
+}

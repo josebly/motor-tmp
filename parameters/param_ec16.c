@@ -15,7 +15,7 @@ const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
     .fast_loop_param.foc_param.num_poles = 1,
     .main_loop_param.gear_ratio = 5.4,
     .main_loop_param.kt = .0114,       // 48V maxon ec16 30W
-    .main_loop_param.mode = MOTOR_TORQUE,
+    .main_loop_param.mode = NORMAL_CONTROL,
     .main_loop_param.update_frequency = 10000,
     .fast_loop_param.adc1_offset = 1957,
     .fast_loop_param.adc2_offset = 1973,
@@ -33,6 +33,9 @@ const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
     .fast_loop_param.vbus_gain = 3.3/4096*(82+4.99)/4.99,
     .fast_loop_param.cogging.table = {
 #include "../cogprocessed.csv"
-    }
-
+    },
+    .name = "J1 ec16",
+    .startup_param.do_phase_lock = 1,
+    .startup_param.phase_lock_current = 2,
+    .startup_param.phase_lock_duration = 2,
 };

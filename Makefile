@@ -15,7 +15,7 @@ $(shell touch version.h)
 ######################################
 # target
 ######################################
-TARGET = usb_vcp_ze
+TARGET = motor-tmp
 
 
 ######################################
@@ -26,6 +26,7 @@ DEBUG = 1
 LTO=0
 ifeq ($(LTO), 1)
 LTOI = -flto
+$(info "Building with lto!!!!")
 else
 LTOI = 
 endif
@@ -33,6 +34,7 @@ endif
 # optimization
 OPT = -Og -O3
 
+DEFAULT_PARAM_C = param_dev_00_robo.c
 
 #######################################
 # paths
@@ -80,9 +82,11 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac_ex.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
 Src/param.c \
 Src/util.c \
-parameters/param_ec16.c
+parameters/${DEFAULT_PARAM_C}
 
-CPP_SOURCES = control/control_fun.cpp \
+# config must be initialized before others
+CPP_SOURCES = Src/config.cpp \
+control/control_fun.cpp \
 foc.cpp \
 foc_i.cpp \
 sincos.cpp \
@@ -91,7 +95,11 @@ pwm.cpp \
 main_loop.cpp \
 Src/pin_config.cpp \
 Src/main.cpp \
-parameters/otp.cpp
+parameters/otp.cpp \
+communication/usb_communication.cpp \
+control/spi_encoder.cpp \
+control/gpio.cpp \
+
 
 # ASM sources
 ASM_SOURCES =  \
@@ -187,20 +195,21 @@ LIBDIR =
 LDFLAGS = $(MCU) -specs=nosys.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections $(LTOI)
 
 # default action: build all
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
+all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin $(BUILD_DIR)/$(TARGET)_param.bin
 
 
 #######################################
 # build the application
 #######################################
 # list of objects
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
+OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:.cpp=.o)))
+vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:.cpp=.o)))
-vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
+
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
@@ -219,7 +228,10 @@ $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
 	
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
-	$(BIN) $< $@	
+	$(BIN) -R flash_param $< $@	
+
+$(BUILD_DIR)/%_param.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
+	$(BIN) -j flash_param $< $@	
 	
 $(BUILD_DIR):
 	mkdir $@		
@@ -234,4 +246,28 @@ clean:
 # dependencies
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
+
+PARAM_GEN_SRCS = Src/param.c parameters/${DEFAULT_PARAM_C} Src/param_gen.cpp
+param_gen: $(PARAM_GEN_SRCS) | $(BUILD_DIR)
+	gcc $(PARAM_GEN_SRCS) -lstdc++ -o $(BUILD_DIR)/param_gen
+
+OTP_GEN_SRCS = parameters/otp_gen.cpp parameters/otp.cpp
+otp_gen: $(BUILD_DIR)
+	g++ $(OTP_GEN_SRCS) -o $(BUILD_DIR)/otp_gen
+
+FOLDER = release_$(shell git describe --tags)
+package: all param_gen otp_gen
+	mkdir -p $(FOLDER)
+	cp $(BUILD_DIR)/param_gen $(FOLDER)
+	cp Src/load_param.sh $(FOLDER)
+	cp load_program.sh $(FOLDER)
+	cp $(BUILD_DIR)/$(TARGET).bin $(FOLDER)
+	cp $(BUILD_DIR)/$(TARGET)_param.bin $(FOLDER)
+	cp $(BUILD_DIR)/otp_gen $(FOLDER)
+	cp parameters/load_otp.sh $(FOLDER)
+	cp parameters/dev_00.ini $(FOLDER)
+	cp 99-st.rules $(FOLDER)
+	cp LICENSE $(FOLDER)
+	cp -r docs/ $(FOLDER)
+	tar czf $(FOLDER).tgz $(FOLDER)/
 
