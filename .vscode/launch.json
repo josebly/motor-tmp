@@ -7,7 +7,7 @@
         
         {
             "cwd": "${workspaceRoot}",
-            "executable": "./build/usb_vcp_ze.elf",
+            "executable": "./build/motor-tmp.elf",
             "name": "Debug Microcontroller",
             "request": "launch",
             "type": "cortex-debug",

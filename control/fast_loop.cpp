@@ -5,6 +5,7 @@
 #include "pwm.h"
 #include "../Src/util.h"
 #include "encoder.h"
+#include "stm32f446xx.h"
 
 FastLoop::FastLoop(PWM &pwm, Encoder &encoder) : pwm_(pwm), encoder_(encoder) {
     foc_ = new FOC;
@@ -16,24 +17,27 @@ FastLoop::~FastLoop() {
 
 // called at fixed frequency in an interrupt
 void FastLoop::update() {
+    // trigger encoder read
+    encoder_.trigger();
+
     timestamp_ = get_clock();
+
     // get ADC
-    // get encoder
     adc1 = ADC3->JDR1;
     adc2 = ADC2->JDR1;
     adc3 = ADC1->JDR1;
+    foc_command_.measured.i_a = param_.adc1_gain*(adc1-param_.adc1_offset) - ia_bias_;
+    foc_command_.measured.i_b = param_.adc2_gain*(adc2-param_.adc2_offset) - ib_bias_;
+    foc_command_.measured.i_c = param_.adc3_gain*(adc3-param_.adc3_offset) - ic_bias_;
+    foc_command_.desired.i_d = id_des;
+    
+    // get encoder value, may wait a little
     motor_enc = encoder_.get_value();
+
     motor_position_ = param_.motor_encoder.dir * 2 * (float) M_PI * inv_motor_encoder_cpr_ * motor_enc;
     motor_velocity =  param_.motor_encoder.dir * (motor_enc-last_motor_enc)*(2*(float) M_PI * inv_motor_encoder_cpr_ * frequency_hz_);
-    // motor_velocity_filtered = motor_velocity_filter.update(motor_velocity);
     motor_velocity_filtered = (1-alpha)*motor_velocity_filtered + alpha*motor_velocity;
     last_motor_enc = motor_enc;
-
-    // debugging port
-    ITM->PORT[0].u32 = adc1;
-
-    // output adc on dac for reference 
- //   hdac.Instance->DHR12R1 = adc1;
 
     // cogging compensation, interpolate in the table
     motor_mechanical_position_ = (motor_enc - motor_index_pos_); 
@@ -45,12 +49,8 @@ void FastLoop::update() {
     float iq_ff = param_.cogging.gain * param_.cogging.table[i];
 
     // update FOC
-    foc_command_.measured.i_a = param_.adc1_gain*(adc1-param_.adc1_offset) - ia_bias_;
-    foc_command_.measured.i_b = param_.adc2_gain*(adc2-param_.adc2_offset) - ib_bias_;
-    foc_command_.measured.i_c = param_.adc3_gain*(adc3-param_.adc3_offset) - ic_bias_;
     foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI  * inv_motor_encoder_cpr_);
     foc_command_.desired.i_q = iq_des_gain_ * (iq_des + iq_ff);
-    foc_command_.desired.i_d = id_des;
     
     FOCStatus *foc_status = foc_->step(foc_command_);
 
@@ -93,6 +93,7 @@ void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
 }
 
 void FastLoop::voltage_mode() {
+    pwm_.voltage_mode();
     mode_ = VOLTAGE_MODE;
 }
 
@@ -106,6 +107,7 @@ void FastLoop::phase_lock_mode(float id) {
     phase_mode_ = 0;
     id_des = id;
     iq_des_gain_ = 0;
+    pwm_.voltage_mode();
     mode_ = PHASE_LOCK_MODE;
 }
 
@@ -113,7 +115,16 @@ void FastLoop::current_mode() {
     phase_mode_ = param_.phase_mode == 0 ? 1 : -1;
     id_des = 0;
     iq_des_gain_ = 1;
+    pwm_.voltage_mode();
     mode_ = CURRENT_MODE;
+}
+
+void FastLoop::brake_mode() {
+    pwm_.brake_mode();
+}
+
+void FastLoop::open_mode() {
+    pwm_.open_mode();
 }
 
 void FastLoop::get_status(FastLoopStatus *fast_loop_status) {

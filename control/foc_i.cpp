@@ -1,91 +1,66 @@
-#include "fast_loop.h"
-#include "control_fun.h"
 #include "foc_i.h"
-#include "pwm.h"
-#include "main_loop.h"
-#include "encoder.h"
-#include "../Src/param.h"
-#include "../Src/pin_config.h"
-
-static PWM pwm_ = {*TIM8};
-static Encoder motor_encoder_;
-static FastLoop fast_loop_(pwm_, motor_encoder_);
-static PIDController controller_;
-static MainLoop main_loop_;
+#include "../Src/config.h"
 
 void system_init() {
-    main_loop_.init();
-    motor_encoder_.init(get_pin_config()->motor_encoder_reg);
+    config.main_loop.init();
 }
 
 void fast_loop_update() {
-    fast_loop_.update();
+    config.fast_loop.update();
 }
 
 void fast_loop_maintenance() {
-    fast_loop_.maintenance();
+    config.fast_loop.maintenance();
 }
 
 void fast_loop_set_id_des(float id) {
-    fast_loop_.set_id_des(id);
+    config.fast_loop.set_id_des(id);
 }
 void fast_loop_set_iq_des(float iq) {
-    fast_loop_.set_iq_des(iq);
+    config.fast_loop.set_iq_des(iq);
 }
 
 void fast_loop_phase_lock_mode(float id) {
-    fast_loop_.phase_lock_mode(id);
+    config.fast_loop.phase_lock_mode(id);
 }
 
 void fast_loop_current_mode() {
-    fast_loop_.current_mode();
+    config.fast_loop.current_mode();
+}
+
+void fast_loop_brake_mode() {
+    config.fast_loop.brake_mode();
+}
+
+void fast_loop_open_mode() {
+    config.fast_loop.open_mode();
 }
 
 void fast_loop_set_param(const FastLoopParam *const fast_loop_param) {
-    fast_loop_.set_param(*fast_loop_param);
+    config.fast_loop.set_param(*fast_loop_param);
 }
 
 void fast_loop_get_status(FastLoopStatus * const fast_loop_status) {
-    fast_loop_.get_status(fast_loop_status);
+    config.fast_loop.get_status(fast_loop_status);
 }
 
 void fast_loop_voltage_mode() {
-    fast_loop_.voltage_mode();
+    config.fast_loop.voltage_mode();
 }
 
 void fast_loop_zero_current_sensors() {
-    fast_loop_.zero_current_sensors();
+    config.fast_loop.zero_current_sensors();
 }
 
 
 void main_loop_update() {
-    main_loop_.update();
+    config.main_loop.update();
 }
 
 void main_loop_set_param(MainLoopParam * const main_loop_param) {
-    main_loop_.set_param(*main_loop_param);
+    config.main_loop.set_param(*main_loop_param);
 }
 
 void main_loop_get_status(MainLoopStatus * const main_loop_status) {
-    main_loop_.get_status(main_loop_status);
-}
-
-// void fast_loop_set_command(FOCCommand *foc_command) {
-//     fast_loop_.set_command(*foc_command);
-// }
-
-// void foc_get_status(FOCStatus *foc_status) {
-//     foc_.get_status(foc_status);
-// }
-
-// void foc_set_param(FOCParam *foc_param) {
-//     foc_.set_param(*foc_param);
-// }
-
-void controller_set_param(PIDParam *pid_param) {
-    controller_.set_param(*pid_param);
-}
-
-float controller_step(float desired, float measured) {
-    return controller_.step(desired, measured);
+    config.main_loop.get_status(main_loop_status);
 }
