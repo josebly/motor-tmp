@@ -271,3 +271,5 @@ package: all param_gen otp_gen
 	cp -r docs/ $(FOLDER)
 	tar czf $(FOLDER).tgz $(FOLDER)/
 
+test: all
+	$(MAKE) -C test
