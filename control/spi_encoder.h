@@ -9,7 +9,7 @@ struct SPI_TypeDef;
 
 class SPIEncoder : public Encoder {
  public:
-    SPIEncoder(SPI_TypeDef &regs) : regs_(regs) {} 
+    SPIEncoder(SPI_TypeDef &regs) : Encoder(0), regs_(regs) {} 
     //void init() {}
     virtual int32_t get_value();
     virtual void trigger();

@@ -10,15 +10,17 @@ class Communication;
 
 class MainLoop {
  public:
+    MainLoop(PIDController &controller, Communication &communication, LED &led) : 
+        controller_(controller), communication_(communication), led_(led) {}
     void init();
     void update();
     void set_param(MainLoopParam &);
     void get_status(MainLoopStatus * const main_loop_status) const;
  private:
     MainLoopParam param_;
-    LED *led_;
-    PIDController *controller_;
-    Communication *communication_;
+    PIDController &controller_;
+    Communication &communication_;
+    LED &led_;
     ReceiveData receive_data_ = {};
     uint64_t count_ = 0;
     FastLoopStatus fast_loop_status_ = {};

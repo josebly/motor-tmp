@@ -5,6 +5,7 @@
 #include "pwm.h"
 #include "../Src/util.h"
 #include "encoder.h"
+#include "stm32f446xx.h"
 
 FastLoop::FastLoop(PWM &pwm, Encoder &encoder) : pwm_(pwm), encoder_(encoder) {
     foc_ = new FOC;
@@ -92,6 +93,7 @@ void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
 }
 
 void FastLoop::voltage_mode() {
+    pwm_.voltage_mode();
     mode_ = VOLTAGE_MODE;
 }
 
@@ -105,6 +107,7 @@ void FastLoop::phase_lock_mode(float id) {
     phase_mode_ = 0;
     id_des = id;
     iq_des_gain_ = 0;
+    pwm_.voltage_mode();
     mode_ = PHASE_LOCK_MODE;
 }
 
@@ -112,7 +115,16 @@ void FastLoop::current_mode() {
     phase_mode_ = param_.phase_mode == 0 ? 1 : -1;
     id_des = 0;
     iq_des_gain_ = 1;
+    pwm_.voltage_mode();
     mode_ = CURRENT_MODE;
+}
+
+void FastLoop::brake_mode() {
+    pwm_.brake_mode();
+}
+
+void FastLoop::open_mode() {
+    pwm_.open_mode();
 }
 
 void FastLoop::get_status(FastLoopStatus *fast_loop_status) {

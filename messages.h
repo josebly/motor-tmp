@@ -56,13 +56,13 @@ typedef struct {
     float torque_gain, torque_bias;
     float kt;
     float gear_ratio;
-    enum MainControlMode mode;
 } MainLoopParam;
 
 typedef struct {
     uint8_t do_phase_lock;          // 1: yes, 0: no
     float phase_lock_current;       // current in A
     float phase_lock_duration;      // duration in seconds
+    enum MainControlMode startup_mode;
 } StartupParam;
 
 typedef struct {
