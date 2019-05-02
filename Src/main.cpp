@@ -209,6 +209,12 @@ int main(void)
 
   DRV_EN_GPIO_INIT
 
+  GPIOA->MODER |= GPIO_MODER_MODE15_0;
+  GPIOA->MODER &= ~GPIO_MODER_MODE15_1;
+
+  GPIOB->MODER |= GPIO_MODER_MODE12_0;
+  GPIOB->MODER &= ~GPIO_MODER_MODE12_1;
+
     init_param_from_flash();
   fast_loop_set_param(&param()->fast_loop_param);
   TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency ;
@@ -216,6 +222,9 @@ int main(void)
   TIM1->ARR = 180e6/param()->main_loop_param.update_frequency - 1;
 
   SPI3->CR1 |= SPI_CR1_SPE;   // enable spi
+  SPI2->CR1 |= SPI_CR1_SPE;
+  SPI1->CR1 |= SPI_CR1_SPE;
+
 	HAL_TIM_Base_Start(&htim8);
 	HAL_TIM_Base_Start(&htim1);
 	HAL_TIM_Base_Start(&htim2);
@@ -277,9 +286,9 @@ int main(void)
   for (uint8_t i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
     uint16_t reg_out = drv_regs[i];
     uint16_t reg_in = 0;
-    HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
-    reg_out |= (1<<15); // switch to read mode
-    HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
+    // HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
+    // reg_out |= (1<<15); // switch to read mode
+    // HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
     if ((reg_in & 0x7FF) != (reg_out & 0x7FF)) {
       drv_regs_error |= 1 << i;
     }
@@ -665,9 +674,12 @@ static void MX_SPI1_Init(void)
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
-  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
-  hspi1.Init.TIMode = SPI_TIMODE_ENABLE;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 10;
   if (HAL_SPI_Init(&hspi1) != HAL_OK)
@@ -699,11 +711,11 @@ static void MX_SPI2_Init(void)
   hspi2.Instance = SPI2;
   hspi2.Init.Mode = SPI_MODE_MASTER;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
-  hspi2.Init.NSS = SPI_NSS_HARD_OUTPUT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;

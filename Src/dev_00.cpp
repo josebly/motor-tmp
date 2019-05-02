@@ -5,9 +5,12 @@
 extern const volatile Param initial_param;
 
 static struct {
-    Encoder motor_encoder = {reinterpret_cast<volatile int32_t *>(&TIM2->CNT)};
-    //SPIEncoder motor_encoder = {*SPI3};
-    GPIO enable;
+    //Encoder motor_encoder = {reinterpret_cast<volatile int32_t *>(&TIM2->CNT)};
+  //  GPIO motor_encoder_cs = {*GPIOB, 12, GPIO::OUTPUT};
+  //  SPIEncoder motor_encoder = {*SPI2, motor_encoder_cs};
+    GPIO motor_encoder_cs = {*GPIOA, 15, GPIO::OUTPUT};
+    SPIEncoder motor_encoder = {*SPI1, motor_encoder_cs};
+    GPIO enable = {*GPIOC, 14, GPIO::OUTPUT};
     PWM motor_pwm = {initial_param.fast_loop_param.pwm_frequency, *const_cast<uint32_t*>(&TIM8->CCR3), 
                           *const_cast<uint32_t*>(&TIM8->CCR2), 
                           *const_cast<uint32_t*>(&TIM8->CCR1),
