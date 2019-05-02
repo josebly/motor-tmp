@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         "Note this is 4x lines per revolution for quadrature", true);
     app.add_option("-d,--encoder_dir", p.fast_loop_param.motor_encoder.dir, "Encoder direction, 0 or 1", true);
     app.add_option("-o,--phase_order", p.fast_loop_param.phase_mode, "Phase mode, 0 or 1", true);
- 
+    app.add_option("--pwm_frequency", p.fast_loop_param.pwm_frequency, "PWM frequency in Hz", true);
     app.set_config("-c,--config");
 
     CLI::App *fast_loop_param = app.add_subcommand("fast_loop_param");
@@ -82,6 +82,8 @@ void print_param(Param *p) {
     std::cout << "Encoder cpr: " << p->fast_loop_param.motor_encoder.cpr << std::endl;
     std::cout << "Current sensor 1 V/A: " << 3.3/4096/p->fast_loop_param.adc1_gain << std::endl;
     std::cout << "Do phase lock: " << (p->startup_param.do_phase_lock ? "yes" : "no") << std::endl;
-    std::cout << "Phase lock_duration: " << p->startup_param.phase_lock_duration << "s" << std::endl;
-    std::cout << "Phase lock_current: " << p->startup_param.phase_lock_current << "A" << std::endl;
+    std::cout << "Phase lock_duration: " << p->startup_param.phase_lock_duration << " s" << std::endl;
+    std::cout << "Phase lock_current: " << p->startup_param.phase_lock_current << " A" << std::endl;
+    std::cout << "PWM frequency: " << p->fast_loop_param.pwm_frequency << " Hz" << std::endl;
+
 }
