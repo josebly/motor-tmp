@@ -28,3 +28,9 @@ void PWM::voltage_mode() {
     enable_.set();
     regs_.BDTR |= TIM_BDTR_MOE;
 }
+
+void PWM::set_frequency_hz(uint32_t frequency_hz) {
+    regs_.ARR = 180e6/2/frequency_hz; 
+    period_ = regs_.ARR;
+    half_period_ = period_/2; 
+}

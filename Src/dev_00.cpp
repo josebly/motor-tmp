@@ -2,8 +2,11 @@
 #include "../communication/usb_communication.h"
 #include "stm32f446xx.h"
 
+extern const volatile Param initial_param;
+
 static struct {
-    SPIEncoder motor_encoder = {*SPI3};
+    Encoder motor_encoder = {reinterpret_cast<volatile int32_t *>(&TIM2->CNT)};
+    //SPIEncoder motor_encoder = {*SPI3};
     GPIO enable = {*GPIOC, 14, GPIO::OUTPUT};
     PWM motor_pwm = {899, *const_cast<uint32_t*>(&TIM8->CCR3), 
                           *const_cast<uint32_t*>(&TIM8->CCR2), 
