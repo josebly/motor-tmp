@@ -265,7 +265,6 @@ void ADC_IRQHandler(void)
   lsu_start = get_lsu_count();
   fold_start = DWT->FOLDCNT;
   t_diff0 = get_clock() - t_start;
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
   	t_diff1 = get_clock() - t_start;
 #if 0
   /* USER CODE END ADC_IRQn 0 */
@@ -282,7 +281,6 @@ void ADC_IRQHandler(void)
   t_diff2 = get_clock()-t_start;
   
 	hadc1.Instance->SR &= ~ADC_SR_JEOC;
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
 	t_diff = get_clock() - t_start;
   cpi_diff = get_cpi_count() - cpi_start;
   lsu_diff = get_lsu_count() - lsu_start;
@@ -297,13 +295,11 @@ void ADC_IRQHandler(void)
 void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
 
   main_loop_update();
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 1 */
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
   /* USER CODE END TIM1_UP_TIM10_IRQn 1 */
 }
 

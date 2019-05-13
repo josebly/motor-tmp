@@ -7,10 +7,11 @@
 class FOC;
 class PWM;
 class Encoder;
+class GPIO;
 
 class FastLoop {
  public:
-    FastLoop(PWM &pwm, Encoder &encoder); // TODO consider changing encoder to template
+    FastLoop(PWM &pwm, Encoder &encoder, GPIO &scope); // TODO consider changing encoder to template
     ~FastLoop();
     void update();
     void maintenance();
@@ -56,6 +57,7 @@ class FastLoop {
     float v_bus_ = 12;
     mcu_time timestamp_;
    Encoder &encoder_;
+   GPIO &scope_;
 };
 
 #endif

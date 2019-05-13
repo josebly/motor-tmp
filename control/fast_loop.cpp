@@ -6,8 +6,9 @@
 #include "../Src/util.h"
 #include "encoder.h"
 #include "stm32f446xx.h"
+#include "gpio.h"
 
-FastLoop::FastLoop(PWM &pwm, Encoder &encoder) : pwm_(pwm), encoder_(encoder) {
+FastLoop::FastLoop(PWM &pwm, Encoder &encoder, GPIO &scope) : pwm_(pwm), encoder_(encoder), scope_(scope) {
     foc_ = new FOC;
 }
 
@@ -17,6 +18,7 @@ FastLoop::~FastLoop() {
 
 // called at fixed frequency in an interrupt
 void FastLoop::update() {
+    scope_.set();
     // trigger encoder read
     encoder_.trigger();
 
@@ -62,6 +64,7 @@ void FastLoop::update() {
     } else {
         pwm_.set_voltage(&foc_status->command.v_a);
     }
+    scope_.clear();
 }
 
 // called at a slow frequency in a non interrupt

@@ -6,12 +6,13 @@
 class LED;
 class PIDController;
 class Communication;
+class GPIO;
 #include <cmath>
 
 class MainLoop {
  public:
-    MainLoop(PIDController &controller, Communication &communication, LED &led) : 
-        controller_(controller), communication_(communication), led_(led) {}
+    MainLoop(PIDController &controller, Communication &communication, LED &led, GPIO &scope) : 
+        controller_(controller), communication_(communication), led_(led), scope_(scope) {}
     void init();
     void update();
     void set_param(MainLoopParam &);
@@ -25,6 +26,7 @@ class MainLoop {
     uint64_t count_ = 0;
     FastLoopStatus fast_loop_status_ = {};
     MainControlMode mode_ = OPEN;
+    GPIO &scope_;
 
 
 inline uint16_t minu16(uint16_t a, uint16_t b) {

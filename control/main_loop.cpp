@@ -8,6 +8,7 @@
 #include "stm32f4xx_hal.h"
 #include "../communication/usb_communication.h"
 #include "foc_i.h"
+#include "gpio.h"
 
 void MainLoop::init() {
     communication_.init();
@@ -15,6 +16,7 @@ void MainLoop::init() {
 
 extern SPI_HandleTypeDef hspi2;
 void MainLoop::update() {
+  scope_.set();
   count_++;
   int count_received = communication_.receive_data(&receive_data_);
   if (count_received) {
@@ -49,6 +51,7 @@ void MainLoop::update() {
   send_data.motor_position = fast_loop_status_.motor_position.position;
   communication_.send_data(send_data);
   led_.update();
+  scope_.clear();
 }
 
 void MainLoop::set_param(MainLoopParam &param) {

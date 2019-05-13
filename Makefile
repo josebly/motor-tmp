@@ -17,6 +17,9 @@ $(shell touch version.h)
 ######################################
 TARGET = motor-tmp
 
+ifdef DEBUG_SCOPE
+DDEBUG_SCOPE="-DDEBUG_SCOPE"
+endif
 
 ######################################
 # building variables
@@ -151,7 +154,8 @@ AS_DEFS =
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32F446xx \
--DGIT_VERSION=\"$(GIT_VERSION)\"
+-DGIT_VERSION=\"$(GIT_VERSION)\"\
+$(DDEBUG_SCOPE)\
 
 
 # AS includes

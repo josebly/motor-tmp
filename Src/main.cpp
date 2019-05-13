@@ -215,6 +215,13 @@ int main(void)
   GPIOB->MODER |= GPIO_MODER_MODE12_0;
   GPIOB->MODER &= ~GPIO_MODER_MODE12_1;
 
+  #ifdef DEBUG_SCOPE
+  GPIOA->MODER |= GPIO_MODER_MODE6_0;
+  GPIOA->MODER &= ~GPIO_MODER_MODE6_1;
+  GPIOA->MODER |= GPIO_MODER_MODE7_0;
+  GPIOA->MODER &= ~GPIO_MODER_MODE7_1;
+  #endif
+
     init_param_from_flash();
   fast_loop_set_param(&param()->fast_loop_param);
   TIM8->ARR = 180e6/2/param()->fast_loop_param.pwm_frequency ;
