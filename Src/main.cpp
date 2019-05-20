@@ -61,6 +61,7 @@
 #include "pin_config.h"
 #include "../peripheral/usb.h"
 #include "config.h"
+#include "../control/gpio.h"
 //__attribute__((used)) DWT_Type *dwt = DWT;
 
 /* USER CODE END Includes */
@@ -211,6 +212,7 @@ int main(void)
 
   GPIOA->MODER |= GPIO_MODER_MODE15_0;
   GPIOA->MODER &= ~GPIO_MODER_MODE15_1;
+  GPIOA->BSRR |= GPIO_BSRR_BS15;
 
   GPIOB->MODER |= GPIO_MODER_MODE12_0;
   GPIOB->MODER &= ~GPIO_MODER_MODE12_1;
@@ -286,9 +288,14 @@ int main(void)
   for (uint8_t i=0; i<sizeof(drv_regs)/sizeof(uint16_t); i++) {
     uint16_t reg_out = drv_regs[i];
     uint16_t reg_in = 0;
-    // HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
-    // reg_out |= (1<<15); // switch to read mode
-    // HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
+    GPIO gpio(*GPIOA, 15, GPIO::OUTPUT);
+    gpio.clear();
+    HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
+    gpio.set();
+    reg_out |= (1<<15); // switch to read mode
+    gpio.clear();
+    HAL_SPI_TransmitReceive(&hspi1, (uint8_t *) &reg_out, (uint8_t *) &reg_in, 1, 10);
+    gpio.set();
     if ((reg_in & 0x7FF) != (reg_out & 0x7FF)) {
       drv_regs_error |= 1 << i;
     }
@@ -675,9 +682,9 @@ static void MX_SPI1_Init(void)
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
