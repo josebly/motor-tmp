@@ -88,6 +88,7 @@ void FastLoop::maintenance() {
 void FastLoop::set_param(const FastLoopParam &fast_loop_param) {
     foc_->set_param(fast_loop_param.foc_param);
     param_ = fast_loop_param;
+    set_phase_mode();
     inv_motor_encoder_cpr_ = param_.motor_encoder.cpr != 0 ? 1.f/param_.motor_encoder.cpr : 0;
     frequency_hz_ = param_.pwm_frequency;
 }
@@ -112,7 +113,7 @@ void FastLoop::phase_lock_mode(float id) {
 }
 
 void FastLoop::current_mode() {
-    phase_mode_ = param_.phase_mode == 0 ? 1 : -1;
+    phase_mode_ = phase_mode_desired_;
     id_des = 0;
     iq_des_gain_ = 1;
     pwm_.voltage_mode();
@@ -135,4 +136,8 @@ void FastLoop::get_status(FastLoopStatus *fast_loop_status) {
     fast_loop_status->motor_position.velocity = motor_velocity_filtered;
     fast_loop_status->motor_position.raw = motor_enc;
     fast_loop_status->timestamp = timestamp_;
+}
+
+void FastLoop::set_phase_mode() {
+    phase_mode_desired_ = param_.phase_mode == 0 ? 1 : -1;
 }

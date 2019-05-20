@@ -24,6 +24,7 @@ class FastLoop {
     void set_param(const FastLoopParam &fast_loop_param); 
     void get_status(FastLoopStatus *fast_loop_status);
     void zero_current_sensors();
+    void set_phase_mode();
  private:
     FastLoopParam param_;
     FOC *foc_;
@@ -36,7 +37,8 @@ class FastLoop {
     float motor_velocity=0;
     float motor_velocity_filtered=0;
     float alpha=0.001;
-    float phase_mode_ = 1;    // 1: standard or 2: two wires switched
+    float phase_mode_ = 1;    // 1: standard or -1: two wires switched
+    float phase_mode_desired_ = 1;
     float motor_mechanical_position_ = 0;
 
     float iq_des = 0;
