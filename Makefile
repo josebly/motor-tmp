@@ -271,5 +271,30 @@ package: all param_gen otp_gen
 	cp -r docs/ $(FOLDER)
 	tar czf $(FOLDER).tgz $(FOLDER)/
 
+DEB_FOLDER = $(TARGET)-$(GIT_VERSION)
+INSTALL_PREFIX = usr
+INSTALL_BIN_DIR = $(INSTALL_PREFIX)/bin
+INSTALL_SHARE_DIR = $(INSTALL_PREFIX)/share/$(TARGET)
+INSTALL_UDEV_RULES_DIR = etc/udev/rules.d
+deb_package: package
+	mkdir -p $(DEB_FOLDER)/$(INSTALL_BIN_DIR)
+	mkdir -p $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)
+	mkdir -p $(DEB_FOLDER)/$(INSTALL_UDEV_RULES_DIR)
+	cp -r DEBIAN $(DEB_FOLDER)/
+	cp Src/load_param.sh $(DEB_FOLDER)/$(INSTALL_BIN_DIR)/motor_load_param
+	cp load_program.sh $(DEB_FOLDER)/$(INSTALL_BIN_DIR)/motor_load_program
+	cp $(BUILD_DIR)/otp_gen $(DEB_FOLDER)/$(INSTALL_BIN_DIR)/motor_otp_gen
+	cp $(BUILD_DIR)/param_gen $(DEB_FOLDER)/$(INSTALL_BIN_DIR)/motor_param_gen
+	cp parameters/load_otp.sh $(DEB_FOLDER)/$(INSTALL_BIN_DIR)/motor_load_otp
+	cp $(BUILD_DIR)/$(TARGET).bin $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)
+	cp $(BUILD_DIR)/$(TARGET)_param.bin $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)
+	cp 99-st.rules $(DEB_FOLDER)/$(INSTALL_UDEV_RULES_DIR)
+	cp parameters/dev_00.ini $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)
+	cp -r docs/ $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)/
+	cp LICENSE $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)/
+
+	echo $(GIT_VERSION) | sed 's/^v/Version: /' >> $(DEB_FOLDER)/DEBIAN/control
+	dpkg-deb --build $(DEB_FOLDER)
+
 test: all
 	$(MAKE) -C test
