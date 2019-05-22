@@ -249,11 +249,11 @@ clean:
 
 PARAM_GEN_SRCS = Src/param.c parameters/${DEFAULT_PARAM_C} Src/param_gen.cpp
 param_gen: $(PARAM_GEN_SRCS) | $(BUILD_DIR)
-	gcc $(PARAM_GEN_SRCS) -lstdc++ -o $(BUILD_DIR)/param_gen
+	gcc $(PARAM_GEN_SRCS) -lstdc++ -std=c++11 -o $(BUILD_DIR)/param_gen
 
 OTP_GEN_SRCS = parameters/otp_gen.cpp parameters/otp.cpp
 otp_gen: $(BUILD_DIR)
-	g++ $(OTP_GEN_SRCS) -o $(BUILD_DIR)/otp_gen
+	g++ $(OTP_GEN_SRCS) -std=c++11 -o $(BUILD_DIR)/otp_gen
 
 FOLDER = release_$(shell git describe --tags)
 package: all param_gen otp_gen
@@ -265,7 +265,7 @@ package: all param_gen otp_gen
 	cp $(BUILD_DIR)/$(TARGET)_param.bin $(FOLDER)
 	cp $(BUILD_DIR)/otp_gen $(FOLDER)
 	cp parameters/load_otp.sh $(FOLDER)
-	cp parameters/dev_00.ini $(FOLDER)
+	cp -r ini/ $(FOLDER)
 	cp 99-st.rules $(FOLDER)
 	cp LICENSE $(FOLDER)
 	cp -r docs/ $(FOLDER)
@@ -289,7 +289,7 @@ deb_package: package
 	cp $(BUILD_DIR)/$(TARGET).bin $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)
 	cp $(BUILD_DIR)/$(TARGET)_param.bin $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)
 	cp 99-st.rules $(DEB_FOLDER)/$(INSTALL_UDEV_RULES_DIR)
-	cp parameters/dev_00.ini $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)
+	cp -r ini/ $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)/
 	cp -r docs/ $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)/
 	cp LICENSE $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)/
 
