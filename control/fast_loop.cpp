@@ -32,12 +32,18 @@ void FastLoop::update() {
     foc_command_.desired.i_d = id_des;
     
     // get encoder value, may wait a little
-    motor_enc = encoder_.get_value();
+    int32_t motor_enc_tmp = encoder_.get_value();
+    motor_enc += motor_enc_tmp - last_motor_enc;
+    if (motor_enc_tmp - last_motor_enc > ((int32_t) (param_.motor_encoder.cpr >> 1))) {
+        motor_enc += -((int32_t) param_.motor_encoder.cpr);
+    } else if (motor_enc_tmp - last_motor_enc < -((int32_t) (param_.motor_encoder.cpr >> 1))) {
+        motor_enc += param_.motor_encoder.cpr;
+    }
 
     motor_position_ = param_.motor_encoder.dir * 2 * (float) M_PI * inv_motor_encoder_cpr_ * motor_enc;
     motor_velocity =  param_.motor_encoder.dir * (motor_enc-last_motor_enc)*(2*(float) M_PI * inv_motor_encoder_cpr_ * frequency_hz_);
     motor_velocity_filtered = (1-alpha)*motor_velocity_filtered + alpha*motor_velocity;
-    last_motor_enc = motor_enc;
+    last_motor_enc = motor_enc_tmp;
 
     // cogging compensation, interpolate in the table
     motor_mechanical_position_ = (motor_enc - motor_index_pos_); 

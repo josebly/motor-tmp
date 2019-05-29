@@ -214,6 +214,15 @@ int main(void)
   GPIOA->MODER &= ~GPIO_MODER_MODE15_1;
   GPIOA->BSRR |= GPIO_BSRR_BS15;
 
+    GPIOA->MODER |= GPIO_MODER_MODE4_0;
+  GPIOA->MODER &= ~GPIO_MODER_MODE4_1;
+  GPIOA->BSRR |= GPIO_BSRR_BS4;
+
+
+    GPIOD->MODER |= GPIO_MODER_MODE2_0;
+  GPIOD->MODER &= ~GPIO_MODER_MODE2_1;
+  GPIOD->BSRR |= GPIO_BSRR_BS2;
+
   GPIOB->MODER |= GPIO_MODER_MODE12_0;
   GPIOB->MODER &= ~GPIO_MODER_MODE12_1;
 
@@ -758,9 +767,9 @@ static void MX_SPI3_Init(void)
   hspi3.Init.Direction = SPI_DIRECTION_2LINES;
   hspi3.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi3.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;

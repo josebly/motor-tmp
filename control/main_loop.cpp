@@ -47,6 +47,9 @@ void MainLoop::update() {
   send_data.timestamp = fast_loop_status_.timestamp;
   send_data.motor_mechanical_position = fast_loop_status_.motor_mechanical_position;
   send_data.motor_position = fast_loop_status_.motor_position.position;
+  send_data.adc1 = ADC3->JDR1;
+    send_data.adc2 = ADC2->JDR1;
+      send_data.adc3 = ADC1->JDR1;
   communication_.send_data(send_data);
   led_.update();
 }
