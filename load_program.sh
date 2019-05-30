@@ -12,7 +12,7 @@ else
  sn=$(motor-util | tail -n +3 | awk '{print $NF}') 
  echo $sn
 
- echo $sn | xargs -n1 -P10 dfu-util -s 0x8000000:leave -a0 -D ${motor_bin} args -p
+ echo $sn | xargs -n1 -P10 dfu-util -s 0x8000000 -a0 -D ${motor_bin} args -p
  if [ ! -z $motor_param_bin ]; then
   echo $sn | xargs -n1 -P10 dfu-util -s 0x8060000:leave -a0 -D ${motor_param_bin} -p
  fi
