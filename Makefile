@@ -36,6 +36,7 @@ OPT = -Og -O3
 
 DEFAULT_PARAM_C = param_dev_00_robo.c
 CONFIG_FILES = Src/config/dev_00.cpp dev_00_spi.cpp
+CONFIG_FILE = Src/config/dev_00.cpp
 
 #######################################
 # paths
@@ -100,6 +101,7 @@ parameters/otp.cpp \
 communication/usb_communication.cpp \
 control/spi_encoder.cpp \
 control/gpio.cpp \
+${CONFIG_FILE}
 
 
 # ASM sources
