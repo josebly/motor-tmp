@@ -1,5 +1,6 @@
-#include "../control/spi_encoder.h"
-#include "../communication/usb_communication.h"
+#include "config_items.h"
+#include "../../control/spi_encoder.h"
+#include "../../communication/usb_communication.h"
 #include "stm32f446xx.h"
 
 extern const volatile Param initial_param;
@@ -20,4 +21,9 @@ static struct {
     PIDController controller;
     USBCommunication communication;
     MainLoop main_loop = {controller, communication, led};
-} config_items;
+} config_struct;
+
+struct ConfigItems config_items = {
+  config_struct.fast_loop,
+  config_struct.main_loop,
+};

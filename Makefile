@@ -35,6 +35,7 @@ endif
 OPT = -Og -O3
 
 DEFAULT_PARAM_C = param_dev_00_robo.c
+CONFIG_FILES = Src/config/dev_00.cpp dev_00_spi.cpp
 
 #######################################
 # paths

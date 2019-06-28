@@ -6,9 +6,8 @@
 #include "../control/pwm.h"
 #include "../control/gpio.h"
 
-#include "dev_00.cpp"
-
 const Config config;
+extern ConfigItems config_items;
 
 Config::Config() :
     fast_loop(config_items.fast_loop),
