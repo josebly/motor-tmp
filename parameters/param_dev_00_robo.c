@@ -31,6 +31,9 @@ const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
     .main_loop_param.torque_bias = 0.025,
     .main_loop_param.torque_gain = -25,
     .fast_loop_param.vbus_gain = 3.0/4096*(18.+2.)/2.,
+    .main_loop_param.controller_param.kp = 1,
+    .main_loop_param.controller_param.kd = .1,
+    .main_loop_param.controller_param.command_max = 3,
     .fast_loop_param.cogging.table = {
 #include "../cogprocessed.csv"
     },
