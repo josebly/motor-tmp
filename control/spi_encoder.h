@@ -15,7 +15,7 @@ class SPIEncoder : public Encoder {
     //void init() {}
     virtual int32_t get_value();
     virtual void trigger();
- private:
+ protected:
     SPI_TypeDef &regs_;
     GPIO &gpio_cs_;
 };

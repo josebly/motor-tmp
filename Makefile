@@ -99,6 +99,7 @@ parameters/otp.cpp \
 communication/usb_communication.cpp \
 control/spi_encoder.cpp \
 control/gpio.cpp \
+control/aksim2_encoder.cpp \
 
 
 # ASM sources
