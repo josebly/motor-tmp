@@ -6,6 +6,7 @@
 #include "../Src/util.h"
 #include "encoder.h"
 #include "stm32f446xx.h"
+#include "sincos.h"
 
 FastLoop::FastLoop(PWM &pwm, Encoder &encoder) : pwm_(pwm), encoder_(encoder) {
     foc_ = new FOC;
@@ -29,7 +30,7 @@ void FastLoop::update() {
     foc_command_.measured.i_a = param_.adc1_gain*(adc1-param_.adc1_offset) - ia_bias_;
     foc_command_.measured.i_b = param_.adc2_gain*(adc2-param_.adc2_offset) - ib_bias_;
     foc_command_.measured.i_c = param_.adc3_gain*(adc3-param_.adc3_offset) - ic_bias_;
-    foc_command_.desired.i_d = id_des;
+    foc_command_.desired.i_d = 0;
     
     // get encoder value, may wait a little
     motor_enc = encoder_.get_value();
@@ -49,8 +50,14 @@ void FastLoop::update() {
     float iq_ff = param_.cogging.gain * param_.cogging.table[i];
 
     // update FOC
-    foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI  * inv_motor_encoder_cpr_);
-    foc_command_.desired.i_q = iq_des_gain_ * (iq_des + iq_ff);
+    // foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI  * inv_motor_encoder_cpr_);
+    // foc_command_.desired.i_q = iq_des_gain_ * (iq_des + iq_ff);
+
+    // sin with amplitude given by iq desired, frequency by id_des
+    Sincos sincos;
+    sincos = sincos1(2 * (float) M_PI * id_des * (timestamp_*(1.0f/180e6f)));
+    foc_command_.desired.i_q = iq_des*(id_des > 0 ? sincos.sin : ((sincos.sin > 0) - (sincos.sin < 0)));
+    foc_command_.measured.motor_encoder = 0;
     
     FOCStatus *foc_status = foc_->step(foc_command_);
 

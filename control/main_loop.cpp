@@ -41,6 +41,7 @@ void MainLoop::update() {
               receive_data_.current_desired;
 
   fast_loop_set_iq_des(iq_des);
+  fast_loop_set_id_des(receive_data_.position_desired);
   SendData send_data;
   send_data.iq = fast_loop_status_.foc_status.measured.i_q;
   send_data.timestamp_received = receive_data_.timestamp;
