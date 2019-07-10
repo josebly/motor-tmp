@@ -6,4 +6,6 @@ class Aksim2Encoder : public SPIEncoder {
     Aksim2Encoder(SPI_TypeDef &regs, GPIO &gpio_cs) : SPIEncoder(regs, gpio_cs) {} 
     virtual int32_t get_value();
     virtual void trigger();
+ private:
+    int count = 0;
 };
