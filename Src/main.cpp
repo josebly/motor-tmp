@@ -662,7 +662,6 @@ static void MX_DAC_Init(void)
   * @retval None
   */
 
- uint16_t spi1_rx[4], spi1_tx[4];
 static void MX_SPI1_Init(void)
 {
 
@@ -691,21 +690,7 @@ static void MX_SPI1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN SPI1_Init 2 */
-  SPI1->CR2 |= SPI_CR2_RXDMAEN;
 
-// init dma: dma2 stream2 ch3 spi_rx, dma2 stream3 ch3 spi_tx
-// no fifo, half word
-  DMA2_Stream2->CR &= ~DMA_SxCR_EN;
-  DMA2_Stream2->CR = DMA_CHANNEL_3 | DMA_SxCR_MSIZE_0 | DMA_SxCR_PSIZE_0 | DMA_SxCR_MINC;
-  DMA2_Stream2->PAR = reinterpret_cast<uint32_t>(&SPI1->DR);
-  DMA2_Stream2->M0AR = reinterpret_cast<uint32_t>(spi1_rx);
-
-  DMA2_Stream3->CR &= ~DMA_SxCR_EN;
-  DMA2_Stream3->CR = DMA_CHANNEL_3 | DMA_SxCR_MSIZE_0 | DMA_SxCR_PSIZE_0 | DMA_SxCR_MINC | DMA_SxCR_DIR_0;
-  DMA2_Stream3->PAR = reinterpret_cast<uint32_t>(&SPI1->DR);
-  DMA2_Stream3->M0AR = reinterpret_cast<uint32_t>(spi1_tx);
-
-  SPI1->CR2 |= SPI_CR2_TXDMAEN;
 
   /* USER CODE END SPI1_Init 2 */
 
