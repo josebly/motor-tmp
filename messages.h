@@ -182,7 +182,7 @@ typedef struct {
     mcu_time timestamp_received;
     float motor_position;
     float iq;
-    float motor_mechanical_position;
+    float motor_raw_position;
 } SendData;
 
 typedef struct {
