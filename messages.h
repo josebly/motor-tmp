@@ -83,7 +83,7 @@ typedef struct {
     } desired;
     struct {
         float position;
-        float i_d, i_q;
+        float i_d, i_q, i_0;
     } measured;
     struct { float v_a, v_b, v_c, v_d, v_q; } command;
 } FOCStatus;
@@ -178,7 +178,7 @@ typedef struct {
 } SimulatorStatus;
 
 typedef struct {
-    mcu_time timestamp;                 // timestamp in microcontroller clock cycles
+    mcu_time mcu_timestamp;             // timestamp in microcontroller clock cycles
     uint32_t host_timestamp_received;   // return of host_timestamp from ReceiveData
     float motor_position;               // motor position in radians
     float joint_position;               // joint position in radians
