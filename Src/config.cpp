@@ -6,7 +6,7 @@
 #include "../control/pwm.h"
 #include "../control/gpio.h"
 
-#include "dev_00.cpp"
+#include "dev_00_aksim2.cpp"
 
 const Config config;
 
