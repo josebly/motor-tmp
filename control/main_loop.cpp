@@ -43,10 +43,11 @@ void MainLoop::update() {
   fast_loop_set_iq_des(iq_des);
   SendData send_data;
   send_data.iq = fast_loop_status_.foc_status.measured.i_q;
-  send_data.timestamp_received = receive_data_.timestamp;
+  send_data.host_timestamp_received = receive_data_.host_timestamp;
   send_data.timestamp = fast_loop_status_.timestamp;
-  send_data.motor_mechanical_position = fast_loop_status_.motor_mechanical_position;
+  send_data.motor_encoder = fast_loop_status_.motor_position.raw;
   send_data.motor_position = fast_loop_status_.motor_position.position;
+  send_data.joint_position = 0;
   communication_.send_data(send_data);
   led_.update();
 }
