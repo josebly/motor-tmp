@@ -48,6 +48,7 @@ void MainLoop::update() {
   send_data.motor_encoder = fast_loop_status_.motor_position.raw;
   send_data.motor_position = fast_loop_status_.motor_position.position;
   send_data.joint_position = 0;
+  send_data.reserved[0] = fast_loop_status_.foc_status.measured.i_0;
   communication_.send_data(send_data);
   led_.update();
 }

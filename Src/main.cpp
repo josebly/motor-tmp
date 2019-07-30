@@ -299,8 +299,8 @@ int main(void)
   
   // startup
   fast_loop_voltage_mode();
-  for (int i=0; i<1000; i++) {
-    HAL_Delay(1);
+  uint32_t t_start = get_clock();
+  while ((get_clock() - t_start)/180e6 < 2) {
     fast_loop_zero_current_sensors();
   }
   if (param()->startup_param.do_phase_lock) {
