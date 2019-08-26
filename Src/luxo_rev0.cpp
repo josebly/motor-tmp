@@ -5,8 +5,8 @@
 extern const volatile Param initial_param;
 
 static struct {
-    GPIO motor_encoder_cs = {*GPIOA, 15, GPIO::OUTPUT};
-    Aksim2Encoder motor_encoder = {*SPI1, motor_encoder_cs};
+    Aksim2Encoder motor_encoder = {*SPI1};
+    Encoder output_encoder = {reinterpret_cast<volatile int32_t *>(&TIM5->CNT)};
     GPIO enable = {*GPIOC, 14, GPIO::OUTPUT};
     PWM motor_pwm = {initial_param.fast_loop_param.pwm_frequency, *const_cast<uint32_t*>(&TIM8->CCR3), 
                           *const_cast<uint32_t*>(&TIM8->CCR2), 
@@ -18,5 +18,5 @@ static struct {
                const_cast<uint16_t*>(reinterpret_cast<volatile uint16_t *>(&TIM3->CCR4)), false, 0.01};
     PIDController controller;
     USBCommunication communication;
-    MainLoop main_loop = {controller, communication, led};
+    MainLoop main_loop = {controller, communication, led, output_encoder};
 } config_items;
