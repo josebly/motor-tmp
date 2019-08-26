@@ -313,7 +313,7 @@ int main(void)
     case OPEN:
       fast_loop_open_mode();
       break;
-    case BRAKE:
+    case DAMPED:
       fast_loop_brake_mode();
       break;
     case NORMAL_CONTROL:
