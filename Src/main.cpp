@@ -139,10 +139,40 @@ uint16_t drv_regs[] = {
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// Find the best value of hsi_trim
+uint8_t calibrate_hsi(uint8_t hse_freq) {
+    // hsi frequency is supposed to be 16 MHz
+    // Switch to hsi for sysclk, connect hse_rtc to tim11 for counting
+    RCC->APB2ENR |= RCC_APB2ENR_TIM11EN;
+    TIM11->OR = 2;
+    TIM11->CR1 |= TIM_CR1_CEN;
+    RCC->CFGR &= ~RCC_CFGR_SW;
+    int32_t min_error = (1<<31)-1;
+    uint8_t min_hsi_trim = 0x10;
+    for (uint32_t i=0; i<=0x1F; i++) {
+      uint32_t hsi_trim = i << RCC_CR_HSITRIM_Pos;
+      RCC->CR &= ~RCC_CR_HSITRIM;
+      RCC->CR |= hsi_trim;
+      uint32_t tstart = get_clock();
+      uint16_t thsestart = TIM11->CNT;
+      for (int j=0; j<1000; j++); // delay
+      uint32_t thsi = get_clock() - tstart;
+      uint32_t thse = TIM11->CNT - thsestart;
+      int32_t error = thse*16/24/2 - thsi;
+      if (abs(error) < abs(min_error)) {
+        min_hsi_trim = i;
+        min_error = error;
+      }
+    }
+    return min_hsi_trim;
+}
+
 // Call bootloader, trigger is go_to_bootloader==1 on reboot + software reset
 uint8_t go_to_bootloader = false;
+uint32_t hsi_trim = 0;
 void reboot_to_bootloader() {
   go_to_bootloader = true;
+  hsi_trim = (uint32_t) calibrate_hsi(get_pin_config()->crystal_frequency_MHz) << RCC_CR_HSITRIM_Pos;
   NVIC_SystemReset();
 }
 
