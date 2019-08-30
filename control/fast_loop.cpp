@@ -66,10 +66,8 @@ void FastLoop::update() {
 
 // called at a slow frequency in a non interrupt
 void FastLoop::maintenance() {
-    if (TIM2->SR & TIM_SR_CC3IF) {
-        // qep index received
-        // TODO cleared by reading CCR3?
-        motor_index_pos_ = TIM2->CCR3;
+    if (encoder_.index_received()) {
+        motor_index_pos_ = encoder_.get_index_pos();
         if (param_.motor_encoder.use_index_electrical_offset_pos) {
           // motor_index_electrical_offset_pos is the value of an electrical zero minus the index position
           // motor_electrical_zero_pos is the offset to the initial encoder value

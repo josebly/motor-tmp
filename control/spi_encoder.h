@@ -11,10 +11,11 @@ class GPIO;
 
 class SPIEncoder : public Encoder {
  public:
-    SPIEncoder(SPI_TypeDef &regs, GPIO &gpio_cs) : Encoder(0), regs_(regs), gpio_cs_(gpio_cs) {} 
+    SPIEncoder(SPI_TypeDef &regs, GPIO &gpio_cs) : Encoder(), regs_(regs), gpio_cs_(gpio_cs) {} 
     //void init() {}
     virtual int32_t get_value();
     virtual void trigger();
+    virtual bool index_received() { return true; }
  protected:
     SPI_TypeDef &regs_;
     GPIO &gpio_cs_;

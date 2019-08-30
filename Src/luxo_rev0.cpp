@@ -1,3 +1,4 @@
+#include "../control/qep_encoder.h"
 #include "../control/aksim2_encoder.h"
 #include "../communication/usb_communication.h"
 #include "stm32f446xx.h"
