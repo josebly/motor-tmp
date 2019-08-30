@@ -34,7 +34,7 @@ endif
 # optimization
 OPT = -Og -O3
 
-DEFAULT_PARAM_C = param_dev_00_robo.c
+DEFAULT_PARAM_C = param_r0.c
 
 #######################################
 # paths
