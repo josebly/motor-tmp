@@ -78,7 +78,7 @@ void FastLoop::maintenance() {
     }
 
     if (mode_ == PHASE_LOCK_MODE) {
-        motor_electrical_zero_pos_ = TIM2->CNT;
+        motor_electrical_zero_pos_ = encoder_.get_value();
     }
 
     v_bus_ = ADC1->DR*param_.vbus_gain;
