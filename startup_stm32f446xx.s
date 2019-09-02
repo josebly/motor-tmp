@@ -75,6 +75,10 @@ Reboot_Loader:
     ldr     r0, =0x40023844 /* RCC_APB2ENR */
     ldr     r1, =0x00004000 /* ENABLE SYSCFG CLOCK */
     str     R1, [R0, #0]
+    ldr     r0, =0x40023800 /* RCC_CR */
+    ldr     r1, =hsi_trim
+    ldr     r1, [r1]
+    str     r1, [r0]
     ldr     R0, =0x40013800 /* SYSCFG_MEMRMP */
     ldr     R1, =0x00000001 /* MAP ROM AT ZERO */
     str     R1, [R0, #0]
