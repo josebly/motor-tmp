@@ -6,8 +6,8 @@
 extern const volatile Param initial_param;
 
 static struct {
-    Aksim2Encoder motor_encoder = {*SPI1};
-    Encoder output_encoder = {reinterpret_cast<volatile int32_t *>(&TIM5->CNT)};
+    Aksim2Encoder output_encoder = {*SPI1};
+    QEPEncoder motor_encoder = {reinterpret_cast<volatile int32_t *>(&TIM5->CNT), reinterpret_cast<volatile int32_t *>(&TIM5->CCR3)};
     GPIO enable = {*GPIOC, 14, GPIO::OUTPUT};
     PWM motor_pwm = {initial_param.fast_loop_param.pwm_frequency, *const_cast<uint32_t*>(&TIM8->CCR3), 
                           *const_cast<uint32_t*>(&TIM8->CCR2), 
