@@ -214,6 +214,8 @@ int main(void)
 
   /* Configure the system clock */
   SystemClock_Config();
+    __HAL_RCC_DMA2_CLK_ENABLE();
+
 
   /* USER CODE BEGIN SysInit */
 
@@ -337,8 +339,8 @@ int main(void)
   
   // startup
   fast_loop_voltage_mode();
-  for (int i=0; i<1000; i++) {
-    HAL_Delay(1);
+  uint32_t t_start = get_clock();
+  while ((get_clock() - t_start)/180e6 < 2) {
     fast_loop_zero_current_sensors();
   }
   if (param()->startup_param.do_phase_lock) {
@@ -351,7 +353,7 @@ int main(void)
     case OPEN:
       fast_loop_open_mode();
       break;
-    case BRAKE:
+    case DAMPED:
       fast_loop_brake_mode();
       break;
     case NORMAL_CONTROL:
@@ -414,7 +416,7 @@ void SystemClock_Config(void)
   /**Initializes the CPU, AHB and APB busses clocks 
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = get_pin_config()->crystal_frequency_MHz;
@@ -699,6 +701,7 @@ static void MX_DAC_Init(void)
   * @param None
   * @retval None
   */
+
 static void MX_SPI1_Init(void)
 {
 
@@ -717,7 +720,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -727,6 +730,7 @@ static void MX_SPI1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN SPI1_Init 2 */
+
 
   /* USER CODE END SPI1_Init 2 */
 

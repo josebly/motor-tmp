@@ -97,7 +97,7 @@
 #define USBD_VID     1155
 #define USBD_LANGID_STRING     1033
 #define USBD_MANUFACTURER_STRING        board_id_manufacturer_string()
-#define USBD_PID_FS     22336
+#define USBD_PID_FS     (22336+1)
 #define USBD_PRODUCT_STRING_FS          board_id_product_string()
 #define USBD_SERIALNUMBER_STRING_FS     board_id_serial_number()
 #define USBD_CONFIGURATION_STRING_FS    VERSION " " GIT_HASH " " BUILD_DATETIME

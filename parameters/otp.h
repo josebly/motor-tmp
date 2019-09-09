@@ -15,8 +15,9 @@ struct BoardID {
     union BoardType {
         enum STBoardType {STUnknownBoardType=0, Nucleo446RE=1, Nucleo446ZE=2};
         enum FabulabBoardType {FabulabUnknownBoardType=0, dev_00=1};
+        enum VeBoardType {VeUnknownBoardType=0, Rev0=1};
     };
-    enum Manufacturer {UnknownManufacturer=0, ST=1, FabulabSL=2, Unprogrammed=0xFF};
+    enum Manufacturer {UnknownManufacturer=0, ST=1, FabulabSL=2, Ve=3, Unprogrammed=0xFF};
     BoardID();
 #endif
 

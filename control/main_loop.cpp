@@ -8,6 +8,7 @@
 #include "stm32f4xx_hal.h"
 #include "../communication/usb_communication.h"
 #include "foc_i.h"
+#include "aksim2_encoder.h"
 
 void MainLoop::init() {
     communication_.init();
@@ -25,7 +26,7 @@ void MainLoop::update() {
         default:
           fast_loop_open_mode();
           break;
-        case BRAKE:
+        case DAMPED:
           fast_loop_brake_mode();
           break;
         case NORMAL_CONTROL:
@@ -34,7 +35,7 @@ void MainLoop::update() {
       }
     }
   }
-  
+  output_encoder_.trigger();
   fast_loop_get_status(&fast_loop_status_);
 
   float iq_des = controller_.step(receive_data_.position_desired, fast_loop_status_.motor_position.position) + \
@@ -47,7 +48,8 @@ void MainLoop::update() {
   send_data.mcu_timestamp = fast_loop_status_.timestamp;
   send_data.motor_encoder = fast_loop_status_.motor_position.raw;
   send_data.motor_position = fast_loop_status_.motor_position.position;
-  send_data.joint_position = 0;
+  send_data.joint_position = output_encoder_.get_value();
+  send_data.reserved[0] = fast_loop_status_.foc_status.measured.i_0;
   communication_.send_data(send_data);
   led_.update();
 }

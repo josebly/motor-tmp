@@ -39,6 +39,19 @@ float fsat(float a, float sat) {
     // return a;
 }
 
+void Hysteresis::set_hysteresis(float value) {
+    hysteresis_ = value;
+}
+
+float Hysteresis::step(float value) {
+    if (value - value_ > hysteresis_) {
+        value_ = value - hysteresis_;
+    } else if (value - value_ < -hysteresis_) {
+        value_ = value + hysteresis_;
+    }
+    return value_;
+}
+
 void PIController::set_param(const PIParam &pi_param) {
     ki_ = pi_param.ki;
     kp_ = pi_param.kp;
@@ -59,10 +72,17 @@ void PIDController::set_param(const PIDParam &param) {
     ki_limit_ = param.ki_limit;
     kd_ = param.kd;
     command_max_ = param.command_max;
+    hysteresis_.set_hysteresis(command_max_/kp_);
 }
 
 float PIDController::step(float desired, float measured) {
-    float error = desired - measured;
+    // if (desired != last_desired_) {
+    //     last_desired_ = desired;
+    //     hysteresis_.set_value(desired);
+    // }
+
+    float proxy_desired = desired; //hysteresis_.step(measured);
+    float error = proxy_desired - measured;
     float error_dot = error-error_last_;
     error_last_ = error;
     ki_sum_ += ki_ * error;

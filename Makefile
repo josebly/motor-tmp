@@ -34,7 +34,7 @@ endif
 # optimization
 OPT = -Og -O3
 
-DEFAULT_PARAM_C = param_dev_00_robo.c
+DEFAULT_PARAM_C = param_r0.c
 
 #######################################
 # paths
@@ -99,6 +99,7 @@ parameters/otp.cpp \
 communication/usb_communication.cpp \
 control/spi_encoder.cpp \
 control/gpio.cpp \
+control/aksim2_encoder.cpp \
 
 
 # ASM sources

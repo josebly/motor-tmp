@@ -54,7 +54,7 @@ class FastLoop {
     float ia_bias_ = 0;
     float ib_bias_ = 0;
     float ic_bias_ = 0;
-    float alpha_zero_ = 0.01;
+    float alpha_zero_ = 0.001;
     float v_bus_ = 12;
     mcu_time timestamp_;
    Encoder &encoder_;
