@@ -1,5 +1,5 @@
 Architecture: amd64
-Depends: dfu-util
+Depends: dfu-util (>= 0.9)
 Description: Motor temporary firmware
 Maintainer: Lee Magnusson
 Package: motor-tmp
