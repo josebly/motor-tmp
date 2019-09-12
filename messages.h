@@ -53,6 +53,9 @@ enum MainControlMode {OPEN, DAMPED, NORMAL_CONTROL};
 typedef struct {
     int32_t update_frequency;
     PIDParam controller_param;
+    struct {
+        float cpr;
+    } output_encoder;
     float torque_gain, torque_bias;
     float kt;
     float gear_ratio;

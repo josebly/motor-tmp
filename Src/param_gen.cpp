@@ -50,6 +50,9 @@ int main(int argc, char** argv) {
     main_loop_param->add_option("--kd", p.main_loop_param.controller_param.kd, "position control kd", true);
     main_loop_param->add_option("--command_max", p.main_loop_param.controller_param.command_max, "position control max command", true);
 
+    CLI::App *output_encoder_param = main_loop_param->add_subcommand("output_encoder");
+    output_encoder_param->add_option("--cpr", p.main_loop_param.output_encoder.cpr, "Output encoder CPR", true);
+
     CLI::App *startup_param = app.add_subcommand("startup_param");
     startup_param->add_option("--do_phase_lock", p.startup_param.do_phase_lock = 1, "Do phase lock at startup", true);
     startup_param->add_option("--phase_lock_duration",p.startup_param.phase_lock_duration, "phase lock duration seconds", true);
