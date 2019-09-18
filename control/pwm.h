@@ -9,7 +9,7 @@ class GPIO;
 
 class PWM {
  public:
-    PWM(uint32_t frequency_hz, uint32_t &pwm_a, uint32_t &pwm_b, 
+    PWM(int32_t frequency_hz, uint32_t &pwm_a, uint32_t &pwm_b, 
          uint32_t &pwm_c, TIM_TypeDef &regs, GPIO &enable) : 
          pwm_a_(pwm_a), pwm_b_(pwm_b), pwm_c_(pwm_c),
          regs_(regs), enable_(enable) {

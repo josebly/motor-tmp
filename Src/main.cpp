@@ -160,10 +160,9 @@ uint8_t calibrate_hsi(uint8_t hse_freq) {
       RCC->CR |= hsi_trim;
 
       uint16_t start_count = TIM11->CCR1;
-      uint16_t tmp[10];
       for (int j=0; j<10; j++) {
         while(!(TIM11->SR & TIM_SR_CC1IF)); // wait for capture
-        tmp[j] = TIM11->CCR1;
+        TIM11->CCR1; // read resets the interrupt flag
       } 
       // The ideal total count is 10*8*16
       uint16_t total_count = TIM11->CCR1 - start_count;
@@ -362,9 +361,7 @@ int main(void)
   }
   fast_loop_set_iq_des(0);
 
-extern uint32_t data2[16];
   int32_t i  = 0;
-  USB usb;
   while (1)
   {
     i++;
@@ -375,15 +372,7 @@ extern uint32_t data2[16];
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
     fast_loop_get_status(&fast_loop_status);
     main_loop_get_status(&main_loop_status);
-//		sprintf(s, "%f, %f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q, main_loop_status.torque);
-//		CDC_Transmit_FS((uint8_t *) s, strlen(s));
-//    usb.send_data(1, (uint8_t*) s, strlen(s));
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-
-
-    int32_t usb_count;
-  //  int num_received = usb.receive_data(2, (uint8_t*) &usb_count, sizeof(usb_count));
-    usb_count = *(int32_t *) &data2[0];
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
 
     i_a_filtered = (1-alpha)*i_a_filtered + alpha*fast_loop_status.foc_command.measured.i_a;
