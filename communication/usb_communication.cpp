@@ -4,9 +4,10 @@
 
 extern uint32_t data2[16];
 extern uint8_t data2_count;
+USB usb;
 
 void USBCommunication::init() {
-    usb_ = new USB;
+    usb_ = &usb;
 }
 
 int USBCommunication::receive_data(ReceiveData * const data) {
