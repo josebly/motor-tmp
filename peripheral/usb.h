@@ -19,35 +19,64 @@ class USB {
     // limited to 64 bytes right now
     void send_data32(uint8_t endpoint, const uint32_t *data, uint8_t length32, uint8_t length8=0) 
     {
-        // if (!usb_connected) {
-        //     return;
-        // }
+        if (!(USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_USBAEP)) {
+            return;
+        }
+        if (endpoint != 0) {
+            if (sending_) {
+                // endpoint zero has priority, I don't know why but sending on another 
+                // endpoint at the same time seems to break the system
+                return;
+            }
+        }
+        // if (sending_)
+        //     asm("bkpt");
+        sending_ = 1;
         if (length8 == 0) {
             length8 = length32*4;
         }
-        HAL_NVIC_DisableIRQ(OTG_FS_IRQn);
+        if (endpoint != 0) {
         if (USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_EPENA) {  
             int count = 0;
             do {     
                 USBx_INEP(endpoint)->DIEPCTL |= USB_OTG_DIEPCTL_SNAK;
                 if (count++ > 100) {
-                    HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
                     return;
                 } 
             } while(!(USBx_INEP(endpoint)->DIEPINT & USB_OTG_DIEPINT_INEPNE) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS) && !(USBx_INEP(endpoint)->DIEPINT & USB_OTG_DIEPINT_EPDISD));
-            USBx->GRSTCTL = ( USB_OTG_GRSTCTL_TXFFLSH |(uint32_t)( 1 << (USB_OTG_GRSTCTL_TXFNUM_Pos + endpoint - 1)));
-            while((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS));     // wait on flush
+           while((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS) && !(USBx->GRSTCTL & USB_OTG_GRSTCTL_AHBIDL));
+           USBx->GRSTCTL = ( USB_OTG_GRSTCTL_TXFFLSH |(uint32_t)( 1 << (USB_OTG_GRSTCTL_TXFNUM_Pos + endpoint - 1)));
+           while((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS));     // wait on flush
         }
-   
+        } else {
+            while(USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_EPENA) {
+                asm("bkpt");
+            }
+        }
+
         USBx_INEP(endpoint)->DIEPTSIZ = 0;  // TODO necessary?
         USBx_INEP(endpoint)->DIEPTSIZ = length8 | ((length8/64 + 1) << USB_OTG_DIEPTSIZ_PKTCNT_Pos);
         USBx_INEP(endpoint)->DIEPCTL |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK ;
+
         for(int i=0; i<length32; i++) {
             USBx_DFIFO(endpoint) = data[i]; 
         }
+        // if (endpoint == 0) {
+        // do {
+        //     if (USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_NAKSTS) {
+        //         USBx_INEP(endpoint)->DIEPCTL |= USB_OTG_DIEPCTL_EPDIS | USB_OTG_DIEPCTL_SNAK ;
+        //         while((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS) && !(USBx->GRSTCTL & USB_OTG_GRSTCTL_AHBIDL));
+        //         USBx->GRSTCTL = ( USB_OTG_GRSTCTL_TXFFLSH |(uint32_t)( 1 << (USB_OTG_GRSTCTL_TXFNUM_Pos + endpoint - 1)));
+        //         while((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS));     // wait on flush
+        //         sending_ = 0;
+        //         return;
+        //     }
+        // } while(USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_EPENA);
+        // if (USBx_INEP(endpoint)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ)
+        //     asm("bkpt");
+        // }
 
-        HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
-
+        sending_ = 0;
     }
 
     void send_data(uint8_t endpoint, const uint8_t *data, uint8_t length) {
@@ -96,9 +125,15 @@ class USB {
             USBx_OUTEP(0U)->DOEPTSIZ = 0U;
             USBx_OUTEP(0U)->DOEPTSIZ |= (USB_OTG_DOEPTSIZ_PKTCNT & (1U << 19U)) ;
             USBx_OUTEP(0U)->DOEPTSIZ |= (3U * 8U);
-            USBx_OUTEP(0U)->DOEPTSIZ |=  USB_OTG_DOEPTSIZ_STUPCNT;  
+            USBx_OUTEP(0U)->DOEPTSIZ |=  USB_OTG_DOEPTSIZ_STUPCNT;
+
+            USBx_INEP(2)->DIEPCTL = 0;  
 
             USBx->GINTSTS &= USB_OTG_GINTSTS_USBRST;
+        }
+
+        if (USBx->GINTSTS & USB_OTG_GINTSTS_USBSUSP) {
+            USBx->GINTSTS &= USB_OTG_GINTSTS_USBSUSP;
         }
 
         if (USBx->GINTSTS & USB_OTG_GINTSTS_ENUMDNE)
@@ -121,7 +156,7 @@ class USB {
              USBx->GINTSTS &= USB_OTG_GINTSTS_ENUMDNE;
         }
 
-        uint8_t setup_data[64];
+    
         /* Handle RxQLevel Interrupt */
         if(USBx->GINTSTS & USB_OTG_GINTSTS_RXFLVL)
         {
@@ -136,7 +171,6 @@ class USB {
             
             if (packet_status == STS_DATA_UPDT) {
                 read_fifo(byte_count, data);
-                data_count++;
             }
             if (packet_status == STS_SETUP_UPDT) {
                 read_fifo(byte_count, reinterpret_cast<uint32_t *>(setup_data));
@@ -153,12 +187,10 @@ class USB {
             if (out_ep_interrupt & 1) { // endpoint 0 interrupt
                 if (USBx_OUTEP(0)->DOEPINT & USB_OTG_DOEPINT_XFRC) {
                     // transfer complete
-                    data_count++;
                 }
                 if (USBx_OUTEP(0)->DOEPINT & USB_OTG_DOEPINT_STUP) {
                     // setup phase done
                     handle_setup_packet(setup_data);
-                    st_count2++;
                 }
                 USBx_OUTEP(0)->DOEPINT = 0xFFFF;
             }
@@ -175,7 +207,6 @@ class USB {
                         // USBx_DEVICE->DCFG &= ~USB_OTG_DCFG_DAD;
                         // USBx_DEVICE->DCFG |= device_address_ << USB_OTG_DCFG_DAD_Pos;
                     }
-                    data_count++;
                 }
                 USBx_INEP(0)->DIEPINT = 0xFFFF;
             }
@@ -208,7 +239,7 @@ class USB {
                                         send_data(0, reinterpret_cast<const uint8_t *>("\x4\x3\x9\x4"), 4); // english
                                         break;
                                     default:
-                                        send_data(0, reinterpret_cast<const uint8_t *>("\xa\x3" "b\0o\0r\0t\0"), 10);
+                                        send_data(0, reinterpret_cast<const uint8_t *>("\xa\x3" "b\0o\0r\0t\0o\0"), 12);
                                         break;
                                 }
                                 break;
@@ -228,12 +259,16 @@ class USB {
                         send_data(0,0,0); // core seems to know to still send this as address 0
                         break;
                     case 0x09: // set configuration
+                        // enable endpoint 2
+                        USBx_DEVICE->DAINTMSK |= USB_OTG_DAINTMSK_IEPM & ((1U << (2)));
+                        USBx_INEP(2)->DIEPCTL |= ((64 & USB_OTG_DIEPCTL_MPSIZ ) | (2 << 18U) |\
+                            ((2) << USB_OTG_DIEPCTL_TXFNUM_Pos) | (USB_OTG_DIEPCTL_SD0PID_SEVNFRM) | (USB_OTG_DIEPCTL_USBAEP)); 
                         send_data(0,0,0);
                         break;
                 }
                 break;
             default:
-                st_count++;
+                send_stall(0);
                 break;
         }
         USBx_OUTEP(0U)->DOEPTSIZ = 0U;
@@ -242,10 +277,11 @@ class USB {
         USBx_OUTEP(0U)->DOEPTSIZ |=  USB_OTG_DOEPTSIZ_STUPCNT;  
         USBx_OUTEP(0)->DOEPCTL |= USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA;
     }
-    int st_count=0;
-    int st_count2=0;
-    int data_count=0;
+
+private:
     uint8_t device_address_ = 0;
+    uint8_t setup_data[64];
+    int sending_=0;
 };
 
 #endif
