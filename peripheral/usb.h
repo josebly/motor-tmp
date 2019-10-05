@@ -5,6 +5,7 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_ll_usb.h"
 #include <algorithm>
+#include <cstring>
 
 #include "usbd_cdc.h"
 
@@ -83,9 +84,18 @@ class USB {
         send_data32(endpoint, (uint32_t *) data, (length+3)/4, length);
     }
 
-    // receive up to length bytes from endpoint, return number of bytes read
-    int receive_data(uint8_t endpoint, uint8_t * const data, uint8_t length) {
-        return 0;
+    // receive up to length32 words from endpoint, return number of words read
+    int receive_data(uint8_t endpoint, uint32_t * const data, uint8_t length32) {
+        if (new_rx_data_[endpoint]) {
+            new_rx_data_[endpoint] = false;
+            for (int i=0; i<length32; i++) {
+                data[i] = rx_data_[endpoint][i];
+            }
+            return length32;
+        } else {
+            return 0;
+        }
+
     }
 
     void send_stall(uint8_t endpoint) {
@@ -160,9 +170,6 @@ class USB {
         /* Handle RxQLevel Interrupt */
         if(USBx->GINTSTS & USB_OTG_GINTSTS_RXFLVL)
         {
-            uint32_t data[64];
-          //  USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL);
-        
             uint32_t temp = USBx->GRXSTSP;
         
             uint8_t ep_number = temp & USB_OTG_GRXSTSP_EPNUM;
@@ -170,15 +177,16 @@ class USB {
             uint8_t packet_status = (temp & USB_OTG_PKTSTS) >> USB_OTG_PKTSTS_Pos;
             
             if (packet_status == STS_DATA_UPDT) {
-                read_fifo(byte_count, data);
+                read_fifo(byte_count, rx_data_[ep_number]);
+                new_rx_data_[ep_number] = true;
             }
             if (packet_status == STS_SETUP_UPDT) {
                 read_fifo(byte_count, reinterpret_cast<uint32_t *>(setup_data));
             }
-
-        
-      //  USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTSTS_RXFLVL);
-        
+            if (ep_number == 2) {
+                USBx_OUTEP(2)->DOEPTSIZ = 0x80040; 
+                USBx_OUTEP(2)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
+            }
         }
 
         if(USBx->GINTSTS & USB_OTG_GINTSTS_OEPINT)
@@ -193,6 +201,14 @@ class USB {
                     handle_setup_packet(setup_data);
                 }
                 USBx_OUTEP(0)->DOEPINT = 0xFFFF;
+            }
+            if (out_ep_interrupt & (1<<2)) { // endpoint 2 interrupt
+                if (USBx_OUTEP(2)->DOEPINT & USB_OTG_DOEPINT_XFRC) {
+                    // transfer complete
+                    // USBx_OUTEP(2)->DOEPTSIZ = 0x80040; 
+                    // USBx_OUTEP(2)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
+                }
+                USBx_OUTEP(2)->DOEPINT = 0xFFFF;
             }
         }
 
@@ -209,6 +225,9 @@ class USB {
                     }
                 }
                 USBx_INEP(0)->DIEPINT = 0xFFFF;
+            }
+            if (in_ep_interrupt & (1 << 2)) {
+                USBx_INEP(2)->DIEPINT = 0xFFFF;
             }
         }
     }
@@ -248,6 +267,9 @@ class USB {
                                 break;
                         }
                         break;
+                    default:
+                        send_stall(0);
+                        break;
                 }
                 break;
             case 0x00:  // standard request set
@@ -259,11 +281,22 @@ class USB {
                         send_data(0,0,0); // core seems to know to still send this as address 0
                         break;
                     case 0x09: // set configuration
-                        // enable endpoint 2
+                        // enable endpoint 2 IN (TX)
                         USBx_DEVICE->DAINTMSK |= USB_OTG_DAINTMSK_IEPM & ((1U << (2)));
                         USBx_INEP(2)->DIEPCTL |= ((64 & USB_OTG_DIEPCTL_MPSIZ ) | (2 << 18U) |\
                             ((2) << USB_OTG_DIEPCTL_TXFNUM_Pos) | (USB_OTG_DIEPCTL_SD0PID_SEVNFRM) | (USB_OTG_DIEPCTL_USBAEP)); 
+                        
+                        // enable endpoint 2 OUT (RX)
+                        USBx_DEVICE->DAINTMSK |= USB_OTG_DAINTMSK_OEPM & ((1U << (2)) << 16u);
+                        USBx_OUTEP(2)->DOEPCTL |= ((64 & USB_OTG_DOEPCTL_MPSIZ ) | (2 << 18U) |\
+                            (USB_OTG_DIEPCTL_SD0PID_SEVNFRM)| (USB_OTG_DOEPCTL_USBAEP));
+                        USBx_OUTEP(2)->DOEPTSIZ = 0x80040; 
+                        USBx_OUTEP(2)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
+                        // setup status phase    
                         send_data(0,0,0);
+                        break;
+                    default:
+                        send_stall(0);
                         break;
                 }
                 break;
@@ -281,7 +314,9 @@ class USB {
 private:
     uint8_t device_address_ = 0;
     uint8_t setup_data[64];
+    uint32_t rx_data_[4][16] = {};
     int sending_=0;
+    bool new_rx_data_[4] = {};
 };
 
 #endif

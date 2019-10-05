@@ -2,8 +2,6 @@
 #include "../peripheral/usb.h"
 #include <cstring>
 
-extern uint32_t data2[16];
-extern uint8_t data2_count;
 USB usb;
 
 void USBCommunication::init() {
@@ -11,10 +9,7 @@ void USBCommunication::init() {
 }
 
 int USBCommunication::receive_data(ReceiveData * const data) {
-    std::memcpy(data, data2, data2_count);
-    int count = data2_count;
-    data2_count = 0;
-    return count;
+    return usb_->receive_data(2, reinterpret_cast<uint32_t * const>(data), sizeof(data)/sizeof(uint32_t));
 }
 
 void USBCommunication::send_data(const SendData &data) {
