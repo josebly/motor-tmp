@@ -8,11 +8,12 @@
 #include <cstring>
 
 #include "usbd_cdc.h"
+#include "../parameters/otp.h"
+#include "../Src/param.h"
+#include "../version.h"
 
-extern uint8_t usb_connected;
-
-    extern uint8_t USBD_FS_DeviceDesc[0x12];
-    extern uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ];
+extern uint8_t USBD_FS_DeviceDesc[0x12];
+extern uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ];
 
 #define USBx USB_OTG_FS
 class USB {
@@ -82,6 +83,16 @@ class USB {
 
     void send_data(uint8_t endpoint, const uint8_t *data, uint8_t length) {
         send_data32(endpoint, (uint32_t *) data, (length+3)/4, length);
+    }
+
+    void send_string(uint8_t endpoint, const char *str, uint8_t length) {
+        uint16_t str_out[length+1] = {};
+        uint8_t length_total = 2 + 2*length;
+        str_out[0] = length_total | (3 << 8); // header
+        for (int i=0; i<length; i++) {
+            str_out[i+1] = str[i];
+        }
+        send_data(endpoint, reinterpret_cast<const uint8_t *>(str_out), length_total);
     }
 
     // receive up to length32 words from endpoint, return number of words read
@@ -253,12 +264,27 @@ class USB {
                                 send_data(0, USBD_CDC_CfgFSDesc, std::min(static_cast<size_t>(setup_data[6]),sizeof(USBD_CDC_CfgFSDesc)));
                                 break;
                             case 0x03:  // string descriptor
-                                switch (setup_data[4]) {
+                                switch (setup_data[2]) {
                                     case 0x00: // language descriptor
                                         send_data(0, reinterpret_cast<const uint8_t *>("\x4\x3\x9\x4"), 4); // english
                                         break;
+                                    case 0x01:
+                                        send_string(0, board_id_manufacturer_string(), std::strlen(board_id_manufacturer_string()));
+                                        break;
+                                    case 0x02:
+                                        send_string(0, board_id_product_string(), std::strlen(board_id_product_string()));
+                                        break;
+                                    case 0x03:
+                                        send_string(0, board_id_serial_number(), std::strlen(board_id_serial_number()));
+                                        break;
+                                    case 0x04:
+                                        send_string(0, VERSION " " GIT_HASH " " BUILD_DATETIME, std::strlen(VERSION " " GIT_HASH " " BUILD_DATETIME));
+                                        break;
+                                    case 0x05:
+                                        send_string(0, param()->name, std::strlen(param()->name));
+                                        break;
                                     default:
-                                        send_data(0, reinterpret_cast<const uint8_t *>("\xa\x3" "b\0o\0r\0t\0o\0"), 12);
+                                        send_string(0, "default", std::strlen("default"));
                                         break;
                                 }
                                 break;
