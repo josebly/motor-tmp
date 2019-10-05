@@ -14,6 +14,7 @@
 
 extern uint8_t USBD_FS_DeviceDesc[0x12];
 extern uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ];
+extern uint8_t go_to_bootloader;
 
 #define USBx USB_OTG_FS
 class USB {
@@ -325,6 +326,10 @@ class USB {
                         send_stall(0);
                         break;
                 }
+                break;
+            case 0x01:  // interface request
+                go_to_bootloader = true;
+                send_data(0,0,0);
                 break;
             default:
                 send_stall(0);
