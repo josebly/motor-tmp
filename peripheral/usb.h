@@ -327,9 +327,28 @@ class USB {
                         break;
                 }
                 break;
-            case 0x01:  // interface request
-                go_to_bootloader = true;
-                send_data(0,0,0);
+            case 0x01:  // interface request set
+                if (setup_data[1] == 11) { // set inteface request
+                    interface_ = setup_data[4];
+                    send_data(0,0,0);
+                } else {
+                    send_stall(0);
+                }
+                break;
+            case 0xa1:  // interface class get
+                if ((setup_data[1] == 3) && (interface_ == 1)) { // dfu get_status
+                    send_data(0,reinterpret_cast<const uint8_t *>("\x00\x00\x00\x00\x00\x00"), 6);
+                } else {
+                    send_stall(0);
+                }
+                break;
+            case 0x21:  // interface class request
+                if ((setup_data[1] == 0) && (interface_ == 1)) { // dfu detach
+                    go_to_bootloader = true;
+                    send_data(0,0,0);
+                } else {
+                    send_stall(0);
+                }
                 break;
             default:
                 send_stall(0);
@@ -345,6 +364,7 @@ class USB {
 private:
     uint8_t device_address_ = 0;
     uint8_t setup_data[64];
+    uint16_t interface_ = 0;
     uint32_t rx_data_[4][16] = {};
     int sending_=0;
     bool new_rx_data_[4] = {};
