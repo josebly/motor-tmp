@@ -9,7 +9,7 @@ void USBCommunication::init() {
 }
 
 int USBCommunication::receive_data(ReceiveData * const data) {
-    return usb_->receive_data(2, reinterpret_cast<uint32_t * const>(data), sizeof(data)/sizeof(uint32_t));
+    return usb_->receive_data(2, reinterpret_cast<uint32_t * const>(data), sizeof(*data)/sizeof(uint32_t));
 }
 
 void USBCommunication::send_data(const SendData &data) {
