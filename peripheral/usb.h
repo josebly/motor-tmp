@@ -16,6 +16,13 @@ extern uint8_t USBD_FS_DeviceDesc[0x12];
 extern uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ];
 extern uint8_t go_to_bootloader;
 
+extern uint8_t device_address_;
+extern uint8_t setup_data[64];
+extern uint16_t interface_;
+extern uint32_t rx_data_[4][16];
+extern volatile int sending_;
+extern bool new_rx_data_[4];
+
 #define USBx USB_OTG_FS
 class USB {
  public:
@@ -44,7 +51,12 @@ class USB {
             do {     
                 USBx_INEP(endpoint)->DIEPCTL |= USB_OTG_DIEPCTL_SNAK;
                 if (count++ > 100) {
-                    return;
+                    if (USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_NAKSTS) {
+                        break;
+                    } else {
+                        sending_ = 0;
+                        return;
+                    }
                 } 
             } while(!(USBx_INEP(endpoint)->DIEPINT & USB_OTG_DIEPINT_INEPNE) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS) && !(USBx_INEP(endpoint)->DIEPINT & USB_OTG_DIEPINT_EPDISD));
            while((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS) && !(USBx->GRSTCTL & USB_OTG_GRSTCTL_AHBIDL));
@@ -362,12 +374,12 @@ class USB {
     }
 
 private:
-    uint8_t device_address_ = 0;
-    uint8_t setup_data[64];
-    uint16_t interface_ = 0;
-    uint32_t rx_data_[4][16] = {};
-    int sending_=0;
-    bool new_rx_data_[4] = {};
+    // uint8_t device_address_ = 0;
+    // uint8_t setup_data[64];
+    // uint16_t interface_ = 0;
+    // uint32_t rx_data_[4][16] = {};
+    // int sending_=0;
+    // bool new_rx_data_[4] = {};
 };
 
 #endif
