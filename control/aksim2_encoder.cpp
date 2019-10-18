@@ -21,7 +21,9 @@ void Aksim2Encoder::init() {
 void Aksim2Encoder::trigger() {
     if (!init_) {
         init();
-        init_ = true;
+    }
+    if (init_++ < 10) {
+        return;
     }
     // EN == 0 if not transferring, TCIF also means transfer complete
     // Stream 2 is RX, Stream 3 is TX

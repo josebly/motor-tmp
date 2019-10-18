@@ -222,7 +222,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USB_DEVICE_Init();
+//MX_USB_DEVICE_Init();
   MX_ADC2_Init();
   MX_ADC3_Init();
   MX_TIM8_Init();
@@ -236,17 +236,27 @@ int main(void)
   MX_ADC1_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
+  MX_USB_DEVICE_Init();
+    			HAL_NVIC_SetPriority(OTG_FS_IRQn, 3, 0);
+      HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2, 0);
 
   // spi2 cs
   GPIOB->MODER |= GPIO_MODER_MODE12_0;
   GPIOB->MODER &= ~GPIO_MODER_MODE12_1;
 
+  //MX_USB_DEVICE_Init();
+
   // tmp power source with power cycle
   GPIOF->MODER |= GPIO_MODER_MODE12_0;
   GPIOF->MODER &= ~GPIO_MODER_MODE12_1;
   GPIOF->ODR &= ~GPIO_ODR_OD12;
+
+  //MX_USB_DEVICE_Init();
   HAL_Delay(100);
+  //MX_USB_DEVICE_Init();
   GPIOF->ODR |= GPIO_ODR_OD12;
+
+//  MX_USB_DEVICE_Init();
 
   DRV_EN_GPIO_INIT
 
@@ -265,6 +275,8 @@ int main(void)
   SPI3->CR1 |= SPI_CR1_SPE;   // enable spi
   SPI2->CR1 |= SPI_CR1_SPE;
   SPI1->CR1 |= SPI_CR1_SPE;
+
+  //MX_USB_DEVICE_Init();
 
 	HAL_TIM_Base_Start(&htim8);
 	HAL_TIM_Base_Start(&htim1);
@@ -286,8 +298,9 @@ int main(void)
       htim8.Instance->CCER |= TIM_CCER_CC1NE | TIM_CCER_CC2NE | TIM_CCER_CC3NE;
 			hadc1.Instance->CR1 |= ADC_CR1_JEOCIE;
 			htim1.Instance->DIER |= TIM_DIER_UIE;
-			HAL_NVIC_SetPriority(OTG_FS_IRQn, 3, 0);
-      HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2, 0);
+			//HAL_NVIC_SetPriority(OTG_FS_IRQn, 3, 0);
+      //HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2, 0);
+        
 			htim2.Instance->ARR = 0xFFFFFFFF;
 			
 			htim5.Instance->ARR = 0xFFFFFFFF;

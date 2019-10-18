@@ -14,6 +14,6 @@ class Aksim2Encoder : public Encoder {
     uint32_t last_raw_value_ = 0;
     int32_t value_ = 0;
     uint16_t rx_data_[4] = {}, tx_data_[4] = {};
-    bool init_ = false;
+    uint16_t init_ = 0;
     SPI_TypeDef &regs_;
 };
