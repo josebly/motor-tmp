@@ -2,6 +2,7 @@
 #define MOTOR_CONTROL_FUN_H
 
 #include "../messages.h"
+#include <cmath>
 
 class Hysteresis {
  public:
@@ -13,6 +14,25 @@ class Hysteresis {
     float hysteresis_ = 0;
 };
 
+class FirstOrderLowPassFilter {
+public:
+    FirstOrderLowPassFilter(float frequency_hz, float dt) {
+        alpha_ = 2*M_PI*dt*frequency_hz/(2*M_PI*dt*frequency_hz + 1);
+    }
+    void init(float value) {
+        value_ = value;
+        last_value_ = value;
+    }
+    float update(float value) {
+        value_ = alpha_*value + (1-alpha_)*last_value_;
+        last_value_ = value_;
+        return get_value();
+    }
+    float get_value() const { return value_; }
+private:
+    float value_ = 0, last_value_ = 0;
+    float alpha_;
+};
 
 class PIController {
 public:
@@ -35,6 +55,7 @@ private:
     float error_last_ = 0;
     float last_desired_ = 0;
     Hysteresis hysteresis_;
+    FirstOrderLowPassFilter error_dot_filter_ = {200, 1.0/10000};
 };
 
 class PIDDeadbandController : public PIDController {

@@ -87,7 +87,7 @@ float PIDController::step(float desired, float measured) {
 
     float proxy_desired = desired; //hysteresis_.step(measured);
     float error = proxy_desired - measured;
-    float error_dot = error-error_last_;
+    float error_dot = error_dot_filter_.update(error-error_last_);
     error_last_ = error;
     ki_sum_ += ki_ * error;
     ki_sum_ = fsat(ki_sum_, ki_limit_);
