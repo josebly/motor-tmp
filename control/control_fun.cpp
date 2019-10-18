@@ -39,6 +39,10 @@ float fsat(float a, float sat) {
     // return a;
 }
 
+float fsignf(float a) {
+    return a>=0 ? 1 : -1;
+}
+
 void Hysteresis::set_hysteresis(float value) {
     hysteresis_ = value;
 }
@@ -88,4 +92,9 @@ float PIDController::step(float desired, float measured) {
     ki_sum_ += ki_ * error;
     ki_sum_ = fsat(ki_sum_, ki_limit_);
     return fsat(kp_*error + ki_sum_ + kd_*error_dot, command_max_);
+}
+
+float PIDDeadbandController::step(float desired, float deadband, float measured) {
+    float desired_with_deadband = fsignf(desired-measured)*fmaxf(fabsf(desired-measured) - deadband, 0) + measured;
+    return PIDController::step(desired_with_deadband, measured);
 }

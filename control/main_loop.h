@@ -4,22 +4,23 @@
 
 #include "../messages.h"
 class LED;
-class PIDController;
+class PIDDeadbandController;
 class Communication;
 class Encoder;
 #include <cmath>
 
 class MainLoop {
  public:
-    MainLoop(PIDController &controller, Communication &communication, LED &led, Encoder &output_encoder) : 
+    MainLoop(PIDDeadbandController &controller, Communication &communication, LED &led, Encoder &output_encoder) : 
         controller_(controller), communication_(communication), led_(led), output_encoder_(output_encoder) {}
     void init();
     void update();
     void set_param(MainLoopParam &);
     void get_status(MainLoopStatus * const main_loop_status) const;
+    void set_mode(MainControlMode mode);
  private:
     MainLoopParam param_;
-    PIDController &controller_;
+    PIDDeadbandController &controller_;
     Communication &communication_;
     LED &led_;
     ReceiveData receive_data_ = {};

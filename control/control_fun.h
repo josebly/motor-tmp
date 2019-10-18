@@ -37,6 +37,13 @@ private:
     Hysteresis hysteresis_;
 };
 
+class PIDDeadbandController : public PIDController {
+public:
+    virtual ~PIDDeadbandController() {}
+    virtual float step(float desired, float deadband, float measured);
+};
+
+
 
 
 #endif //MOTOR_CONTROL_FUN_H
