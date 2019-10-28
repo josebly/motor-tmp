@@ -31,6 +31,7 @@ void MainLoop::set_mode(MainControlMode mode) {
       fast_loop_current_mode();
       break;
   }
+  receive_data_.mode_desired = mode;
 }
 
 extern SPI_HandleTypeDef hspi2;

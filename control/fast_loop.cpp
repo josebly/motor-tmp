@@ -120,10 +120,12 @@ void FastLoop::current_mode() {
 
 void FastLoop::brake_mode() {
     pwm_.brake_mode();
+    mode_ = BRAKE_MODE;
 }
 
 void FastLoop::open_mode() {
     pwm_.open_mode();
+    mode_ = OPEN_MODE;
 }
 
 void FastLoop::get_status(FastLoopStatus *fast_loop_status) {
