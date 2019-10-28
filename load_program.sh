@@ -1,12 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-if ! type motor-util > /dev/null || (( $(motor-util | wc -l) == 2 )) ; then
-  dfu-util -s 0x8000000 -a0 -D motor-tmp.bin args $@
-  dfu-util -s 0x8060000:leave -a0 -D motor-tmp_param.bin $@
+: ${motor_bin:=/usr/share/motor-tmp/motor-tmp.bin}
+
+motors_programmed=0
+if ! type motor_util > /dev/null; then
+  dfu-util -s 0x8000000:leave -a0 -D ${motor_bin} $@
+
 else
- sn=$(motor-util | tail -n +3 | awk '{print $NF}') 
- echo $sn
+  paths=$(motor_util --list-path-only) 
+  echo "${paths}"
+  echo "${paths}" | xargs -I{} -n1 -P10 dfu-util -s 0x8000000:leave -a0 -D ${motor_bin} args -p {} && echo "Success"
+fi
 
- echo $sn | xargs -n1 -P10 dfu-util -s 0x8000000 -a0 -D motor-tmp.bin args -p
- echo $sn | xargs -n1 -P10 dfu-util -s 0x8060000:leave -a0 -D motor-tmp_param.bin -p
+if (($? == 0)); then
+  echo "Motors programmed success"
+else
+  echo "Error programming motors"
+  exit 1
 fi

@@ -6,7 +6,7 @@
 #include "../control/pwm.h"
 #include "../control/gpio.h"
 
-#include "dev_00.cpp"
+#include "luxo_rev0.cpp"
 
 const Config config;
 

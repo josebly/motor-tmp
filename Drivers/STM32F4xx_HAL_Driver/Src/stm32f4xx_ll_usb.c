@@ -789,6 +789,8 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx , USB_OTG_EPTypeD
   /* IN endpoint */
   if (ep->is_in == 1U)
   {
+    // Lee added to address non empty tx fifo at times messing with enumeration
+    USB_FlushTxFifo(USBx, ep->num);
     /* Zero Length Packet? */
     if (ep->xfer_len == 0U)
     {

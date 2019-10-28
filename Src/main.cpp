@@ -139,10 +139,49 @@ uint16_t drv_regs[] = {
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// Find the best value of hsi_trim
+uint8_t calibrate_hsi(uint8_t hse_freq) {
+    // hsi frequency is supposed to be 16 MHz
+    // Switch to hsi for sysclk, connect hse_rtc to tim11 for counting
+    RCC->APB2ENR |= RCC_APB2ENR_TIM11EN;
+    RCC->CFGR &= ~(RCC_CFGR_SW | RCC_CFGR_PPRE2);      // HSI at 16MHz for sysclk, APB2 at 16MHz for TIM11
+    RCC->CFGR |= (uint32_t) hse_freq << RCC_CFGR_RTCPRE_Pos; // HSE_RTC at 1 MHz
+
+    TIM11->OR = 2;
+    TIM11->CR1 |= TIM_CR1_CEN;
+    TIM11->CCMR1 |= TIM_CCMR1_CC1S_0 | TIM_CCMR1_IC1PSC; // input capture IC1, max prescaler, 8
+    TIM11->CCER |= TIM_CCER_CC1E;     // enable input capture
+
+    int16_t min_error = INT16_MAX;
+    uint8_t min_hsi_trim = 0x10;
+    for (uint32_t i=0; i<=0x1F; i++) {
+      uint32_t hsi_trim = i << RCC_CR_HSITRIM_Pos;
+      RCC->CR &= ~RCC_CR_HSITRIM;
+      RCC->CR |= hsi_trim;
+
+      uint16_t start_count = TIM11->CCR1;
+      for (int j=0; j<10; j++) {
+        while(!(TIM11->SR & TIM_SR_CC1IF)); // wait for capture
+        TIM11->CCR1; // read resets the interrupt flag
+      } 
+      // The ideal total count is 10*8*16
+      uint16_t total_count = TIM11->CCR1 - start_count;
+      int16_t error = 10*8*16 - (int16_t) total_count;
+      if (abs(error) < abs(min_error)) {
+        min_hsi_trim = i;
+        min_error = error;
+      }
+    }
+    return min_hsi_trim;
+}
+
 // Call bootloader, trigger is go_to_bootloader==1 on reboot + software reset
 uint8_t go_to_bootloader = false;
+uint32_t hsi_trim = 0x10l << RCC_CR_HSITRIM_Pos;
 void reboot_to_bootloader() {
+  __disable_irq();
   go_to_bootloader = true;
+  hsi_trim = (uint32_t) calibrate_hsi(get_pin_config()->crystal_frequency_MHz) << RCC_CR_HSITRIM_Pos;
   NVIC_SystemReset();
 }
 
@@ -174,6 +213,8 @@ int main(void)
 
   /* Configure the system clock */
   SystemClock_Config();
+    __HAL_RCC_DMA2_CLK_ENABLE();
+
 
   /* USER CODE BEGIN SysInit */
 
@@ -181,7 +222,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USB_DEVICE_Init();
+//MX_USB_DEVICE_Init();
   MX_ADC2_Init();
   MX_ADC3_Init();
   MX_TIM8_Init();
@@ -195,17 +236,27 @@ int main(void)
   MX_ADC1_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
+  MX_USB_DEVICE_Init();
+    			HAL_NVIC_SetPriority(OTG_FS_IRQn, 3, 0);
+      HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2, 0);
 
   // spi2 cs
   GPIOB->MODER |= GPIO_MODER_MODE12_0;
   GPIOB->MODER &= ~GPIO_MODER_MODE12_1;
 
+  //MX_USB_DEVICE_Init();
+
   // tmp power source with power cycle
   GPIOF->MODER |= GPIO_MODER_MODE12_0;
   GPIOF->MODER &= ~GPIO_MODER_MODE12_1;
   GPIOF->ODR &= ~GPIO_ODR_OD12;
+
+  //MX_USB_DEVICE_Init();
   HAL_Delay(100);
+  //MX_USB_DEVICE_Init();
   GPIOF->ODR |= GPIO_ODR_OD12;
+
+//  MX_USB_DEVICE_Init();
 
   DRV_EN_GPIO_INIT
 
@@ -224,6 +275,8 @@ int main(void)
   SPI3->CR1 |= SPI_CR1_SPE;   // enable spi
   SPI2->CR1 |= SPI_CR1_SPE;
   SPI1->CR1 |= SPI_CR1_SPE;
+
+  //MX_USB_DEVICE_Init();
 
 	HAL_TIM_Base_Start(&htim8);
 	HAL_TIM_Base_Start(&htim1);
@@ -245,8 +298,9 @@ int main(void)
       htim8.Instance->CCER |= TIM_CCER_CC1NE | TIM_CCER_CC2NE | TIM_CCER_CC3NE;
 			hadc1.Instance->CR1 |= ADC_CR1_JEOCIE;
 			htim1.Instance->DIER |= TIM_DIER_UIE;
-			HAL_NVIC_SetPriority(OTG_FS_IRQn, 3, 0);
-      HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2, 0);
+			//HAL_NVIC_SetPriority(OTG_FS_IRQn, 3, 0);
+      //HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2, 0);
+        
 			htim2.Instance->ARR = 0xFFFFFFFF;
 			
 			htim5.Instance->ARR = 0xFFFFFFFF;
@@ -297,8 +351,8 @@ int main(void)
   
   // startup
   fast_loop_voltage_mode();
-  for (int i=0; i<1000; i++) {
-    HAL_Delay(1);
+  uint32_t t_start = get_clock();
+  while ((get_clock() - t_start)/180e6 < 2) {
     fast_loop_zero_current_sensors();
   }
   if (param()->startup_param.do_phase_lock) {
@@ -311,7 +365,7 @@ int main(void)
     case OPEN:
       fast_loop_open_mode();
       break;
-    case BRAKE:
+    case DAMPED:
       fast_loop_brake_mode();
       break;
     case NORMAL_CONTROL:
@@ -320,9 +374,7 @@ int main(void)
   }
   fast_loop_set_iq_des(0);
 
-extern uint32_t data2[16];
   int32_t i  = 0;
-  USB usb;
   while (1)
   {
     i++;
@@ -333,15 +385,7 @@ extern uint32_t data2[16];
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
     fast_loop_get_status(&fast_loop_status);
     main_loop_get_status(&main_loop_status);
-//		sprintf(s, "%f, %f, %f\r\n", fast_loop_status.motor_mechanical_position, fast_loop_status.foc_status.measured.i_q, main_loop_status.torque);
-//		CDC_Transmit_FS((uint8_t *) s, strlen(s));
-//    usb.send_data(1, (uint8_t*) s, strlen(s));
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-
-
-    int32_t usb_count;
-  //  int num_received = usb.receive_data(2, (uint8_t*) &usb_count, sizeof(usb_count));
-    usb_count = *(int32_t *) &data2[0];
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
 
     i_a_filtered = (1-alpha)*i_a_filtered + alpha*fast_loop_status.foc_command.measured.i_a;
@@ -374,7 +418,7 @@ void SystemClock_Config(void)
   /**Initializes the CPU, AHB and APB busses clocks 
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = get_pin_config()->crystal_frequency_MHz;
@@ -659,6 +703,7 @@ static void MX_DAC_Init(void)
   * @param None
   * @retval None
   */
+
 static void MX_SPI1_Init(void)
 {
 
@@ -677,7 +722,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -687,6 +732,7 @@ static void MX_SPI1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN SPI1_Init 2 */
+
 
   /* USER CODE END SPI1_Init 2 */
 

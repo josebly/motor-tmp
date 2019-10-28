@@ -34,7 +34,7 @@ endif
 # optimization
 OPT = -Og -O3
 
-DEFAULT_PARAM_C = param_dev_00_robo.c
+DEFAULT_PARAM_C = param_r0.c
 
 #######################################
 # paths
@@ -99,6 +99,8 @@ parameters/otp.cpp \
 communication/usb_communication.cpp \
 control/spi_encoder.cpp \
 control/gpio.cpp \
+control/aksim2_encoder.cpp \
+peripheral/usb.cpp \
 
 
 # ASM sources
@@ -192,7 +194,7 @@ LDSCRIPT = STM32F446ZETx_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nosys.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections $(LTOI)
+LDFLAGS = $(MCU) -specs=nosys.specs -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections $(LTOI)
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin $(BUILD_DIR)/$(TARGET)_param.bin
@@ -249,11 +251,11 @@ clean:
 
 PARAM_GEN_SRCS = Src/param.c parameters/${DEFAULT_PARAM_C} Src/param_gen.cpp
 param_gen: $(PARAM_GEN_SRCS) | $(BUILD_DIR)
-	gcc $(PARAM_GEN_SRCS) -lstdc++ -o $(BUILD_DIR)/param_gen
+	gcc $(PARAM_GEN_SRCS) -lstdc++ -std=c++11 -o $(BUILD_DIR)/param_gen
 
 OTP_GEN_SRCS = parameters/otp_gen.cpp parameters/otp.cpp
 otp_gen: $(BUILD_DIR)
-	g++ $(OTP_GEN_SRCS) -o $(BUILD_DIR)/otp_gen
+	g++ $(OTP_GEN_SRCS) -std=c++11 -o $(BUILD_DIR)/otp_gen
 
 FOLDER = release_$(shell git describe --tags)
 package: all param_gen otp_gen
@@ -265,9 +267,36 @@ package: all param_gen otp_gen
 	cp $(BUILD_DIR)/$(TARGET)_param.bin $(FOLDER)
 	cp $(BUILD_DIR)/otp_gen $(FOLDER)
 	cp parameters/load_otp.sh $(FOLDER)
-	cp parameters/dev_00.ini $(FOLDER)
+	cp -r ini/ $(FOLDER)
 	cp 99-st.rules $(FOLDER)
 	cp LICENSE $(FOLDER)
 	cp -r docs/ $(FOLDER)
 	tar czf $(FOLDER).tgz $(FOLDER)/
 
+DEB_FOLDER = $(TARGET)-$(GIT_VERSION)
+INSTALL_PREFIX = usr
+INSTALL_BIN_DIR = $(INSTALL_PREFIX)/bin
+INSTALL_SHARE_DIR = $(INSTALL_PREFIX)/share/$(TARGET)
+INSTALL_UDEV_RULES_DIR = etc/udev/rules.d
+deb_package: package
+	mkdir -p $(DEB_FOLDER)/$(INSTALL_BIN_DIR)
+	mkdir -p $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)
+	mkdir -p $(DEB_FOLDER)/$(INSTALL_UDEV_RULES_DIR)
+	cp -r DEBIAN $(DEB_FOLDER)/
+	cp Src/load_param.sh $(DEB_FOLDER)/$(INSTALL_BIN_DIR)/motor_load_param
+	cp load_program.sh $(DEB_FOLDER)/$(INSTALL_BIN_DIR)/motor_load_program
+	cp $(BUILD_DIR)/otp_gen $(DEB_FOLDER)/$(INSTALL_BIN_DIR)/motor_otp_gen
+	cp $(BUILD_DIR)/param_gen $(DEB_FOLDER)/$(INSTALL_BIN_DIR)/motor_param_gen
+	cp parameters/load_otp.sh $(DEB_FOLDER)/$(INSTALL_BIN_DIR)/motor_load_otp
+	cp $(BUILD_DIR)/$(TARGET).bin $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)
+	cp $(BUILD_DIR)/$(TARGET)_param.bin $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)
+	cp 99-st.rules $(DEB_FOLDER)/$(INSTALL_UDEV_RULES_DIR)
+	cp -r ini/ $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)/
+	cp -r docs/ $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)/
+	cp LICENSE $(DEB_FOLDER)/$(INSTALL_SHARE_DIR)/
+
+	echo $(GIT_VERSION) | sed 's/^v/Version: /' >> $(DEB_FOLDER)/DEBIAN/control
+	dpkg-deb --build $(DEB_FOLDER)
+
+test: all
+	$(MAKE) -C test

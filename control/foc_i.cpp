@@ -64,3 +64,9 @@ void main_loop_set_param(MainLoopParam * const main_loop_param) {
 void main_loop_get_status(MainLoopStatus * const main_loop_status) {
     config.main_loop.get_status(main_loop_status);
 }
+
+#include "../peripheral/usb.h"
+extern USB usb;
+void usb_interrupt() {
+    usb.interrupt();
+}

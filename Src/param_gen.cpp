@@ -43,8 +43,15 @@ int main(int argc, char** argv) {
     foc_param->add_option("--command_max", p.fast_loop_param.foc_param.pi_q.command_max, "current control max command", true);
  
     CLI::App *main_loop_param = app.add_subcommand("main_loop_param");
+    main_loop_param->add_option("--update_frequency", p.main_loop_param.update_frequency, "Update frequency Hz", true);
     main_loop_param->add_option("--gear_ratio", p.main_loop_param.gear_ratio, "Gear ratio", true);
     main_loop_param->add_option("--kt", p.main_loop_param.kt, "Motor kt", true);
+    main_loop_param->add_option("--kp", p.main_loop_param.controller_param.kp, "position control kp", true);
+    main_loop_param->add_option("--kd", p.main_loop_param.controller_param.kd, "position control kd", true);
+    main_loop_param->add_option("--command_max", p.main_loop_param.controller_param.command_max, "position control max command", true);
+
+    CLI::App *output_encoder_param = main_loop_param->add_subcommand("output_encoder");
+    output_encoder_param->add_option("--cpr", p.main_loop_param.output_encoder.cpr, "Output encoder CPR", true);
 
     CLI::App *startup_param = app.add_subcommand("startup_param");
     startup_param->add_option("--do_phase_lock", p.startup_param.do_phase_lock = 1, "Do phase lock at startup", true);

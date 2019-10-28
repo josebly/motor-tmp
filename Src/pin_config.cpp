@@ -33,7 +33,8 @@ void config_init() {
 uint32_t HSE_VALUE = 24000000U;
 
 void CConfig::init() {
-    if (get_board_id()->manufacturer != BoardID::FabulabSL) {
+    if (get_board_id()->manufacturer == BoardID::ST && 
+        get_board_id()->board_type == BoardID::BoardType::Nucleo446RE) {
         pin_config_->crystal_frequency_MHz = 8;
         HSE_VALUE = 8000000;
     }
