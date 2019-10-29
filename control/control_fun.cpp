@@ -85,7 +85,8 @@ float PIDController::step(float desired, float measured) {
     //     hysteresis_.set_value(desired);
     // }
 
-    float proxy_desired = desired; //hysteresis_.step(measured);
+   // float proxy_desired = desired; //hysteresis_.step(measured);
+    float proxy_desired = rate_limit_.step(desired);
     float error = proxy_desired - measured;
     float error_dot = error_dot_filter_.update(error-error_last_);
     error_last_ = error;

@@ -44,6 +44,25 @@ private:
 
 };
 
+class RateLimiter {
+ public:
+    void set_limit(float limit) { limit_ = limit; }
+    float step(float value) {
+        float out_value;
+        if (value > (last_value_ + limit_)) {
+            out_value = last_value_ + limit_;
+        } else if (value < (last_value_ - limit_)) {
+            out_value = last_value_ - limit_;
+        } else {
+            out_value = value;
+        }
+        last_value_ = out_value;
+        return out_value;
+    }
+ private:
+    float limit_ = 0.0066;
+    float last_value_ = 0;
+};
 
 class PIDController {
 public:
@@ -55,6 +74,7 @@ private:
     float error_last_ = 0;
     float last_desired_ = 0;
     Hysteresis hysteresis_;
+    RateLimiter rate_limit_;
     FirstOrderLowPassFilter error_dot_filter_ = {200, 1.0/10000};
 };
 
