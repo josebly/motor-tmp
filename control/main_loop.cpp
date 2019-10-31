@@ -52,7 +52,7 @@ void MainLoop::update() {
       iq_des = receive_data_.current_desired;
       break;
     case POSITION:
-      iq_des = controller_.step(receive_data_.position_desired, receive_data_.position_deadband, fast_loop_status_.motor_position.position) + \
+      iq_des = controller_.step(receive_data_.position_desired, receive_data_.velocity_desired, receive_data_.position_deadband, fast_loop_status_.motor_position.position) + \
               receive_data_.current_desired;
       break;
     default:
