@@ -13,6 +13,7 @@ void fast_loop_update();
 void fast_loop_maintenance();
 void fast_loop_set_id_des(float id);
 void fast_loop_set_iq_des(float iq);
+void fast_loop_set_reserved(float reserved);
 void fast_loop_phase_lock_mode(float id);
 void fast_loop_current_mode();
 void fast_loop_open_mode();
