@@ -514,6 +514,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     /* Handle Reset Interrupt */
     if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_USBRST))
     {
+      usb_connected = 0;
       USBx_DEVICE->DCTL &= ~USB_OTG_DCTL_RWUSIG; 
       USB_FlushTxFifo(hpcd->Instance , 0x10U);
       

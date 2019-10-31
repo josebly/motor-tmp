@@ -1,0 +1,8 @@
+{signal: [
+  ['Host', {name: 'process', data:['poll 1,2,3','read 1','poll 2,3','read 2,3'], wave: '05.......5550',node:'..a......m.o'},],
+   ['USB bus', {name: 'hub', wave: '0.30....3330.', data: ['read start','read finish 1','read finish 2','read finish 3'],node:'..bc....jkln'},
+    {name: 'mtr1', wave: '60.4....0..60',data:['buffer','read','buffer'],node:'...d....g'},
+    {name: 'mtr2', wave: '0604....0...6',data:['buffer','read','buffer'],node:'...e....h'},
+    {name: 'mtr3', wave: '60.4....0..60',data:['buffer','read','buffer'],node:'...f....i'}],
+
+],   config: {hscale: 2.5}, edge:['a->b', 'c->d', 'c->e', 'c->f', 'g->j','h-|>k','i-|>l','k->m','n->o']}

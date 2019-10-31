@@ -19,13 +19,13 @@ void PWM::open_mode() {
 
 void PWM::brake_mode() {
     enable_.set();
-    //MOE = 0; // with OSSI=1 to force low
-    regs_.BDTR |= TIM_BDTR_OSSI;
-    regs_.BDTR &= ~TIM_BDTR_MOE;
+    // CC4E is the driving the interrupt, keep enabled, disable others
+    regs_.CCER = TIM_CCER_CC4E;
 }
 
 void PWM::voltage_mode() {
     enable_.set();
+    regs_.CCER = TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC3E | TIM_CCER_CC4E;
     regs_.BDTR |= TIM_BDTR_MOE;
 }
 

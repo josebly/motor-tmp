@@ -20,6 +20,7 @@ typedef struct {
     float ki_limit;
     float kd;
     float command_max;
+    float velocity_filter_frequency_hz;
 } PIDParam;
 
 typedef struct {
@@ -49,10 +50,13 @@ typedef struct {
     float vbus_gain;
 } FastLoopParam;
 
-enum MainControlMode {OPEN, BRAKE, NORMAL_CONTROL};
+enum MainControlMode {OPEN, DAMPED, CURRENT, POSITION};
 typedef struct {
     int32_t update_frequency;
     PIDParam controller_param;
+    struct {
+        float cpr;
+    } output_encoder;
     float torque_gain, torque_bias;
     float kt;
     float gear_ratio;
@@ -83,7 +87,7 @@ typedef struct {
     } desired;
     struct {
         float position;
-        float i_d, i_q;
+        float i_d, i_q, i_0;
     } measured;
     struct { float v_a, v_b, v_c, v_d, v_q; } command;
 } FOCStatus;
@@ -178,18 +182,21 @@ typedef struct {
 } SimulatorStatus;
 
 typedef struct {
-    mcu_time timestamp;
-    mcu_time timestamp_received;
-    float motor_position;
-    float iq;
-    float motor_mechanical_position;
+    mcu_time mcu_timestamp;             // timestamp in microcontroller clock cycles
+    uint32_t host_timestamp_received;   // return of host_timestamp from ReceiveData
+    float motor_position;               // motor position in radians
+    float joint_position;               // joint position in radians
+    float iq;                           // Measured motor current in A line-line
+    int32_t motor_encoder;              // motor position in raw counts
+    float reserved[2];
 } SendData;
 
 typedef struct {
-    mcu_time timestamp;
-    uint8_t mode_desired;
-    float current_desired;
-    float position_desired;
+    uint32_t host_timestamp;            // Value from host
+    uint8_t mode_desired;               // 0: open, 1: damped, 2: active
+    float current_desired;              // motor current desired in A line-line
+    float position_desired;             // motor position desired in rad
+    float position_deadband;            // no position control for values < abs(position_deadband - position_desired)
 } ReceiveData;
 
 #endif

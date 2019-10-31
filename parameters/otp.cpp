@@ -9,7 +9,7 @@ static BoardIDWrapper board_id_wrapper = {&default_board_id};
 
 BoardID::BoardID() : serial_number("0") {}
 
-static const char * ProductStrings[][3] = {
+static const char * ProductStrings[][4] = {
     {
         "Unknown",
     },
@@ -22,12 +22,17 @@ static const char * ProductStrings[][3] = {
         "Unknown Fabulab",
         "dev_00",
     },
+    {
+        "Unknown Ve",
+        "Rev0",
+    },
 };
 
 static const char * ManufacturerStrings[] = {
     "Unknown",
     "ST",
-    "FabulabSL"
+    "FabulabSL",
+    "Ve",
 };
 
 

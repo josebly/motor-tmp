@@ -73,10 +73,8 @@ void FastLoop::update() {
 
 // called at a slow frequency in a non interrupt
 void FastLoop::maintenance() {
-    if (TIM2->SR & TIM_SR_CC3IF) {
-        // qep index received
-        // TODO cleared by reading CCR3?
-        motor_index_pos_ = TIM2->CCR3;
+    if (encoder_.index_received()) {
+        motor_index_pos_ = encoder_.get_index_pos();
         if (param_.motor_encoder.use_index_electrical_offset_pos) {
           // motor_index_electrical_offset_pos is the value of an electrical zero minus the index position
           // motor_electrical_zero_pos is the offset to the initial encoder value
@@ -85,7 +83,7 @@ void FastLoop::maintenance() {
     }
 
     if (mode_ == PHASE_LOCK_MODE) {
-        motor_electrical_zero_pos_ = TIM2->CNT;
+        motor_electrical_zero_pos_ = encoder_.get_value();
     }
 
     v_bus_ = ADC1->DR*param_.vbus_gain;
@@ -129,10 +127,12 @@ void FastLoop::current_mode() {
 
 void FastLoop::brake_mode() {
     pwm_.brake_mode();
+    mode_ = BRAKE_MODE;
 }
 
 void FastLoop::open_mode() {
     pwm_.open_mode();
+    mode_ = OPEN_MODE;
 }
 
 void FastLoop::get_status(FastLoopStatus *fast_loop_status) {
