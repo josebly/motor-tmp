@@ -76,6 +76,7 @@ void PIDController::set_param(const PIDParam &param) {
     ki_limit_ = param.ki_limit;
     kd_ = param.kd;
     command_max_ = param.command_max;
+    error_dot_filter_.set_frequency(param.velocity_filter_frequency_hz);
     hysteresis_.set_hysteresis(command_max_/kp_);
 }
 
@@ -88,7 +89,7 @@ float PIDController::step(float desired, float measured) {
    // float proxy_desired = desired; //hysteresis_.step(measured);
     float proxy_desired = rate_limit_.step(desired);
     float error = proxy_desired - measured;
-    float error_dot = error_dot_filter_.update(error-error_last_);
+    float error_dot = error_dot_filter_.update((error-error_last_)/dt_);
     error_last_ = error;
     ki_sum_ += ki_ * error;
     ki_sum_ = fsat(ki_sum_, ki_limit_);

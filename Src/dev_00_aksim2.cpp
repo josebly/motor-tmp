@@ -16,7 +16,7 @@ static struct {
     LED led = {const_cast<uint16_t*>(reinterpret_cast<volatile uint16_t *>(&TIM3->CCR1)), 
                const_cast<uint16_t*>(reinterpret_cast<volatile uint16_t *>(&TIM3->CCR2)),
                const_cast<uint16_t*>(reinterpret_cast<volatile uint16_t *>(&TIM3->CCR4)), true};
-    PIDController controller;
+    PIDController controller(1.0/10000);
     USBCommunication communication;
     MainLoop main_loop = {controller, communication, led};
 } config_items;

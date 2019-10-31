@@ -34,6 +34,7 @@ const volatile Param __attribute__ ((section ("flash_param"))) initial_param = {
     .main_loop_param.controller_param.kp = 0,
     .main_loop_param.controller_param.kd = 0,
     .main_loop_param.controller_param.command_max = 3,
+    .main_loop_param.controller_param.velocity_filter_frequency_hz = 1000,
     .fast_loop_param.cogging.table = {
 #include "../cogprocessed.csv"
     },

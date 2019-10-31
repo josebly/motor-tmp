@@ -20,6 +20,7 @@ typedef struct {
     float ki_limit;
     float kd;
     float command_max;
+    float velocity_filter_frequency_hz;
 } PIDParam;
 
 typedef struct {

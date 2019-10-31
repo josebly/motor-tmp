@@ -16,8 +16,9 @@ class Hysteresis {
 
 class FirstOrderLowPassFilter {
 public:
-    FirstOrderLowPassFilter(float frequency_hz, float dt) {
-        alpha_ = 2*M_PI*dt*frequency_hz/(2*M_PI*dt*frequency_hz + 1);
+    FirstOrderLowPassFilter(float dt, float frequency_hz=0) {
+        dt_ = dt;
+        set_frequency(frequency_hz);
     }
     void init(float value) {
         value_ = value;
@@ -29,9 +30,16 @@ public:
         return get_value();
     }
     float get_value() const { return value_; }
+    void set_frequency(float frequency_hz) {
+        if (frequency_hz == 0) {
+            alpha_ = 1;
+        } else {
+            alpha_ = 2*M_PI*dt_*frequency_hz/(2*M_PI*dt_*frequency_hz + 1);
+        }
+    }
 private:
     float value_ = 0, last_value_ = 0;
-    float alpha_;
+    float alpha_, dt_;
 };
 
 class PIController {
@@ -68,6 +76,7 @@ class RateLimiter {
 
 class PIDController {
 public:
+    PIDController(float dt) : dt_(dt), error_dot_filter_(dt) {}
     virtual ~PIDController() {}
     virtual float step(float desired, float measured);
     void set_param(const PIDParam &param);
@@ -75,13 +84,15 @@ private:
     float kp_ = 0, kd_ = 0, ki_ = 0, ki_sum_ = 0, ki_limit_ = 0, command_max_ = 0;
     float error_last_ = 0;
     float last_desired_ = 0;
+    float dt_;
     Hysteresis hysteresis_;
     RateLimiter rate_limit_;
-    FirstOrderLowPassFilter error_dot_filter_ = {200, 1.0/10000};
+    FirstOrderLowPassFilter error_dot_filter_;
 };
 
 class PIDDeadbandController : public PIDController {
 public:
+    PIDDeadbandController(float dt) : PIDController(dt) {}
     virtual ~PIDDeadbandController() {}
     virtual float step(float desired, float deadband, float measured);
 };
