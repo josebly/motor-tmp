@@ -196,7 +196,7 @@ typedef struct {
     uint8_t mode_desired;               // 0: open, 1: damped, 2: active
     float current_desired;              // motor current desired in A line-line
     float position_desired;             // motor position desired in rad
-    float position_deadband;            // no position control for values < abs(position_deadband - position_desired)
+    float reserved;            // no position control for values < abs(position_deadband - position_desired)
 } ReceiveData;
 
 #endif
