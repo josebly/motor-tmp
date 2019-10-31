@@ -49,6 +49,7 @@ int main(int argc, char** argv) {
     main_loop_param->add_option("--kp", p.main_loop_param.controller_param.kp, "position control kp", true);
     main_loop_param->add_option("--kd", p.main_loop_param.controller_param.kd, "position control kd", true);
     main_loop_param->add_option("--command_max", p.main_loop_param.controller_param.command_max, "position control max command", true);
+    main_loop_param->add_option("--velocity_filter", p.main_loop_param.controller_param.velocity_filter_frequency_hz, "velocity filter frequency hz", true);
 
     CLI::App *output_encoder_param = main_loop_param->add_subcommand("output_encoder");
     output_encoder_param->add_option("--cpr", p.main_loop_param.output_encoder.cpr, "Output encoder CPR", true);

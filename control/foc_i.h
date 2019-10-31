@@ -25,7 +25,7 @@ void fast_loop_zero_current_sensors();
 void main_loop_update();
 void main_loop_set_param(MainLoopParam * const main_loop_param);
 void main_loop_get_status(MainLoopStatus * const main_loop_status);
-
+void main_loop_set_mode(enum MainControlMode mode);
 void usb_interrupt();
 
 #ifdef __cplusplus

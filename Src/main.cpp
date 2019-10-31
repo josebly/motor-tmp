@@ -360,18 +360,7 @@ int main(void)
     HAL_Delay(1000*param()->startup_param.phase_lock_duration);
   }
   fast_loop_maintenance();  // TODO better way than calling this to update zero pos
-  switch (param()->startup_param.startup_mode) {
-    default:
-    case OPEN:
-      fast_loop_open_mode();
-      break;
-    case DAMPED:
-      fast_loop_brake_mode();
-      break;
-    case NORMAL_CONTROL:
-      fast_loop_current_mode();
-      break;
-  }
+  main_loop_set_mode(param()->startup_param.startup_mode);
   fast_loop_set_iq_des(0);
 
   int32_t i  = 0;
