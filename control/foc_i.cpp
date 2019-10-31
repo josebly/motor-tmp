@@ -20,6 +20,10 @@ void fast_loop_set_iq_des(float iq) {
     config.fast_loop.set_iq_des(iq);
 }
 
+void fast_loop_set_reserved(float reserved) {
+    config.fast_loop.set_reserved(reserved);
+}
+
 void fast_loop_phase_lock_mode(float id) {
     config.fast_loop.phase_lock_mode(id);
 }

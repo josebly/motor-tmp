@@ -16,6 +16,7 @@ class FastLoop {
     void maintenance();
     void set_id_des(float id) { id_des = id; }
     void set_iq_des(float iq) { if (mode_ == CURRENT_MODE) iq_des = iq; }
+    void set_reserved(float reserved) { reserved_ = reserved; }
     void phase_lock_mode(float id);
     void current_mode();
     void voltage_mode();
@@ -58,6 +59,7 @@ class FastLoop {
     float v_bus_ = 12;
     mcu_time timestamp_;
    Encoder &encoder_;
+   float reserved_ = 0;
 };
 
 #endif
