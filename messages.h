@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define MAX_DATA_LENGTH 120 // bytes
-typedef int32_t mcu_time;
+typedef uint32_t mcu_time;
 
 typedef struct {
     float kp;
