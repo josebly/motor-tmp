@@ -14,6 +14,28 @@ class Hysteresis {
     float hysteresis_ = 0;
 };
 
+class KahanSum {
+ public:
+    float add(float input) {
+        float y = input - c_;
+        float t = sum_ + y;
+        c_ = (t - sum_) - y;
+        sum_ = t;
+        return sum_;
+    }
+    float value() const {
+        return sum_;
+    }
+    void init() {
+        sum_ = 0;
+        c_ = 0;
+    }
+ private:
+    float sum_ = 0;
+    float c_ = 0;
+
+};
+
 class FirstOrderLowPassFilter {
 public:
     FirstOrderLowPassFilter(float dt, float frequency_hz=0) {
