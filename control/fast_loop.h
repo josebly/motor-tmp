@@ -7,6 +7,7 @@
 class FOC;
 class PWM;
 class Encoder;
+class KahanSum;
 
 class FastLoop {
  public:
@@ -60,6 +61,7 @@ class FastLoop {
     mcu_time timestamp_;
    Encoder &encoder_;
    float reserved_ = 0;
+    KahanSum *t_seconds_;
 };
 
 #endif

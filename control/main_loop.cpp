@@ -60,7 +60,7 @@ void MainLoop::update() {
   }
 
   fast_loop_set_iq_des(iq_des);
-  fast_loop_set_id_des(receive_data_.position_desired);
+  fast_loop_set_reserved(receive_data_.reserved);
   SendData send_data;
   send_data.iq = fast_loop_status_.foc_status.measured.i_q;
   send_data.host_timestamp_received = receive_data_.host_timestamp;

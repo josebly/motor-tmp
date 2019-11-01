@@ -7,9 +7,11 @@
 #include "encoder.h"
 #include "stm32f446xx.h"
 #include "sincos.h"
+#include "control_fun.h"
 
 FastLoop::FastLoop(PWM &pwm, Encoder &encoder) : pwm_(pwm), encoder_(encoder) {
     foc_ = new FOC;
+    t_seconds_ = new KahanSum;
 }
 
 FastLoop::~FastLoop() {
@@ -30,7 +32,8 @@ void FastLoop::update() {
     foc_command_.measured.i_a = param_.adc1_gain*(adc1-param_.adc1_offset) - ia_bias_;
     foc_command_.measured.i_b = param_.adc2_gain*(adc2-param_.adc2_offset) - ib_bias_;
     foc_command_.measured.i_c = param_.adc3_gain*(adc3-param_.adc3_offset) - ic_bias_;
-    foc_command_.desired.i_d = 0;
+    foc_command_.desired.i_d = id_des;
+
     
     // get encoder value, may wait a little
     motor_enc = encoder_.get_value();
@@ -50,14 +53,28 @@ void FastLoop::update() {
     float iq_ff = param_.cogging.gain * param_.cogging.table[i];
 
     // update FOC
-    // foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI  * inv_motor_encoder_cpr_);
+    foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI  * inv_motor_encoder_cpr_);
     // foc_command_.desired.i_q = iq_des_gain_ * (iq_des + iq_ff);
 
     // sin with amplitude given by iq desired, frequency by id_des
-    Sincos sincos;
-    sincos = sincos1(2 * (float) M_PI * id_des * (timestamp_*(1.0f/180e6f)));
-    foc_command_.desired.i_q = iq_des*(id_des > 0 ? sincos.sin : ((sincos.sin > 0) - (sincos.sin < 0)));
-    foc_command_.measured.motor_encoder = 0;
+    static uint32_t last_timestamp_ = 0;
+    static float last_reserved = reserved_;
+
+    float phase = 0;
+    if (reserved_ != last_reserved) {
+        t_seconds_->init();
+    }
+    last_reserved = reserved_;
+    t_seconds_->add(((uint32_t)timestamp_-(uint32_t)last_timestamp_)*(1.0f/180e6f));
+    last_timestamp_ = timestamp_;
+    float T=100-0;
+    float k=(fabsf(reserved_)-1)/T;
+    Sincos sincos = sincos1(2*(float) M_PI*(.5*k*t_seconds_->value()+1)*t_seconds_->value()+phase);
+   // Sincos sincos;
+   // sincos = sincos1(2 * (float) M_PI * reserved_ * ((int32_t)((uint32_t)timestamp_-(uint32_t)tstart)*(1.0f/180e6f)));
+    //sincos = sincos1(2 * (float) M_PI * reserved_ * (timestamp_*(1.0f/180e6f)));
+    foc_command_.desired.i_q = iq_des_gain_*iq_des*(reserved_ > 0 ? sincos.sin : ((sincos.sin > 0) - (sincos.sin < 0)));
+//    foc_command_.measured.motor_encoder = 0;
     
     FOCStatus *foc_status = foc_->step(foc_command_);
 
@@ -142,7 +159,9 @@ void FastLoop::get_status(FastLoopStatus *fast_loop_status) {
     fast_loop_status->motor_position.position = motor_position_;
     fast_loop_status->motor_position.velocity = motor_velocity_filtered;
     fast_loop_status->motor_position.raw = motor_enc;
+    fast_loop_status->motor_position.index_pos = motor_index_pos_;
     fast_loop_status->timestamp = timestamp_;
+    fast_loop_status->t_seconds = t_seconds_->value();
 }
 
 void FastLoop::set_phase_mode() {

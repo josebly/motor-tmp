@@ -102,6 +102,7 @@ typedef struct {
 
 typedef struct {
     mcu_time timestamp;
+    float t_seconds;
     FOCStatus foc_status;
     struct {
         int32_t raw;
