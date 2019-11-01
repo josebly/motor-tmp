@@ -48,7 +48,7 @@ class FastLoop {
     uint16_t adc1, adc2, adc3;
     FOCCommand foc_command_ = {};
 
-    int32_t motor_index_pos_;
+    int32_t motor_index_pos_ = 0;
     int32_t motor_electrical_zero_pos_;
     float inv_motor_encoder_cpr_;
     int32_t frequency_hz_ = 100000;

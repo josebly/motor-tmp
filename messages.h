@@ -107,6 +107,7 @@ typedef struct {
         int32_t raw;
         float position;
         float velocity;
+        int32_t index_pos;
     } motor_position;
     float motor_mechanical_position;
     FOCCommand foc_command;
