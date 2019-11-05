@@ -9,9 +9,12 @@
 #include "../communication/usb_communication.h"
 #include "foc_i.h"
 #include "aksim2_encoder.h"
+#include "control_fun.h"
+#include "sincos.h"
 
 void MainLoop::init() {
     communication_.init();
+    t_seconds_ = new KahanSum;
 }
 
 void MainLoop::set_mode(MainControlMode mode) {
@@ -46,13 +49,28 @@ void MainLoop::update() {
   output_encoder_.trigger();
   fast_loop_get_status(&fast_loop_status_);
 
+  static uint32_t last_timestamp_ = fast_loop_status_.timestamp;
+  static float last_reserved = receive_data_.reserved;
+
+  float phase = 0;
+  if (receive_data_.reserved != last_reserved) {
+      t_seconds_->init();
+  }
+  last_reserved = receive_data_.reserved;
+  t_seconds_->add(((uint32_t)fast_loop_status_.timestamp-(uint32_t)last_timestamp_)*(1.0f/180e6f));
+  last_timestamp_ = fast_loop_status_.timestamp;
+  float T=500-0;
+  float k=(fabsf(receive_data_.reserved)-1)/T;
+  Sincos sincos = sincos1(2*(float) M_PI*(.5*k*t_seconds_->value()+1)*t_seconds_->value()+phase);
+  float position_desired = receive_data_.position_desired*(receive_data_.reserved > 0 ? sincos.sin : ((sincos.sin > 0) - (sincos.sin < 0)));
+
   float iq_des = 0;
   switch (mode_) {
     case CURRENT:
       iq_des = receive_data_.current_desired;
       break;
     case POSITION:
-      iq_des = controller_.step(receive_data_.position_desired, receive_data_.reserved, fast_loop_status_.motor_position.position) + \
+      iq_des = controller_.step(position_desired, 0, fast_loop_status_.motor_position.position) + \
               receive_data_.current_desired;
       break;
     default:
@@ -67,7 +85,7 @@ void MainLoop::update() {
   send_data.motor_encoder = fast_loop_status_.motor_position.raw;
   send_data.motor_position = fast_loop_status_.motor_position.position;
   send_data.joint_position = output_encoder_.get_value()*2.0*(float) M_PI/param_.output_encoder.cpr;
-  send_data.reserved[0] = fast_loop_status_.foc_status.measured.i_0;
+  send_data.reserved[0] = position_desired;
   communication_.send_data(send_data);
   led_.update();
 }

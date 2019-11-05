@@ -7,6 +7,7 @@ class LED;
 class PIDDeadbandController;
 class Communication;
 class Encoder;
+class KahanSum;
 #include <cmath>
 
 class MainLoop {
@@ -28,6 +29,7 @@ class MainLoop {
     FastLoopStatus fast_loop_status_ = {};
     MainControlMode mode_ = OPEN;
     Encoder &output_encoder_;
+    KahanSum *t_seconds_;
 
 
 inline uint16_t minu16(uint16_t a, uint16_t b) {
