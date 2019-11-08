@@ -16,7 +16,7 @@ static struct {
     FastLoop fast_loop = {motor_pwm, motor_encoder};
     LED led = {const_cast<uint16_t*>(reinterpret_cast<volatile uint16_t *>(&TIM3->CCR1)), 
                const_cast<uint16_t*>(reinterpret_cast<volatile uint16_t *>(&TIM3->CCR2)),
-               const_cast<uint16_t*>(reinterpret_cast<volatile uint16_t *>(&TIM3->CCR4)), false, 0.01};
+               const_cast<uint16_t*>(reinterpret_cast<volatile uint16_t *>(&TIM3->CCR4)), 1};
     PIDDeadbandController controller = {1.0/10000};
     USBCommunication communication;
     MainLoop main_loop = {controller, communication, led, output_encoder};

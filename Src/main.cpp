@@ -51,6 +51,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "usb_device.h"
+#include "../communication/led.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -351,12 +352,14 @@ int main(void)
 
   
   // startup
+  config.main_loop.led()->set_color(LED::CHARTREUSE);
   fast_loop_voltage_mode();
   uint32_t t_start = get_clock();
   while ((get_clock() - t_start)/180e6 < 2) {
     fast_loop_zero_current_sensors();
   }
   if (param()->startup_param.do_phase_lock) {
+    config.main_loop.led()->set_color(LED::VIOLET);
     fast_loop_phase_lock_mode(param()->startup_param.phase_lock_current);
     HAL_Delay(1000*param()->startup_param.phase_lock_duration);
   }
