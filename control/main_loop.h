@@ -18,6 +18,7 @@ class MainLoop {
     void set_param(MainLoopParam &);
     void get_status(MainLoopStatus * const main_loop_status) const;
     void set_mode(MainControlMode mode);
+    LED* led() { return &led_; }
  private:
     MainLoopParam param_;
     PIDDeadbandController &controller_;

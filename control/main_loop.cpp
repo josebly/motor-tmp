@@ -20,15 +20,19 @@ void MainLoop::set_mode(MainControlMode mode) {
     case OPEN:
     default:
       fast_loop_open_mode();
+      led_.set_color(LED::AZURE);
       break;
     case DAMPED:
       fast_loop_brake_mode();
+      led_.set_color(LED::ORANGE);
       break;
     case CURRENT:
       fast_loop_current_mode();
+      led_.set_color(LED::GREEN);
       break;
     case POSITION:
       fast_loop_current_mode();
+      led_.set_color(LED::BLUE);
       break;
   }
   receive_data_.mode_desired = mode;
