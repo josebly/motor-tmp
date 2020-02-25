@@ -9,6 +9,7 @@
 #include "../communication/usb_communication.h"
 #include "foc_i.h"
 #include "aksim2_encoder.h"
+#include "sincos.h"
 
 void MainLoop::init() {
     communication_.init();
@@ -59,6 +60,27 @@ void MainLoop::update() {
       iq_des = controller_.step(receive_data_.position_desired, receive_data_.reserved, fast_loop_status_.motor_position.position) + \
               receive_data_.current_desired;
       break;
+    case VELOCITY:
+      // saturate position so that current = current max due to kp, so error max = 
+      iq_des = controller_.step(fast_loop_status_.motor_position.position + param_.controller_param.command_max/param_.controller_param.kp*fsignf(receive_data_.velocity_desired), 
+              receive_data_.velocity_desired, receive_data_.reserved, fast_loop_status_.motor_position.position, receive_data_.velocity_desired) + \
+              receive_data_.current_desired;
+      break;
+    case POSITION_TUNING: 
+    {
+      Sincos sincos;
+      if (dt_sum_ > 1.0f/receive_data_.reserved) {
+        dt_sum_ -= 1.0f/receive_data_.reserved;
+      }
+      if (receive_data_.reserved != last_receive_data_.reserved) {
+        dt_sum_ = 0;
+      }
+      sincos = sincos1(2 * (float) M_PI * receive_data_.reserved * fast_loop_status_.t_seconds); //dt_sum_);
+      float pos_desired = receive_data_.position_desired*(receive_data_.reserved > 0 ? sincos.sin : ((sincos.sin > 0) - (sincos.sin < 0)));
+      float vel_desired = receive_data_.reserved > 0 ? 2 * (float) M_PI * receive_data_.reserved * (1.0f/CPU_FREQUENCY_HZ) * sincos.cos : 0;
+      iq_des = controller_.step(pos_desired, vel_desired, 0, fast_loop_status_.motor_position.position);
+      break;
+    }
     default:
       break;
   }

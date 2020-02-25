@@ -29,6 +29,7 @@ class MainLoop {
     FastLoopStatus fast_loop_status_ = {};
     MainControlMode mode_ = OPEN;
     Encoder &output_encoder_;
+    float dt_sum_;
 
 
 inline uint16_t minu16(uint16_t a, uint16_t b) {

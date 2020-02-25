@@ -77,6 +77,7 @@ private:
 class RateLimiter {
  public:
     void set_limit(float limit) { limit_ = limit; }
+    void init(float value) { last_value_ = value; }
     float step(float value) {
         float out_value = value;
         if (limit_ != 0) {
@@ -100,10 +101,12 @@ class PIDController {
 public:
     PIDController(float dt) : dt_(dt), error_dot_filter_(dt) {}
     virtual ~PIDController() {}
-    virtual float step(float desired, float measured);
+    void init(float measured) { rate_limit_.init(measured), measured_last_ = measured; error_dot_filter_.init(0); }
+    virtual float step(float desired, float velocity_desired, float measured, float velocity_limit = INFINITY);
     void set_param(const PIDParam &param);
 private:
     float kp_ = 0, kd_ = 0, ki_ = 0, ki_sum_ = 0, ki_limit_ = 0, command_max_ = 0;
+    float measured_last_ = 0;
     float error_last_ = 0;
     float last_desired_ = 0;
     float dt_;
