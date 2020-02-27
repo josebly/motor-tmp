@@ -62,6 +62,10 @@ void FastLoop::update() {
     } else {
         pwm_.set_voltage(&foc_status->command.v_a);
     }
+
+    dt_ = (timestamp_ - last_timestamp_)*(float) (1.0f/180e6);
+    last_timestamp_ = timestamp_;
+    t_seconds_.add(dt_);
 }
 
 // called at a slow frequency in a non interrupt
@@ -136,6 +140,9 @@ void FastLoop::get_status(FastLoopStatus *fast_loop_status) {
     fast_loop_status->motor_position.velocity = motor_velocity_filtered;
     fast_loop_status->motor_position.raw = motor_enc;
     fast_loop_status->timestamp = timestamp_;
+    fast_loop_status->t_seconds = t_seconds_.value();
+    fast_loop_status->dt = dt_;
+    fast_loop_status->vbus = v_bus_;
 }
 
 void FastLoop::set_phase_mode() {

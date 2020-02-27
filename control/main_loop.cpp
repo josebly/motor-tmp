@@ -9,6 +9,8 @@
 #include "../communication/usb_communication.h"
 #include "foc_i.h"
 #include "aksim2_encoder.h"
+#include "sincos.h"
+#include "../Src/util.h"
 
 void MainLoop::init() {
     communication_.init();
@@ -30,9 +32,17 @@ void MainLoop::set_mode(MainControlMode mode) {
       fast_loop_current_mode();
       led_.set_color(LED::GREEN);
       break;
+    case CURRENT_TUNING:
+      break;
+    case POSITION_TUNING:
+      phi_.init();
     case POSITION:
+    case VELOCITY:
       fast_loop_current_mode();
       led_.set_color(LED::BLUE);
+      break;
+    case BOARD_RESET:
+      NVIC_SystemReset();
       break;
   }
   receive_data_.mode_desired = mode;
@@ -41,14 +51,18 @@ void MainLoop::set_mode(MainControlMode mode) {
 extern SPI_HandleTypeDef hspi2;
 void MainLoop::update() {
   count_++;
+
+  timestamp_ = get_clock();
+  dt_ = (timestamp_ - last_timestamp_) * (1.0f/180e6);
+
+  fast_loop_get_status(&fast_loop_status_);
+
   int count_received = communication_.receive_data(&receive_data_);
   if (count_received) {
     if (mode_ != static_cast<MainControlMode>(receive_data_.mode_desired)) {
       set_mode(static_cast<MainControlMode>(receive_data_.mode_desired));
     }
   }
-  output_encoder_.trigger();
-  fast_loop_get_status(&fast_loop_status_);
 
   float iq_des = 0;
   switch (mode_) {
@@ -56,9 +70,25 @@ void MainLoop::update() {
       iq_des = receive_data_.current_desired;
       break;
     case POSITION:
-      iq_des = controller_.step(receive_data_.position_desired, receive_data_.reserved, fast_loop_status_.motor_position.position) + \
+iq_des = controller_.step(receive_data_.position_desired, receive_data_.velocity_desired, receive_data_.reserved, fast_loop_status_.motor_position.position) + \
               receive_data_.current_desired;
       break;
+    case POSITION_TUNING: 
+    {
+      // phi_ is a radian counter at the command frequency doesn't get larger than 2*pi
+      // only works down to frequencies of .0047 Hz, could use kahansum to go slower
+      phi_.add(2 * (float) M_PI * fabsf(receive_data_.reserved) * dt_);
+      if (phi_.value() > 2 * (float) M_PI) {
+        phi_.add(-2 * (float) M_PI);
+      }
+
+      Sincos sincos;
+      sincos = sincos1(phi_.value());
+      float pos_desired = receive_data_.position_desired*(receive_data_.reserved > 0 ? sincos.sin : ((sincos.sin > 0) - (sincos.sin < 0)));
+      float vel_desired = receive_data_.reserved > 0 ? 2 * (float) M_PI * receive_data_.reserved * (1.0f/180e6) * sincos.cos : 0;
+      iq_des = controller_.step(pos_desired, vel_desired, 0, fast_loop_status_.motor_position.position);
+      break;
+    }
     default:
       break;
   }
@@ -68,12 +98,13 @@ void MainLoop::update() {
   send_data.iq = fast_loop_status_.foc_status.measured.i_q;
   send_data.host_timestamp_received = receive_data_.host_timestamp;
   send_data.mcu_timestamp = fast_loop_status_.timestamp;
-  send_data.motor_encoder = fast_loop_status_.motor_position.raw;
+  send_data.motor_encoder = fast_loop_status_.motor_mechanical_position;
   send_data.motor_position = fast_loop_status_.motor_position.position;
-  send_data.joint_position = output_encoder_.get_value()*2.0*(float) M_PI/param_.output_encoder.cpr;
-  send_data.reserved[0] = fast_loop_status_.foc_status.measured.i_0;
+  //send_data.joint_position = output_encoder_.get_value()*2.0*(float) M_PI/param_.output_encoder.cpr;
+  send_data.reserved[0] = iq_des;
   communication_.send_data(send_data);
   led_.update();
+  last_receive_data_ = receive_data_;
 }
 
 void MainLoop::set_param(MainLoopParam &param) {

@@ -8,6 +8,7 @@ class PIDDeadbandController;
 class Communication;
 class Encoder;
 #include <cmath>
+#include "control_fun.h"
 
 class MainLoop {
  public:
@@ -25,10 +26,15 @@ class MainLoop {
     Communication &communication_;
     LED &led_;
     ReceiveData receive_data_ = {};
+    ReceiveData last_receive_data_ = {};
     uint64_t count_ = 0;
     FastLoopStatus fast_loop_status_ = {};
     MainControlMode mode_ = OPEN;
     Encoder &output_encoder_;
+    float dt_ = 0;
+    KahanSum phi_;
+    uint32_t timestamp_ = 0;
+    uint32_t last_timestamp_ = 0;
 
 
 inline uint16_t minu16(uint16_t a, uint16_t b) {
