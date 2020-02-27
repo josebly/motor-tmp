@@ -15,6 +15,7 @@ class QEPEncoder : public Encoder {
        counter_reg_ = counter_reg;
        index_reg_ = index_reg;
     }
+    virtual int32_t read() { return *counter_reg_; }
     virtual int32_t get_value() { return *counter_reg_; }
     virtual void trigger() {}
     virtual int32_t get_index_pos() { return *index_reg_; }

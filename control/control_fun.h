@@ -2,7 +2,9 @@
 #define MOTOR_CONTROL_FUN_H
 
 #include "../messages.h"
+#undef _DEFAULT_SOURCE
 #include <cmath>
+#define M_PI 3.1415926f
 
 class Hysteresis {
  public:
@@ -14,16 +16,20 @@ class Hysteresis {
     float hysteresis_ = 0;
 };
 
+float fsignf(float a);
+
 class KahanSum {
  public:
-    float add(float input) {
+    float add(float input) //__attribute__((section (".ccmram")))
+    {
         float y = input - c_;
         float t = sum_ + y;
         c_ = (t - sum_) - y;
         sum_ = t;
         return sum_;
     }
-    float value() const {
+    float value() const //__attribute__((section (".ccmram")))
+    {
         return sum_;
     }
     void init() {

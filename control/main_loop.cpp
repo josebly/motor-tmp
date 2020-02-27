@@ -3,8 +3,10 @@
 #include "../communication/led.h"
 #include "control_fun.h"
 
-#include "../Src/pin_config.h"
 #include <cmath>
+
+#include "encoder.h"
+#include "../Src/pin_config.h"
 #include "stm32f4xx_hal.h"
 #include "../communication/usb_communication.h"
 #include "foc_i.h"
@@ -48,10 +50,12 @@ void MainLoop::set_mode(MainControlMode mode) {
   receive_data_.mode_desired = mode;
 }
 
-extern SPI_HandleTypeDef hspi2;
+//extern SPI_HandleTypeDef hspi2;
+
 void MainLoop::update() {
   count_++;
 
+  last_timestamp_ = timestamp_;
   timestamp_ = get_clock();
   dt_ = (timestamp_ - last_timestamp_) * (1.0f/180e6);
 
@@ -61,6 +65,7 @@ void MainLoop::update() {
   if (count_received) {
     if (mode_ != static_cast<MainControlMode>(receive_data_.mode_desired)) {
       set_mode(static_cast<MainControlMode>(receive_data_.mode_desired));
+      controller_.init(fast_loop_status_.motor_position.position);
     }
   }
 
@@ -70,7 +75,13 @@ void MainLoop::update() {
       iq_des = receive_data_.current_desired;
       break;
     case POSITION:
-iq_des = controller_.step(receive_data_.position_desired, receive_data_.velocity_desired, receive_data_.reserved, fast_loop_status_.motor_position.position) + \
+      iq_des = controller_.step(receive_data_.position_desired, receive_data_.velocity_desired, receive_data_.reserved, fast_loop_status_.motor_position.position) + \
+              receive_data_.current_desired;
+      break;
+    case VELOCITY:
+      // saturate position so that current = current max due to kp, so error max = 
+      iq_des = controller_.step(fast_loop_status_.motor_position.position + param_.controller_param.command_max/param_.controller_param.kp*fsignf(receive_data_.velocity_desired), 
+              receive_data_.velocity_desired, receive_data_.reserved, fast_loop_status_.motor_position.position, receive_data_.velocity_desired) + \
               receive_data_.current_desired;
       break;
     case POSITION_TUNING: 
@@ -85,10 +96,13 @@ iq_des = controller_.step(receive_data_.position_desired, receive_data_.velocity
       Sincos sincos;
       sincos = sincos1(phi_.value());
       float pos_desired = receive_data_.position_desired*(receive_data_.reserved > 0 ? sincos.sin : ((sincos.sin > 0) - (sincos.sin < 0)));
-      float vel_desired = receive_data_.reserved > 0 ? 2 * (float) M_PI * receive_data_.reserved * (1.0f/180e6) * sincos.cos : 0;
+      float vel_desired = receive_data_.reserved > 0 ? 2 * (float) M_PI * receive_data_.reserved * (1.0f/250e6) * sincos.cos : 0;
       iq_des = controller_.step(pos_desired, vel_desired, 0, fast_loop_status_.motor_position.position);
       break;
     }
+    case CURRENT_TUNING: 
+      fast_loop_set_tuning_amplitude(receive_data_.current_desired);
+      fast_loop_set_tuning_frequency(receive_data_.reserved);
     default:
       break;
   }

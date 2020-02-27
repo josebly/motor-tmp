@@ -6,6 +6,7 @@
 #include "../Src/util.h"
 #include "encoder.h"
 #include "stm32f446xx.h"
+#include "sincos.h"
 
 FastLoop::FastLoop(PWM &pwm, Encoder &encoder) : pwm_(pwm), encoder_(encoder) {
     foc_ = new FOC;
@@ -32,7 +33,7 @@ void FastLoop::update() {
     foc_command_.desired.i_d = id_des;
     
     // get encoder value, may wait a little
-    motor_enc = encoder_.get_value();
+    motor_enc = encoder_.read();
 
     motor_position_ = param_.motor_encoder.dir * 2 * (float) M_PI * inv_motor_encoder_cpr_ * motor_enc;
     motor_velocity =  param_.motor_encoder.dir * (motor_enc-last_motor_enc)*(2*(float) M_PI * inv_motor_encoder_cpr_ * frequency_hz_);
@@ -47,6 +48,17 @@ void FastLoop::update() {
     // Note (i+1) & (COGGING_TABLE_SIZE-1) allows wrap around, requires COGGING_TABLE_SIZE is multiple of 2
  //   float iq_ff = param_.cogging.gain * (param_.cogging.table[i] + ifrac * (param_.cogging.table[(i+1) & (COGGING_TABLE_SIZE-1)] - param_.cogging.table[i]));
     float iq_ff = param_.cogging.gain * param_.cogging.table[i];
+
+    if (mode_ == CURRENT_TUNING_MODE) {
+      // only works down to frequencies of .047 Hz, could use kahansum to go slower
+      phi_ += 2 * (float) M_PI * fabsf(tuning_frequency_) * dt_;   // use id des to set frequency
+      if (phi_ > 2 * (float) M_PI) {
+        phi_ -= 2 * (float) M_PI;
+      }
+      Sincos sincos;
+      sincos = sincos1(phi_);
+      iq_des = tuning_amplitude_ * (tuning_frequency_ > 0 ? sincos.sin : ((sincos.sin > 0) - (sincos.sin < 0)));
+    }
 
     // update FOC
     foc_command_.measured.motor_encoder = phase_mode_*(motor_enc - motor_electrical_zero_pos_)*(2*(float) M_PI  * inv_motor_encoder_cpr_);
@@ -63,7 +75,7 @@ void FastLoop::update() {
         pwm_.set_voltage(&foc_status->command.v_a);
     }
 
-    dt_ = (timestamp_ - last_timestamp_)*(float) (1.0f/180e6);
+    dt_ = (timestamp_ - last_timestamp_)*(float) (1.0f/250e6);
     last_timestamp_ = timestamp_;
     t_seconds_.add(dt_);
 }
@@ -84,6 +96,7 @@ void FastLoop::maintenance() {
     }
 
     v_bus_ = ADC1->DR*param_.vbus_gain;
+    v_bus_ = fmaxf(10, v_bus_);
     pwm_.set_vbus(v_bus_);
 }
 
