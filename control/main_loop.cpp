@@ -47,6 +47,7 @@ void MainLoop::set_mode(MainControlMode mode) {
       NVIC_SystemReset();
       break;
   }
+  
   receive_data_.mode_desired = mode;
 }
 
@@ -57,7 +58,7 @@ void MainLoop::update() {
 
   last_timestamp_ = timestamp_;
   timestamp_ = get_clock();
-  dt_ = (timestamp_ - last_timestamp_) * (1.0f/180e6);
+  dt_ = (timestamp_ - last_timestamp_) * (float) (1.0f/180e6);
 
   fast_loop_get_status(&fast_loop_status_);
 
@@ -96,7 +97,7 @@ void MainLoop::update() {
       Sincos sincos;
       sincos = sincos1(phi_.value());
       float pos_desired = receive_data_.position_desired*(receive_data_.reserved > 0 ? sincos.sin : ((sincos.sin > 0) - (sincos.sin < 0)));
-      float vel_desired = receive_data_.reserved > 0 ? 2 * (float) M_PI * receive_data_.reserved * (1.0f/250e6) * sincos.cos : 0;
+      float vel_desired = receive_data_.reserved > 0 ? 2 * (float) M_PI * receive_data_.position_desired * receive_data_.reserved * sincos.cos : 0;
       iq_des = controller_.step(pos_desired, vel_desired, 0, fast_loop_status_.motor_position.position);
       break;
     }
@@ -115,6 +116,7 @@ void MainLoop::update() {
   send_data.motor_encoder = fast_loop_status_.motor_mechanical_position;
   send_data.motor_position = fast_loop_status_.motor_position.position;
   //send_data.joint_position = output_encoder_.get_value()*2.0*(float) M_PI/param_.output_encoder.cpr;
+  send_data.joint_position = 0;
   send_data.reserved[0] = iq_des;
   communication_.send_data(send_data);
   led_.update();
