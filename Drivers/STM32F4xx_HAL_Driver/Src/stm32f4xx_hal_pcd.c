@@ -406,7 +406,10 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
         if (epnum == 2) {
          // asm("BKPT");
           CLEAR_IN_EP_INTR(2, USB_OTG_DIEPINT_XFRC);
-        } else        if (ep_intr & 0x1U) /* In ITR */
+        } else   if (epnum == 1) {
+         // asm("BKPT");
+          CLEAR_IN_EP_INTR(1, USB_OTG_DIEPINT_XFRC);
+        } else      if (ep_intr & 0x1U) /* In ITR */
         {
           epint = USB_ReadDevInEPInterrupt(hpcd->Instance, epnum);
 
@@ -658,6 +661,19 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
                 data2_count = count;
                 USBx_OUTEP(2)->DOEPTSIZ = 0x80040; 
                 USBx_OUTEP(2)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
+
+                }
+      } else       
+      if((temp & USB_OTG_GRXSTSP_EPNUM) == 1) {
+        if ( ((temp & USB_OTG_GRXSTSP_PKTSTS) >> USB_OTG_GRXSTSP_PKTSTS_Pos) ==
+                STS_DATA_UPDT) {
+                int count = ((temp & USB_OTG_GRXSTSP_BCNT) >> USB_OTG_GRXSTSP_BCNT_Pos);
+                for(int i=0; i<((count+3)/4); i++) {
+                  data1[i] = USBx_DFIFO(0);
+                }
+                data1_count = count;
+                USBx_OUTEP(1)->DOEPTSIZ = 0x80040; 
+                USBx_OUTEP(1)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
 
                 }
       } else {

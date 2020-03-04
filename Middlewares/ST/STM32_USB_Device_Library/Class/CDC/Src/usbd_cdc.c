@@ -197,7 +197,7 @@ __ALIGN_BEGIN uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
   /* Interface descriptor type */
   0x00,   /* bInterfaceNumber: Number of Interface */
   0x00,   /* bAlternateSetting: Alternate setting */
-  0x02,   /* bNumEndpoints: One endpoints used */
+  0x04,   /* bNumEndpoints: One endpoints used */
   0x00,   /* bInterfaceClass: Communication Interface Class */
   0x00,   /* bInterfaceSubClass: Abstract Control Model */
   0x00,   /* bInterfaceProtocol: Common AT commands */
@@ -219,6 +219,25 @@ __ALIGN_BEGIN uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
   0x02,                           /* bmAttributes: Interrupt */
   LOBYTE(CDC_CMD_PACKET_SIZE),     /* wMaxPacketSize: */
   HIBYTE(CDC_CMD_PACKET_SIZE),
+  0x10,                           /* bInterval: */ 
+
+    // text interface
+  /*Endpoint 1 Descriptor*/
+  0x07,                           /* bLength: Endpoint Descriptor size */
+  USB_DESC_TYPE_ENDPOINT,   /* bDescriptorType: Endpoint */
+  0x81,                     /* bEndpointAddress */
+  0x02,                           /* bmAttributes: Bulk */
+  LOBYTE(USBD_BULK_SIZE),     /* wMaxPacketSize: */
+  HIBYTE(USBD_BULK_SIZE),
+  0x10,                           /* bInterval: */ 
+
+    /*Endpoint 1 Descriptor*/
+  0x07,                           /* bLength: Endpoint Descriptor size */
+  USB_DESC_TYPE_ENDPOINT,   /* bDescriptorType: Endpoint */
+  0x01,                     /* bEndpointAddress */
+  0x02,                           /* bmAttributes: Bulk */
+  LOBYTE(USBD_BULK_SIZE),     /* wMaxPacketSize: */
+  HIBYTE(USBD_BULK_SIZE),
   0x10,                           /* bInterval: */ 
   /*---------------------------------------------------------------------------*/
 
