@@ -95,6 +95,7 @@ pwm.cpp \
 main_loop.cpp \
 Src/pin_config.cpp \
 Src/main.cpp \
+parameter_api.cpp \
 parameters/otp.cpp \
 communication/usb_communication.cpp \
 control/spi_encoder.cpp \

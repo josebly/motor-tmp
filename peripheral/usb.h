@@ -409,4 +409,7 @@ private:
     // bool new_rx_data_[4] = {};
 };
 
+void send_string(const char * str);
+char *get_string();
+
 #endif

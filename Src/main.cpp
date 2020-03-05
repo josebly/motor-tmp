@@ -62,6 +62,7 @@
 #include "pin_config.h"
 #include "../peripheral/usb.h"
 #include "config.h"
+#include "parameter_api.h"
 //__attribute__((used)) DWT_Type *dwt = DWT;
 
 /* USER CODE END Includes */
@@ -367,6 +368,10 @@ int main(void)
   main_loop_set_mode(param()->startup_param.startup_mode);
   fast_loop_set_iq_des(0);
 
+
+  ParameterAPI api;
+  api.add_api_variable("kp", new APIFloat(&param()->main_loop_param.controller_param.kp));
+  api.add_api_variable("kd", new APIFloat(&param()->main_loop_param.controller_param.kd));
   int32_t i  = 0;
   while (1)
   {
@@ -380,10 +385,14 @@ int main(void)
     main_loop_get_status(&main_loop_status);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
-
     i_a_filtered = (1-alpha)*i_a_filtered + alpha*fast_loop_status.foc_command.measured.i_a;
     i_b_filtered = (1-alpha)*i_b_filtered + alpha*fast_loop_status.foc_command.measured.i_b;
     i_c_filtered = (1-alpha)*i_c_filtered + alpha*fast_loop_status.foc_command.measured.i_c;
+
+    char *s = get_string();
+    if (s != NULL) {
+        send_string(api.parse_string(s).c_str());
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
