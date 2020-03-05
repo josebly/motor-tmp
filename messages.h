@@ -111,6 +111,8 @@ typedef struct {
     } motor_position;
     float motor_mechanical_position;
     FOCCommand foc_command;
+    float t_seconds, dt;                // time since startup in seconds, will lose resolution, dt is measured time in seconds
+    float vbus;                         // bus voltage V
 } FastLoopStatus;
 
 typedef struct {
