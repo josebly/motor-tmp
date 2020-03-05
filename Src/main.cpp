@@ -176,23 +176,6 @@ uint8_t calibrate_hsi(uint8_t hse_freq) {
     return min_hsi_trim;
 }
 
-void send_string(const char * str) {
-    if (!usb_.tx_active(1)) {
-        usb_.send_data(1, (const uint8_t *) str, std::strlen(str)+1, false);
-    }
-}
-
-char *get_string() {
-    static char buf[64];
-    int count = usb_.receive_data(1, (uint8_t *) buf, 64);
-    buf[count] = 0;
-    if (count) {
-        return buf;
-    } else {
-        return NULL;
-    }
-}
-
 // Call bootloader, trigger is go_to_bootloader==1 on reboot + software reset
 uint8_t go_to_bootloader = false;
 uint32_t hsi_trim = 0x10l << RCC_CR_HSITRIM_Pos;

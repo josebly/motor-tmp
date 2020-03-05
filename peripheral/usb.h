@@ -161,6 +161,7 @@ class USB {
             USBx_OUTEP(0U)->DOEPTSIZ |= (3U * 8U);
             USBx_OUTEP(0U)->DOEPTSIZ |=  USB_OTG_DOEPTSIZ_STUPCNT;
 
+            USBx_INEP(1)->DIEPCTL = 0;  
             USBx_INEP(2)->DIEPCTL = 0;  
 
             USBx->GINTSTS &= USB_OTG_GINTSTS_USBRST;
@@ -207,6 +208,10 @@ class USB {
             if (packet_status == STS_SETUP_UPDT) {
                 read_fifo(byte_count, reinterpret_cast<uint32_t *>(setup_data));
             }
+            if (ep_number == 1) {
+                USBx_OUTEP(1)->DOEPTSIZ = 0x80040; 
+                USBx_OUTEP(1)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
+            }
             if (ep_number == 2) {
                 USBx_OUTEP(2)->DOEPTSIZ = 0x80040; 
                 USBx_OUTEP(2)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
@@ -233,6 +238,14 @@ class USB {
                     // USBx_OUTEP(2)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
                 }
                 USBx_OUTEP(2)->DOEPINT = 0xFFFF;
+            }
+            if (out_ep_interrupt & (1<<1)) { // endpoint 1 interrupt
+                if (USBx_OUTEP(1)->DOEPINT & USB_OTG_DOEPINT_XFRC) {
+                    // transfer complete
+                    // USBx_OUTEP(2)->DOEPTSIZ = 0x80040; 
+                    // USBx_OUTEP(2)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
+                }
+                USBx_OUTEP(1)->DOEPINT = 0xFFFF;
             }
         }
 
@@ -331,6 +344,17 @@ class USB {
                             (USB_OTG_DIEPCTL_SD0PID_SEVNFRM)| (USB_OTG_DOEPCTL_USBAEP));
                         USBx_OUTEP(2)->DOEPTSIZ = 0x80040; 
                         USBx_OUTEP(2)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
+
+                        USBx_DEVICE->DAINTMSK |= USB_OTG_DAINTMSK_IEPM & ((1U << (1)));
+                        USBx_INEP(1)->DIEPCTL |= ((64 & USB_OTG_DIEPCTL_MPSIZ ) | (2 << 18U) |\
+                            ((1) << USB_OTG_DIEPCTL_TXFNUM_Pos) | (USB_OTG_DIEPCTL_SD0PID_SEVNFRM) | (USB_OTG_DIEPCTL_USBAEP)); 
+                        
+                        // enable endpoint 2 OUT (RX)
+                        USBx_DEVICE->DAINTMSK |= USB_OTG_DAINTMSK_OEPM & ((1U << (1)) << 16u);
+                        USBx_OUTEP(1)->DOEPCTL |= ((64 & USB_OTG_DOEPCTL_MPSIZ ) | (2 << 18U) |\
+                            (USB_OTG_DIEPCTL_SD0PID_SEVNFRM)| (USB_OTG_DOEPCTL_USBAEP));
+                        USBx_OUTEP(1)->DOEPTSIZ = 0x80040; 
+                        USBx_OUTEP(1)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
                         // setup status phase    
                         send_data(0,0,0);
                         break;
@@ -371,6 +395,9 @@ class USB {
         USBx_OUTEP(0U)->DOEPTSIZ |= (3U * 8U);
         USBx_OUTEP(0U)->DOEPTSIZ |=  USB_OTG_DOEPTSIZ_STUPCNT;  
         USBx_OUTEP(0)->DOEPCTL |= USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA;
+    }
+    bool tx_active(int ep_num) {
+        return USBx_INEP(ep_num)->DIEPCTL & USB_OTG_DIEPCTL_EPENA;
     }
 
 private:

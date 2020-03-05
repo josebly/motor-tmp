@@ -227,8 +227,8 @@ __ALIGN_BEGIN uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
   USB_DESC_TYPE_ENDPOINT,   /* bDescriptorType: Endpoint */
   0x81,                     /* bEndpointAddress */
   0x02,                           /* bmAttributes: Bulk */
-  LOBYTE(USBD_BULK_SIZE),     /* wMaxPacketSize: */
-  HIBYTE(USBD_BULK_SIZE),
+  LOBYTE(64),     /* wMaxPacketSize: */
+  HIBYTE(64),
   0x10,                           /* bInterval: */ 
 
     /*Endpoint 1 Descriptor*/
@@ -236,8 +236,8 @@ __ALIGN_BEGIN uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END =
   USB_DESC_TYPE_ENDPOINT,   /* bDescriptorType: Endpoint */
   0x01,                     /* bEndpointAddress */
   0x02,                           /* bmAttributes: Bulk */
-  LOBYTE(USBD_BULK_SIZE),     /* wMaxPacketSize: */
-  HIBYTE(USBD_BULK_SIZE),
+  LOBYTE(64),     /* wMaxPacketSize: */
+  HIBYTE(64),
   0x10,                           /* bInterval: */ 
   /*---------------------------------------------------------------------------*/
 

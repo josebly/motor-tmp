@@ -669,9 +669,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
                 STS_DATA_UPDT) {
                 int count = ((temp & USB_OTG_GRXSTSP_BCNT) >> USB_OTG_GRXSTSP_BCNT_Pos);
                 for(int i=0; i<((count+3)/4); i++) {
-                  data1[i] = USBx_DFIFO(0);
+                  //data1[i] = USBx_DFIFO(0);
                 }
-                data1_count = count;
+                //data1_count = count;
                 USBx_OUTEP(1)->DOEPTSIZ = 0x80040; 
                 USBx_OUTEP(1)->DOEPCTL |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK ;
 
