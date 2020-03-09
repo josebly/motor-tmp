@@ -46,26 +46,26 @@ class USB {
             length8 = length32*4;
         }
         if (endpoint != 0) {
-        if (USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_EPENA) {  
-            int count = 0;
-            do {     
-                USBx_INEP(endpoint)->DIEPCTL |= USB_OTG_DIEPCTL_SNAK;
-                if (count++ > 100) {
-                    if (USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_NAKSTS) {
-                        break;
-                    } else {
-                        sending_ = 0;
-                        return;
-                    }
-                } 
-            } while(!(USBx_INEP(endpoint)->DIEPINT & USB_OTG_DIEPINT_INEPNE) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS) && !(USBx_INEP(endpoint)->DIEPINT & USB_OTG_DIEPINT_EPDISD));
-           while((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS) && !(USBx->GRSTCTL & USB_OTG_GRSTCTL_AHBIDL));
-           USBx->GRSTCTL = ( USB_OTG_GRSTCTL_TXFFLSH |(uint32_t)( 1 << (USB_OTG_GRSTCTL_TXFNUM_Pos + endpoint - 1)));
-           while((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS));     // wait on flush
-        }
+            if (USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_EPENA) {  
+                int count = 0;
+                do {     
+                    USBx_INEP(endpoint)->DIEPCTL |= USB_OTG_DIEPCTL_SNAK;
+                    if (count++ > 100) {
+                        if (USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_NAKSTS) {
+                            break;
+                        } else {
+                            sending_ = 0;
+                            return;
+                        }
+                    } 
+                } while(!(USBx_INEP(endpoint)->DIEPINT & USB_OTG_DIEPINT_INEPNE) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS) && !(USBx_INEP(endpoint)->DIEPINT & USB_OTG_DIEPINT_EPDISD));
+            while((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS) && !(USBx->GRSTCTL & USB_OTG_GRSTCTL_AHBIDL));
+            USBx->GRSTCTL = ( USB_OTG_GRSTCTL_TXFFLSH |(uint32_t)( 1 << (USB_OTG_GRSTCTL_TXFNUM_Pos + endpoint - 1)));
+            while((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) && !(USBx_DEVICE->DSTS & USB_OTG_DSTS_SUSPSTS));     // wait on flush
+            }
         } else {
             while(USBx_INEP(endpoint)->DIEPCTL & USB_OTG_DIEPCTL_EPENA) {
-                asm("bkpt");
+                // wait for previous transmission to complete
             }
         }
 
